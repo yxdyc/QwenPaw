@@ -1,0 +1,43 @@
+# Coding Project — sample template
+
+> This is a sample coding project file. The `/codex` skill reads project
+> files from `.local/projects/` to determine the working directory and
+> context for Codex delegation. Copy and edit to match your project.
+
+---
+
+## Project: Learning Agent CLI
+
+**Status:** active
+**Started:** YYYY-MM-DD
+**Domain:** ai_research
+
+### Stack
+- Python 3.12, asyncio, Click
+- Testing: pytest, pytest-asyncio
+
+### Repository
+- **Path:** CHANGEME_ABSOLUTE_PROJECT_PATH
+- **Codex CWD:** CHANGEME_ABSOLUTE_PROJECT_PATH
+- **Branch:** CHANGEME_BRANCH
+
+### Related Topics
+- T4.1 — Agent Architecture (mastery: 0.4)
+- T4.3 — Tool Use & Function Calling (mastery: 0.3)
+- T2.1 — Async Programming (mastery: 0.6)
+
+### Goals
+- [ ] Implement basic agent loop (perceive → think → act)
+- [ ] Add tool registration and dispatch
+- [ ] Write integration tests for tool pipeline
+- [ ] Add streaming output support
+
+### Codex Session Notes
+- Use `standard` tier (300s) for feature work
+- Use `deep` tier (600s) for multi-file refactors
+- Always run tests after Codex makes changes
+- Confirm the working directory and requested write scope before delegation
+
+### Resources
+- Knowledge base: `knowledge/ai-research/ROADMAP.md`
+- Daily log: `.local/logs/`

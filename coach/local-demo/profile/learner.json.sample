@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.0",
+  "domains": {
+    "finance": {
+      "topics": {
+        "financial_statement_analysis": {
+          "roadmap_id": "T1.1",
+          "mastery": 0.0,
+          "stage": 0,
+          "last_studied": null,
+          "review_due": null,
+          "attempts": 0
+        },
+        "time_value_of_money": {
+          "roadmap_id": "T1.2",
+          "mastery": 0.0,
+          "stage": 0,
+          "last_studied": null,
+          "review_due": null,
+          "attempts": 0
+        }
+      },
+      "interest": "medium"
+    }
+  },
+  "streak_days": 0,
+  "preferred_pace": "moderate",
+  "notes": "Sample learner.json — the coach skills will populate this file as you study."
+}

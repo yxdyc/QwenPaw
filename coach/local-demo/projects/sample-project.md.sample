@@ -1,0 +1,29 @@
+# Active Tasks & Learning — sample template
+
+> This is a synthetic project tracker. Copy it to
+> `.local/projects/sample-project.md` and replace it only with information the
+> learner has approved for local storage.
+
+---
+
+## Project: Sample Finance Study Plan
+
+**Status:** in progress
+**Started:** YYYY-MM-DD
+**Target:** YYYY-MM-DD
+
+### Goals
+
+- [ ] Complete T1.1 — financial statement analysis
+- [ ] Complete T1.2 — time value of money
+- [ ] Build a fictional balance sheet for scenario analysis
+
+### Resources
+
+- Knowledge base: `knowledge/finance/ROADMAP.md`
+- Daily log: `.local/logs/`
+
+### Notes
+
+Use public or synthetic data by default. If private data is introduced, keep
+only the minimum required fields under `.local/` and never store credentials.

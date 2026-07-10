@@ -107,6 +107,8 @@ logs/
 
 # vibe coding
 AGENTS.md
+# The learning-coach profile intentionally ships its routing contract.
+!coach/profile/AGENTS.md
 .claude
 openspec
 CLAUDE.md

@@ -1,0 +1,36 @@
+# Non-synced local data root (runtime state, credentials, secrets, skill data).
+.local/
+
+# QwenPaw writes the live agent configuration into the workspace. It can
+# contain provider credentials, channel identifiers, local paths, and ACP
+# runner settings, so only the setup instructions belong in source control.
+profile/agent.json
+
+# Runtime-generated symlinks under profile/ (created by bootstrap.sh).
+# They redirect platform runtime writes into .local/. NOT committed: their
+# targets live in .local/ and would otherwise leak personal paths into git.
+profile/credentials.yaml
+profile/drivers
+profile/history.db
+profile/chats.json
+profile/jobs.json
+profile/sessions
+profile/memory
+profile/mem_metadata
+profile/mem_session
+profile/memory_file_metadata.json
+profile/skill.json
+profile/dialog
+profile/media
+profile/embedding_cache
+profile/tool_results
+profile/resource
+profile/digest
+profile/file_store
+profile/.mcp
+profile/.reme_store_v1
+profile/.skill.json.lock
+profile/.bootstrap_completed
+
+# macOS
+.DS_Store
