@@ -1,0 +1,18 @@
+# Python runtime artifacts
+__pycache__/
+*.pyc
+
+# Private authoring/review operations. The public mirror contains a distilled
+# QUALITY-REPORT.md instead of machine-, identity-, and scheduler-specific logs.
+/PROGRESS.md
+/REVIEW-REPORT.md
+/REVIEW-REPORT-B.md
+/REVIEW-REPORT-C.md
+/OPS-WATCHDOG.md
+/shared/watchdog-playbook.md
+
+# Local experiments and editor/backup output
+*.bak
+*.bak-*
+*.tmp
+.DS_Store

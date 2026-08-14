@@ -1,0 +1,106 @@
+# LLM-PBL — Project-Based Learning for LLM Systems
+
+> **定位**：一套以「动手做出来」为唯一验收标准的 LLM 系统学习材料。
+> 不是综述，不是讲义摘抄，而是**从零重写核心组件（nano-*）→ 跑通最小闭环 → 对标权威实现与 SOTA 工程实践**的阶梯式训练场。
+
+---
+
+## 目标画像：senior LLM scientist & engineer
+
+材料的终点不是「会用某个框架」，而是把人训练到 senior 水平。具体拆成两面：
+
+- **Scientist 面**：能读懂 SOTA 论文并抓住**本质机制**（而非复述摘要）；能判断一个方法的适用边界与失败模式；能设计实验去验证一个假设。
+- **Engineer 面**：能读懂**权威开源实现的核心源码**；能在吞吐 / 显存 / 稳定性之间做工程取舍；能从 0 搭起可跑的训练 / 数据 / 推理 / agent 系统。
+
+每一节材料都要同时服务这两面：既讲清「为什么」（scientist），又给可跑代码（engineer）。
+
+---
+
+## 为什么叫 PBL（Project-Based Learning）
+
+看会 ≠ 做会。本仓库的每一节都要求学习者**亲手写代码、跑出结果、解释现象**。
+评判一段材料好坏的标准只有一个：**一个具备前置知识的工程师，跟着做完之后，能不能独立复现、并迁移到自己的问题上。**
+
+四条主线对应 LLM 系统栈的四个层次，自底向上、相互咬合：
+
+| 轨道 | 主题 | nano-*（对标权威实现） | SOTA 深挖 |
+|------|------|------------------------|-----------|
+| **01** | 后训练 / RL / SFT infra | trinity-rft · slime · verl · llamafactory | Kimi-K3（agentic RL 规模化） |
+| **02** | 预训练 / CPT infra | megatron · fsdp | DeepSeek（MoE + MLA + 训练稳定性） |
+| **03** | 数据 / 分布式 / RSI / 数据平台工程 | data-juicer · ray · vllm-sglang · data-platform · orchestration · rag-retrieval | LLM 数据方法论 + data-model co-dev + 湖仓/MLOps |
+| **04** | LLM → Agent | agentscope · qwenpaw | Harness engineering |
+
+四条线不是孤立的：03 产出的数据喂给 02/01 训练，01/02 训出的模型在 04 里变成 agent，
+agent 的运行轨迹又回流成 03 的数据——这正是 **data-model co-development（recursive self-improvement）** 的闭环，也是本仓库的核心命题之一。
+
+> **选题来源说明**：这四条线冷启于当前的研究兴趣，但这只是 topic 的初始画像，**不是全貌、更不是目标边界**。
+> 材料的标准始终对标各领域最权威的实现与 SOTA，内容会随「什么最重要、最本质」而扩展，不被任何具体项目绑定。
+
+---
+
+## 设计理念（连接 QwenPaw Learning Coach）
+
+本材料与 [QwenPaw Learning Coach](../../coach/README.md) 共用一组核心教学原则：
+
+1. **K+1 黄金法则** —— 永远只比学习者当前水平（K）高一层。不跳级、不灌水。每个 nano-* 内部再分阶梯（见 ROADMAP）。
+2. **费曼技巧** —— 每节末尾必须有「能不能讲给外行听」的自检。讲不清 = 没懂。
+3. **Project-Based** —— 概念挂在真实可跑的项目上，不悬空。
+4. **对抗式自检（Adversarial Self-Verification）** —— 产出与验证分离；独立验证者以“严苛教授”视角寻找反例和证据缺口。
+5. **零容忍反幻觉（Anti-Hallucination）** —— 所有数字、API、行数、benchmark 分数必须可溯源；不确定处显式标 `[TODO: verify]`，绝不编造。
+
+---
+
+## 材料形态约定
+
+- **code-based**：核心是代码，不是散文。每个 nano-* 至少有一个**可独立运行的最小实现**（single-file 优先）。
+- **notebook-style**：教程以「叙述 + 代码块 + 运行输出 + 思考题」交替推进，像 Jupyter notebook 的阅读体验（即便用 `.md` 承载）。
+- **阶梯递进（ladder）**：每个主题内部从 L0 玩具实现 → L1 单卡可跑 → L2 分布式/性能 → L3 对齐权威/SOTA，逐级加码，每级都能独立验收。
+- **对标权威与 SOTA**：每个 nano-* 都明确对应一个**权威开源实现**（如 verl / Megatron-LM / vLLM / Data-Juicer），L3 级别要求对照其源码做工程取舍分析；每条轨道有 SOTA 深挖。
+- **educational score 优先**：宁可少而透，不可多而浅。深度 / 正确性 / 完备性 > 广度 / 数量。
+
+---
+
+## 目录结构
+
+```
+LLM-PBL/
+├── README.md                  # 本文件：定位 + 目标画像 + 设计理念
+├── ROADMAP.md                 # 总路线图：四轨依赖图 + 阶梯定义 + 评分细则 + 权威/SOTA 参照表
+├── QUALITY-REPORT.md          # 脱敏后的发布范围、QA 结果、证据边界与已知缺口
+├── PUBLICATION-MANIFEST.sha256 # 发布文件摘要清单
+├── shared/                    # 跨轨共用：环境约定 / 术语表 / 评测基线
+└── tutorial/material/
+    ├── 01-post-training-rl-sft/      # 后训练 / RL / SFT
+    │   ├── nano-trinity-rft/  nano-slime/  nano-verl/  nano-llamafactory/
+    │   └── sota-deepdive/            # Kimi-K3 等
+    ├── 02-pretraining-cpt/           # 预训练 / 继续预训练
+    │   ├── nano-megatron/  nano-fsdp/
+    │   └── sota-deepdive/            # DeepSeek 等
+    ├── 03-data-distributed-rsi/      # 数据 / 分布式 / 递归自改进 / 数据平台工程
+    │   ├── nano-data-juicer/  nano-ray/  nano-vllm-sglang/
+    │   ├── nano-data-platform/       # 湖仓 / 接入 / 治理 / MLOps infra（规划中）
+    │   ├── nano-data-orchestration/  # DAG / CI/CD / Agentic workflow（规划中）
+    │   ├── nano-rag-retrieval/       # 向量检索 / RAG（规划中）
+    │   └── sota-deepdive/            # 数据方法论 + co-dev + 湖仓/MLOps
+    └── 04-llm-to-agent/              # LLM → Agent
+        ├── nano-agentscope/  nano-qwenpaw/
+        └── sota-deepdive/            # harness engineering
+```
+
+---
+
+## 快速上手
+
+- 想先看全貌 → 读 [ROADMAP.md](ROADMAP.md)
+- 想按问题选课 / 看跨轨依赖 → 读 [tutorial/material 学习总导航](tutorial/material/README.md)
+- 想从某一层切入 → 进对应 `tutorial/material/0X-*/README.md`
+- 想看当前覆盖、质量证据和已知缺口 → [QUALITY-REPORT.md](QUALITY-REPORT.md)
+
+## 发布与维护边界
+
+本目录是可公开、可复现的课程镜像。课程正文、代码、导航和结构审计进入版本控制；
+个人路径、主机信息、调度记录、逐轮协作账本和原始审查日志不进入发布树。
+
+公开质量结论以 `QUALITY-REPORT.md` 中列出的检查为准。某个脚本曾被运行、某个 hash
+曾经匹配，只能证明对应快照上的局部事实，不能替代全部脚本、全部外部引文和生产系统的
+持续验证。维护时优先提交小而可复现的改动，并同步更新质量报告中的证据和未决项。

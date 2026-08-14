@@ -40,6 +40,11 @@ The main learning loop is:
 6. periodically meta-review the teaching system, requiring approval before
    changing skills, roadmaps, or schedules.
 
+For a full project-based curriculum that applies these principles to runnable
+LLM systems exercises, see the sanitized [LLM-PBL example](../examples/llm-pbl/README.md).
+The curriculum is an independent learning artifact; this profile only shows
+how QwenPaw can host the coaching method around it.
+
 ## Safety Defaults
 
 - Cron, heartbeat, and ACP delegation are opt-in.

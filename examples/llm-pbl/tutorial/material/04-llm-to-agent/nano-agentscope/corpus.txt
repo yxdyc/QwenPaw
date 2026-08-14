@@ -1,0 +1,4 @@
+ReAct: Synergizing Reasoning and Acting in Language Models
+arXiv:2210.03629 — citation verified on arxiv.org, 2026-08-06
+
+Original study note: ReAct interleaves language reasoning with task actions. Reasoning helps maintain and revise a plan; actions query tools or environments for evidence that can update the next reasoning step. This is a paraphrase for the runnable fixture, not text copied from the paper abstract.
