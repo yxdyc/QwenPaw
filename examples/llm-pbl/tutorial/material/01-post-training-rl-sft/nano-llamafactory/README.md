@@ -17,7 +17,7 @@
 |------|------|------|
 | **L0** | single-file 确定性 toy：template 两种渲染 + labels 遮罩（shift 边界）+ collator 双层遮罩；用 coasting 模型量化 mask 的作用（零依赖，CPU 即跑） | ✅ [L0_sft_data_pipeline.py](L0_sft_data_pipeline.py) · [tutorial_L0.md](tutorial_L0.md) |
 | **L1** | 真实小模型 + torch 梯度下降跑最小 SFT 循环：在本节构造的 (input_ids, attention_mask, labels) 上训练，验证遮罩决定模型学到什么（scaffold 原「几步优化」目标在此落地） | ✅ [L1_minimal_sft.py](L1_minimal_sft.py) · [tutorial_L1.md](tutorial_L1.md) |
-| **L2** | DPO：偏好对用同一套 template/mask 机器构造（真实入口 `collator.py:L564` PairwiseDataCollatorWithPadding，2026-08-13 抓取；08-05 快照录 L553，上游漂移），reference-model KL 约束，对比 SFT vs DPO；按 ROADMAP §八 A 层要求写明 DPO 当今定位 | ✅ [L2_dpo_preference_pairs.py](L2_dpo_preference_pairs.py) · [tutorial_L2.md](tutorial_L2.md) |
+| **L2** | DPO：偏好对用同一套 template/mask 机器构造（真实入口 `collator.py:L564` PairwiseDataCollatorWithPadding，2026-08-13 抓取；08-05 快照录 L553，上游漂移），reference-model KL 约束，对比 SFT vs DPO；按课程的经典证据层要求写明 DPO 当今定位 | ✅ [L2_dpo_preference_pairs.py](L2_dpo_preference_pairs.py) · [tutorial_L2.md](tutorial_L2.md) |
 | **L3** | 对照 LLaMA-Factory 配置体系：一个配置切换 SFT/DPO/PPO 的抽象取舍 `[TODO: verify source]` | 🔲 |
 
 ## 环境依赖

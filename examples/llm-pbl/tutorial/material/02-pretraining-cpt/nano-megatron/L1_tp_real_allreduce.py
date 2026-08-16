@@ -15,8 +15,8 @@ L0 用「矩阵逐元素和」模拟 all-reduce 的语义；L1 付出 all-reduce
 运行要求：torch（CPU 即可）。本机命令：
     python L1_tp_real_allreduce.py
 
-可运行性声明（ROADMAP §三契约）：本脚本是真实分布式通信（gloo 多进程），
-不是模拟；GPU/NVLink 上的真实耗时属 Machine B 真机验证通道，
+可运行性声明（课程可运行性契约）：本脚本是真实分布式通信（gloo 多进程），
+不是模拟；GPU/NVLink 上的真实耗时属 真实 GPU/多机环境，
 标 [TODO: verify on real system]，本脚本不冒充。
 """
 

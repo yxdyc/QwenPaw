@@ -405,7 +405,7 @@ SFT 蒸馏的数据侧（模板 / loss mask）→ [nano-llamafactory](../nano-ll
 
 ## 15. 溯源与 §八 SOTA 对齐记录
 
-**SOTA 对齐（ROADMAP §八，B 层选题写前必做）**
+**SOTA 对齐（课程的证据时效性分层，B 层选题写前必做）**
 
 - 对齐日期：**2026-08-05**（全部一手来源当日现场核验）。
 - 结论：未发现取代 OPD 的新一代范式；OPD 维持 **B 层前沿主流**定位，
@@ -425,4 +425,4 @@ SFT 蒸馏的数据侧（模板 / loss mask）→ [nano-llamafactory](../nano-ll
 **本节全部 toy 数字**：`L0_opd_divergence_choice.py` 当日运行输出（三遍
 逐字节一致）；KL 目标形态（forward 全局最小 mu=0: 6.397 / reverse 双谷
 ±3.0: 0.736、mu=0 局部极大 3.249）、off-policy lr=0.15 两步发散路径、
-30/30 seed 锁模——均为本轮独立脚本复算，非转引。
+30/30 seed 锁模——均为独立脚本复算，非转引。

@@ -23,7 +23,7 @@ L2 依赖仅 `torch` + 同目录 L1 模块（import 不落 `__pycache__`），CP
 L3 依赖同 L2（`torch` + 同目录 L1/L2 模块），CPU 即跑约 10 秒：
 `python3 L3_radix_prefix_sharing.py`（计数类输出确定，计时行仅 [3] elapsed 行，
 口径 `sed '/^[[:space:]]*elapsed/d'` 可掩码）；真实引擎（vLLM/SGLang on GPU）
-验证走 Machine B 攒批通道 `[TODO: verify on real system]`。
+验证需在真实 GPU/多机环境验证 `[TODO: verify on real system]`。
 
 ## 核心要讲清的点
 

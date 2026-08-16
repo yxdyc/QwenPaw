@@ -85,15 +85,15 @@ takeaway: 分页把「显存管理」从每序列连续预留变成块池 + bloc
           L3 对照 vLLM block manager / SGLang RadixAttention 源码。
 ```
 
-**声明（ROADMAP §三 可运行性契约）**——输出开头也打印了同样的声明：
+**声明（课程可运行性契约）**——输出开头也打印了同样的声明：
 
 - **权重是 L1 的随机初始化 GQA GPT**（3,148,032 参数，`state_dict` 共享，逐参数断言相等）。
-  真实权重 + 真实引擎（vLLM/SGLang on GPU）留 Machine B 攒批通道 `[TODO: verify on real system]`。
+  真实权重 + 真实引擎（vLLM/SGLang on GPU）仍待真实 GPU/多机环境验证 `[TODO: verify on real system]`。
 - **分页管理不是模拟、不是 API 包装**：block table / refcount / 块级 gather-scatter /
   内容哈希前缀缓存 / CoW / 抢占重算都是真实现——只是规模小、跑在 CPU。
   与 vLLM V1 源码的逐条对照见 §8。
-- 计时行仅 [3] 的 prefill 墙钟及其派生比值，随机器负载浮动（本轮 3 连跑 + 定稿后
-  确认跑共 4 遍，比值区间 2.2×–2.6×）；其余全部为计数类输出，跨运行逐字节一致
+- 计时行仅 [3] 的 prefill 墙钟及其派生比值，随机器负载浮动（共独立运行 4 遍，
+  比值区间 2.2×–2.6×）；其余全部为计数类输出，跨运行逐字节一致
   （§14 确定性记录）。
 
 ---
@@ -182,7 +182,7 @@ B 进场：134-token prompt 的前 128 token 与 A 相同 → 链式哈希逐块
 两个实测数字：
 
 1. **省显存**：B 的 34 块里 32 块是借的（ref_cnt=[2,2] 在盘），物理块只多花 2 块。
-2. **省算力**：prefill 墙钟 5.92 ms → 2.31 ms（**2.6×**，本轮 4 遍区间 2.2×–2.6×）。
+2. **省算力**：prefill 墙钟 5.92 ms → 2.31 ms（**2.6×**，4 次运行区间 2.2×–2.6×）。
 
 为什么只有 2.6× 而不是 134/6 ≈ 22×？因为命中路径**仍要付三笔钱**：
 (a) 前缀 KV 的 gather（32 块要读回来）；(b) 6 个后缀 token 对全部 134 个位置的
@@ -375,7 +375,7 @@ raw 通道独立核验，零漂移；§8 全部锚点在 2026-08-07 再经 raw �
 
 1. **CPU 口径不可外推**：所有墙钟（[3] 的 2.6×）是 CPU 小模型口径——真实引擎的
    gather 融进 paged-attention kernel、GPU 带宽物理不同。机制（块/refcount/CoW/抢占）
-   可外推，绝对数字不可。真机验证 `[TODO: verify on real system]`（Machine B 通道）。
+   可外推，绝对数字不可。真机验证 `[TODO: verify on real system]`（真实 GPU/多机环境）。
 2. **逐块 Python gather 是反面教材**：第一版实现用逐块切片循环，[3] 命中加速只有
    1.1×——每块一次的 Python 分发开销在两条路径都付，把计算差吞了。改向量化索引
    （更接近 kernel 融合）后才显出 2.6×。**测量协议决定你测出什么**（L1 同款教训：
@@ -408,7 +408,7 @@ raw 通道独立核验，零漂移；§8 全部锚点在 2026-08-07 再经 raw �
 ## 14. 溯源与校准
 
 **源码快照（vLLM）**：`vllm-project/vllm` main 分支，2026-08-06 本地下载快照
-（`/tmp/vllm_src/vllm`，含 `v1/core/` 完整 V1 引擎目录）。写作时（2026-08-07 00:3x–01:1x，
+（本地 vLLM 源码快照，含 `v1/core/` 完整 V1 引擎目录）。初次记录时（2026-08-07 00:3x–01:1x，
 tutorial 定稿 01:10）`raw.githubusercontent.com` 不可达（curl 多次 exit 28），§8 锚点全部
 基于该快照逐行核验；其中 `config/cache.py:L47`（`DEFAULT_BLOCK_SIZE = 16`）另有
 2026-08-06 raw 通道独立核验记录，与快照零漂移。
@@ -417,7 +417,7 @@ tutorial 定稿 01:10）`raw.githubusercontent.com` 不可达（curl 多次 exit
 `single_type_kv_cache_manager.py` / `config/cache.py` 与 08-06 快照逐字节相同（零漂移）；
 `kv_cache_utils.py` / `sched/scheduler.py` / `worker/gpu/model_runner.py` 同日微漂移
 （vllm main 提交频繁），锚点仍于行号级有效；model_runner CoW 段现行 main 位于 L954-960
-（快照行号 L959-966，代码内容相同）。SGLang `radix_cache.py` 同因写作时不可达，
+（快照行号 L959-966，代码内容相同）。SGLang `radix_cache.py` 同因初次记录时不可达，
 源码对照按 README 阶梯定义留 L3。
 
 **锚点清单**（快照行号级）：`block_pool.py:L647`（get_new_blocks）/ `L679`
@@ -434,10 +434,10 @@ popleft_n:L273 / prepend_n:L349 / append_n:L370）/ `L576`（hash_block_tokens�
 usenix 页 2026-08-06 核验）。
 
 **确定性记录**：greedy + seed=42 + 固定 prompts（独立 Generator）——计数类输出
-跨运行逐字节一致；计时行仅 [3] prefill 墙钟及其派生比值（本轮 3 连跑：5.92/2.31 ms
+跨运行逐字节一致；计时行仅 [3] prefill 墙钟及其派生比值（3 次连续运行：5.92/2.31 ms
 → 2.6×，6.11/2.35 ms → 2.6×，第三遍比值 2.3×；定稿后确认跑 4.24/1.89 ms → 2.2×，
 比值出 3 遍区间下界——该跑与只读命令并发、负载略高，如实补注；计数类 mask 后
-四遍全部逐字节一致）。本轮调试史如实：fork off-by-one（§12.5）+ 逐块 gather 吞掉
+四遍全部逐字节一致）。已知实现陷阱：fork off-by-one（§12.5）+ 逐块 gather 吞掉
 命中差（§12.2）+ 块重分配必须失效旧哈希（否则前缀命中拿到被覆盖的块——机制先行，
 虽然 nano 调度路径未开缓存）。
 

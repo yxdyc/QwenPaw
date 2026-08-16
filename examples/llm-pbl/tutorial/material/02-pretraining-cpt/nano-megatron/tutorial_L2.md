@@ -460,7 +460,7 @@ P2P 必须非阻塞批量（否则 1F1B 死锁）。
 - **本机数字 ≠ GPU 数字**：全部计时来自 CPU + gloo + loopback，
   P2P 延迟占比大，bubble 绝对值偏高（实测 50–67% vs 公式 11–50%）；
   GPU + NCCL 上 P2P 开销占比小得多，实测 bubble 应更接近公式。
-  真机数字标 `[TODO: verify on real system]`（ROADMAP §三 Machine B 通道）。
+  真机数字标 `[TODO: verify on real system]`（课程的真机验证边界）。
 - **toy 形状**：`H=128, FF=512, T=512, N_BLOCKS=4, WORLD_SIZE=2`，
   计算微秒级，P2P 延迟完全主导；真实形状下计算/通信比会变化，
   但结构不变量（gpipe ≈ 1f1b、通信与 m/L 无关、peak GPipe=m / 1F1B≤N）不变。
@@ -507,4 +507,4 @@ P2P 必须非阻塞批量（否则 1F1B 死锁）。
   （per-mb loss bit-identical vs full-batch Δ = 2.090e-06）
   与 nano-fsdp L2 [4a]/[4b] 同构——逐 mb 计算 vs 全 batch 计算的归约顺序差，
   fp32 下为舍入级差异，非错误。
-- 未 ssh 远端；真机验证走 Machine B 攒批通道。
+- 本节未执行 GPU/多机实测。

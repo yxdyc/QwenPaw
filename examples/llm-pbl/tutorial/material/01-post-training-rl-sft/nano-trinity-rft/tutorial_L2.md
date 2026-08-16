@@ -474,7 +474,7 @@ RM 是请了一位作文阅卷老师——什么题都能阅，但他有自己�
   陈旧是另一个信号质量维度）、[nano-fsdp L3](../../02-pretraining-cpt/nano-fsdp/tutorial_L3.md)
   （混合精度下「省显存不省模型状态」的账本方法，与本节 proxy/gold 分账同构）、
   [02 轨 sota-deepdive](../../02-pretraining-cpt/sota-deepdive/deepseek-moe-mla-stability.md)
-  （只读引用：V3 的稳定性机制面）。
+  （交叉引用：V3 的稳定性机制面）。
 
 ---
 
@@ -487,7 +487,7 @@ RM 是请了一位作文阅卷老师——什么题都能阅，但他有自己�
 
 | 锚点 | 内容 |
 |------|------|
-| README:L21-25 / L73 / L102-105 / L121 | 三组件 / 非可验证域三示例 / 全生命周期数据管线 / SFT 配置项（L0/L1 已用，本轮复验零漂移） |
+| README:L21-25 / L73 / L102-105 / L121 | 三组件 / 非可验证域三示例 / 全生命周期数据管线 / SFT 配置项（L0/L1 已用，复验零漂移） |
 | trinity/common/rewards/reward_fn.py:L7-16 | RewardFn ABC，`__call__ → Dict[str, float]` |
 | trinity/common/rewards/__init__.py:L7-18 | REWARD_FUNCTIONS 注册表 7 项全 rule/parse 型 |
 | trinity/common/rewards/math_reward.py:L15-39 | MathRewardFn = accuracy + format，L39 字典合并 |

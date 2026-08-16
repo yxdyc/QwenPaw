@@ -15,13 +15,13 @@
 $ python3 L2_real_methodology_loop.py
 ```
 
-真实输出（2026-08-08 run1，逐字节粘贴；输出 md5 = `6b852cee4abf425d3271bda2c2d2f4c8`，124 行）：
+真实输出（2026-08-14 复验，逐字节粘贴；输出 md5 = `634c437cc982b85d4196735cf3a2b567`，124 行）：
 
 ```text
 ====================================================================
 nano-qwenpaw L2 — methodology injection, measured
 ====================================================================
-python 3.13.13
+python 3.9.6
 declarations: LearnerModel = declared mock (latent theta,
   logistic responding, expected session score); Examiner-A =
   declared generator on a planted-defect schedule; gap detectors
@@ -33,12 +33,12 @@ declarations: LearnerModel = declared mock (latent theta,
   cap_middleware.py L110-117.
 
 [0] methodology sources: numbers parsed out of the real files
-    SOUL.md            sha256[:8]=78269f03  mode=live
+    SOUL.md            sha256[:8]=e143a057  mode=live
     k-plus-one.md      sha256[:8]=3cbf925a  mode=live
     feynman-check.md   sha256[:8]=bca18409  mode=live
-    cap_middleware.py  sha256[:8]=7047abe2  mode=live
-    manager.py         sha256[:8]=ea74a331  mode=live
-    history.py         sha256[:8]=f1913129  mode=live
+    cap_middleware.py  sha256[:8]=5ea09476  mode=live
+    manager.py         sha256[:8]=6260c313  mode=live
+    history.py         sha256[:8]=48b71b62  mode=live
     SOUL.md: principles=7, principle#5="Anti-Hallucination: Zero Tolerance" (L53)
     k-plus-one.md: rules >80%:+0.1 / 50-80%:+0.05 / <50%:-0.05 (L85) | Examiner-B steps=5 (L40), regenerate > 2 failures
     feynman-check.md: bands >=4.5:+0.1 / >=3.5:+0.05 / >=2.5:+0 / >=0.0:-0.05 (L98) | gap categories=4: Logical Leaps, Undefined Terms, Factual Errors, Missing Aspects
@@ -90,9 +90,9 @@ declarations: LearnerModel = declared mock (latent theta,
     r2: gaps=0 | clarity=5 accuracy=5 completeness=5 | overall=5.0 -> band >=4.5: delta=+0.10 | mastery 0.30 -> 0.40
 
 [4] anti-hallucination claims gate: provenance, not truth
-    VERIFIED        "a single tool result is capped at 3000 tokens" (cap_middleware.py) — cap_middleware.py@7047abe2
+    VERIFIED        "a single tool result is capped at 3000 tokens" (cap_middleware.py) — cap_middleware.py@5ea09476
     NO-PROVENANCE   "the window is the memory" — no source recorded
-    SHA-DRIFT       "one turn stays pinned raw at the head" (manager.py) — recorded 00000000 != live ea74a331
+    SHA-DRIFT       "one turn stays pinned raw at the head" (manager.py) — recorded 00000000 != live 6260c313
     QUOTE-NOT-FOUND "the scroll keeps 7 turns pinned" (manager.py) — snippet not in manager.py
     the NO-PROVENANCE claim is rejected with principle#5's maxim: "If you can't verify, don't assert"
 
@@ -106,7 +106,7 @@ declarations: LearnerModel = declared mock (latent theta,
     degradation path: store down -> real ProgrammingError caught; capped=False degraded=True in_context==full output: True
     (cap_middleware.py L63-68: don't truncate what we could not store)
 
-[6] session ledger (SOUL.md principle#7 "Continuous Improvement", L69) — real sqlite
+[6] session ledger (SOUL.md principle#7 "Continuous Improvement", L72) — real sqlite
     [1] examiner-gate     set#1 failures=4 > 2 -> regenerate; set#2 fixed, 6/6 verified
     [2] k1-adaptive       12 sessions: final mastery=0.30 theta=2.057 (best theta of 3 policies)
     [3] feynman-r1        overall=3.0 -> band 2.5-3.4: delta=+0.00
@@ -148,7 +148,7 @@ takeaway: methodology is not prompt prose — it is executable flow.
 
 ## 2. 声明清单：什么是真的，什么是声明的
 
-L2 延续 L1 的 declared-mock 契约（ROADMAP §3），边界画在「判断」与「机制」之间：
+L2 延续 L1 的 declared-mock 契约（课程可运行性契约），边界画在「判断」与「机制」之间：
 
 | 组件 | 真/声明 | 说明 |
 |---|---|---|
@@ -260,7 +260,7 @@ SOUL.md principle#7（Continuous Improvement，L69）要求每次 session 留痕
 | pointer 格式（TRUNCATED + system-info + recall_tool(tcid)） | 同上 L110-117 | §5 逐字符镜像 |
 | pointer key = tool_call_id（`dedup_key=tcid`） | 同上 L26-27、L87-91 | §3 factual 证据、§5 key |
 
-源文件 sha256[:8]（本 run 输出 [0] 区）：SOUL.md `78269f03`、k-plus-one.md `3cbf925a`、feynman-check.md `bca18409`、cap_middleware.py `7047abe2`、manager.py `ea74a331`、history.py `f1913129`。其中 scroll 四件与 L1 §14 记录一致（cap/manager/history 零漂移），SOUL.md 与 L1 一致。
+源文件 sha256[:8]（本次输出 [0] 区）：SOUL.md `e143a057`、k-plus-one.md `3cbf925a`、feynman-check.md `bca18409`、cap_middleware.py `5ea09476`、manager.py `6260c313`、history.py `48b71b62`。其中 scroll 四件与 L1 §14 记录一致，SOUL.md 与 L1 一致。
 
 ## 11. 费曼自检
 

@@ -28,7 +28,7 @@
 
 - L0：零外部依赖（纯标准库 math/random），CPU 即跑，固定 seed 逐字节确定。
 - L1：依赖 torch（真实小模型前向/梯度）。CPU 即跑，约 4 秒。已在 base（py3.13.13 + torch 2.13.0）和 longds（py3.12.13 + torch 2.4.1）两环境各 3 遍验证，EXIT=0，self-check 全绿。
-- L2+：视实现需 torch；真机项走 Machine B 通道 `[TODO: verify on real system]`。
+- L2+：视实现需 torch；真机项需在真实 GPU/多机环境验证 `[TODO: verify on real system]`。
 
 ## 核心要讲清的点
 

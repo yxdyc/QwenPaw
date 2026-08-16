@@ -8,7 +8,7 @@
 ## 这条线学什么
 
 后训练（post-training）= SFT（监督微调）+ RLHF/RLVR（强化学习）+ 与 RL 正在合流的**蒸馏**（OPD, on-policy distillation：学生自己采样、教师给分布监督）。
-工程难点不在算法公式，而在**如何让「采样 rollout」和「梯度更新」高效协同**——这正是 verl/slime/trinity-rft 这类框架要解决的本质问题；而 OPD 恰好复用同一套 rollout infra，是算法层的前沿（时效性 B 层，见 ROADMAP §八）。
+工程难点不在算法公式，而在**如何让「采样 rollout」和「梯度更新」高效协同**——这正是 verl/slime/trinity-rft 这类框架要解决的本质问题；而 OPD 恰好复用同一套 rollout infra，是算法层的前沿（时效性 B 层，见 课程的证据时效性分层）。
 
 | nano-* | 抓的核心机制 | 对标权威实现 |
 |--------|-------------|--------------|
@@ -60,7 +60,7 @@ Step 6  sota-deepdive: Kimi-K3    ← 看 SOTA 如何把 agentic RL 规模化
 - [ ] 能 single-file 跑通一个 toy OPD，解释「学生自采样 + reverse KL」为何在长程生成上优于静态教师文本的 SFT 蒸馏
 - [ ] 能说出 multi-teacher OPD 的至少一种工程形态（多教师分布融合 / 路由），及其相对单教师的动机
 - [ ] 能为同一条 EpisodeRecord 写出 PPO/GRPO/OPD adapter 的必填字段，并解释 `done` 与 `truncated`
-- [ ] 能按 ROADMAP §八 三层锚点，说出 PPO/DPO（经典层）与 GRPO 族/OPD（前沿层）在当今后训练格局中的定位差异
+- [ ] 能按课程的三层证据时效性分层，说出 PPO/DPO（经典层）与 GRPO 族/OPD（前沿层）在当今后训练格局中的定位差异
 
 ---
 

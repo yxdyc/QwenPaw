@@ -23,7 +23,7 @@ data_methodology_sim.py — 03 轨 sota-deepdive（LLM 数据方法论）的可�
       —— 为什么「训练文档与 benchmark 的 n-gram 重叠率」能把「背题」的文档挑出来，
          而干净文档重叠率趋 0（Lee et al. / DCLM 去污染工具的本质）。
 
-可运行性契约（ROADMAP §三）
+可运行性契约（课程可运行性契约）
 ==========================
 - 本文件是**本质模拟**：[C] 数据配比 与 [D] 去污染 在 nano 侧没有现成实测锚，
   本 sim 用 toy 尺度 + 真实算法语义（真实 MinHash/LSH、真实乘性权重重加权、真实 n-gram 重叠）

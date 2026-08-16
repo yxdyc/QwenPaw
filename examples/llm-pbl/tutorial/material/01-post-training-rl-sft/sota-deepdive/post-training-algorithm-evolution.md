@@ -2,8 +2,8 @@
 
 > **深挖对象**：2023–2026 后训练算法的机制演进主线——PPO 奠基（importance sampling + clipping）→ GRPO 族与 RLVR（去掉 value model、reward 换成可验证信号）→ OPD（on-policy distillation，蒸馏与 RL 的合流）。
 > **状态**：✅ 首版完成（SOTA 对齐日期 2026-08-11）
-> **对照基础**：nano-verl L0–L3（25/25 转正）+ nano-opd L0–L1（24/25）+ nano-llamafactory L0–L1——三者均为 关联的后训练/预训练轨材料，本文只读引用并标注锚点；「nano 实测」全部指向这些模块的可运行产出。
-> **SOTA 对齐日期**：2026-08-11（ROADMAP §八，B 层主题必做）。18 个 arXiv ID 当日经 export.arxiv.org API 现场核验（标题/日期/作者/摘要），两篇一手博客当日现场重抓，见 §10 溯源表。对齐结论：**未发现取代 GRPO 族 / RLVR / OPD 的新一代范式**。
+> **可运行对照**：[nano-verl L0–L3](../nano-verl/) + [nano-opd L0–L1](../nano-opd/) + [nano-llamafactory](../nano-llamafactory/)；文中的「nano 实测」均指向这些模块的可运行产出。
+> **SOTA 对齐日期**：2026-08-11（课程的证据时效性分层，B 层主题必做）。18 个 arXiv ID 当日经 export.arxiv.org API 现场核验（标题/日期/作者/摘要），两篇一手博客当日现场重抓，见 §10 溯源表。对齐结论：**未发现取代 GRPO 族 / RLVR / OPD 的新一代范式**。
 
 ---
 
@@ -130,7 +130,7 @@ DPO [2305.18290]（2023-05-29，Rafailov et al.）是 A 层经典锚点。机制
 
 **当今定位**（§八 A 层必注，推断与文献已有区分如下）：DPO 系方法在「静态偏好数据充足、探索价值低」的场景仍是高效选择（文献已有：DPO 及其变体在工业对齐管线中广泛使用——此为领域常识级表述，不引具体数字）；但在 RLVR 主场（数学/代码/推理）它让位给在线 RL，机制原因有二（推断，基于两处摘要对照）：其一，DPO 的训练信号来自**已标注的偏好对**，而推理任务的价值恰在探索出标注里没有的解法——R1 摘要的「pure reinforcement learning (RL), obviating the need for human-labeled reasoning trajectories」正是对这一点的反向陈述；其二，离线数据与当前策略的分布差会随训练扩大，DPO 没有 IS 机制去修正它（PPO/GRPO 有 ratio，OPD 有 on-policy 采样）。OPD survey [2604.00626] 摘要把这条线缝了回来：该文显式讨论「the connection between OPD and KL-constrained reinforcement learning」——KL 约束闭式解的思想在 OPD 框架里继续活着。
 
-**nano 锚点**：偏好对的数据侧构造（chat template / loss mask / pairwise collator）在 nano-llamafactory L0–L1 已可运行（SFT 数据侧三件套 ✅）；DPO 本身的可运行对照排在该模块 L2（🔲，其 README 已声明「按 ROADMAP §八 A 层要求写明 DPO 当今定位」），本文不预支未落盘的实测。
+**nano 锚点**：偏好对的数据侧构造（chat template / loss mask / pairwise collator）在 nano-llamafactory L0–L1 已可运行（SFT 数据侧三件套 ✅）；DPO 本身的可运行对照见 [nano-llamafactory L2](../nano-llamafactory/tutorial_L2.md)，其中明确区分“经典机制地基”和“当前前沿配方”。
 
 ---
 
@@ -209,7 +209,7 @@ nano-verl L2（当前 CPU-only 输出，seed=42）演示 lockstep 两进程分�
 
 ### 7.4 2026 的 infra 前沿：agentic RL 把轨迹拉长到百万 token
 
-Kimi K3 技术报告 [2607.24653]（2026-07-27，v2 2026-08-07，Kimi Team）摘要声称：2.8T MoE / 104B 激活 / 1M 上下文；post-training = 「reinforcement learning across general, agentic, and coding domains and multiple reasoning-effort levels」；infra 侧的关键新词是「**million-token agentic RL with persistent rollout and sandbox states**」——agentic RL 把 rollout 从「一问一答」拉长到跨环境状态的长时程轨迹，rollout 引擎要能持久化沙箱与中间状态。（正文层细节本轮只核到摘要，标 [TODO: verify]。）这与 04 轨 harness engineering 的长时程主题（状态外化、检查点、可审查停止点）是同一枚硬币的两面：训练侧要持久化 rollout 状态，推理侧要外化 agent 状态——长轨迹既是训练数据也是工程对象（ROADMAP §一 RSI 闭环：agent 轨迹回流数据侧）。DAPO 摘要的生态证据补一句：该开源 RL 系统「built on the verl framework」——verl 系 infra 是 RLVR 开源复现的事实底座（nano-verl 对标的正是它）。
+Kimi K3 技术报告 [2607.24653]（2026-07-27，v2 2026-08-07，Kimi Team）摘要声称：2.8T MoE / 104B 激活 / 1M 上下文；post-training = 「reinforcement learning across general, agentic, and coding domains and multiple reasoning-effort levels」；infra 侧的关键新词是「**million-token agentic RL with persistent rollout and sandbox states**」——agentic RL 把 rollout 从「一问一答」拉长到跨环境状态的长时程轨迹，rollout 引擎要能持久化沙箱与中间状态。（当前证据只覆盖摘要，正文细节标 [TODO: verify]。）这与 04 轨 harness engineering 的长时程主题（状态外化、检查点、可审查停止点）是同一枚硬币的两面：训练侧要持久化 rollout 状态，推理侧要外化 agent 状态——长轨迹既是训练数据也是工程对象（总导航的四轨闭环 RSI 闭环：agent 轨迹回流数据侧）。DAPO 摘要的生态证据补一句：该开源 RL 系统「built on the verl framework」——verl 系 infra 是 RLVR 开源复现的事实底座（nano-verl 对标的正是它）。
 
 ---
 
@@ -223,7 +223,7 @@ Kimi K3 技术报告 [2607.24653]（2026-07-27，v2 2026-08-07，Kimi Team）摘
 | **B 前沿主流** | GRPO [2402.03300 内提出] → DAPO [2503.14476] / Dr. GRPO [2503.20783] / CISPO [2506.13585] / GSPO [2507.18071]；RLVR [2501.12948]；OPD 生产化 [2505.09388 / TM blog 2025-10-27 / 2604.00626 / 2606.30406]；Kimi K3 agentic RL [2607.24653] | 多独立来源支撑：GRPO 族变体各有前沿模型采用证据（Qwen3/M1/MiMo-V2-Flash）；OPD 有 survey + 三家生产配方；本文主体内容 |
 | **C 中间状态** | XPO 类离线偏好变体、MAD-OPD / Uni-OPD 等单源 OPD 变体（无已核验 arXiv ID） | 只讲机制类别（token 级重加权 / 多教师融合），不追单论文微创新；晋升 B 层需 ≥2 个独立验证 |
 
-存在性数据点：Qwen3.5 系列已发布（qwen.ai blog「Qwen3.5: Towards Native Multimodal Agents」；Qwen3.5-Omni Technical Report [2604.15804]，2026-04-17，摘要主题为全模态）——其 post-training 配方细节本轮未能提取一手文本（博客 JS 渲染），标 [TODO: verify]。DeepSeek-V4 采用 pure multi-teacher OPD 的说法系 survey 正文转述（nano-opd §15 已录 [TODO: verify]），本文维持转述口径。
+存在性数据点：Qwen3.5 系列已发布（qwen.ai blog「Qwen3.5: Towards Native Multimodal Agents」；Qwen3.5-Omni Technical Report [2604.15804]，2026-04-17，摘要主题为全模态）——尚未提取其 post-training 配方的一手文本（博客 JS 渲染），标 [TODO: verify]。DeepSeek-V4 采用 pure multi-teacher OPD 的说法系 survey 正文转述（nano-opd §15 已录 [TODO: verify]），本文维持转述口径。
 
 ---
 
@@ -293,9 +293,9 @@ Kimi K3 技术报告 [2607.24653]（2026-07-27，v2 2026-08-07，Kimi Team）摘
 | GSPO: Towards Scalable Reinforcement Learning for Language Models | qwenlm.github.io/blog/gspo/（Qwen Team） | 2025-07-27 | 抓取件 25,141 B |
 | On-Policy Distillation | thinkingmachines.ai/blog/on-policy-distillation/（Kevin Lu in collaboration with others at Thinking Machines） | 2025-10-27 | 抓取件 82,782 B |
 
-**负对照与交叉核验**：18 个 ID 全部返回真实条目且标题与 关联的后训练/预训练轨材料已录值逐词吻合（MiniLLM/GKD/DistiLLM 标题 vs nano-opd tutorial_L0 §15；HybridFlow 标题 vs nano-verl tutorial_L3 §11；OPD survey v4 updated 2026-06-18 vs nano-opd §15 录值）——无一处 ID 误归属。
+**负对照与交叉核验**：18 个 ID 全部返回真实条目且标题与 对应 nano 教程记录逐词吻合（MiniLLM/GKD/DistiLLM 标题 vs nano-opd tutorial_L0 §15；HybridFlow 标题 vs nano-verl tutorial_L3 §11；OPD survey v4 updated 2026-06-18 vs nano-opd §15 录值）——无一处 ID 误归属。
 
-### 10.2 内部对照材料（关联的后训练/预训练轨材料，关联的数据/Agent 轨只读引用）
+### 10.2 课程内可运行对照
 
 - nano-verl L0–L3：`../nano-verl/`（L0 调度 toy 68.0→47.0ms/1.45x；L1 最小 PPO 闭环 27,966 参数/reward 0.831→0.988 + IS 边界；L2 lockstep actor-learner 角色拆分，CPU-only 8.43s→8.18s/1.03x、基本持平；L3 HybridFlow colocate declared 显存算术 7B/13B + resharding 税 101,602 KB 对账 + self-check 10/10，metrics md5 `5cba79e6…`；verl v0.7.1 源码锚点表见其 tutorial_L3 §11，行号以 2026-08-07 抓取日为准）
 - nano-opd L0–L1：`../nano-opd/`（L0 三配方对照/驻点算术 +0.002 vs +136.149/30/30 seed 锁模；L1 2×2 因子设计四格/相变 step 240–299/背书度 −9.342→−1.703/两环境复现；§15 SOTA 对齐记录 2026-08-05 为本文对齐的前置基线）
@@ -304,7 +304,7 @@ Kimi K3 技术报告 [2607.24653]（2026-07-27，v2 2026-08-07，Kimi Team）摘
 ### 10.3 口径声明
 
 - 四类信息区分：「摘要/原文声称」= arXiv 摘要或博客原文（2026-08-11 当日抓取）；「文献已有」= 已发表结论；「推断」= 本文作者的机制推断（已逐处标明）；无猜测级内容入正文。
-- nano 实测数字逐字引自 关联的后训练/预训练轨已验收教程（文内标注文件与节号），本轮未重跑 关联的后训练/预训练轨代码（只读纪律）；其可复现性由 关联的后训练/预训练轨 independent review 历轮亲跑记录背书（nano-verl L3 stdout 锚三遍收敛、nano-opd L1 两环境各 3 遍 EXIT=0 等，见各 README 锚点表）。
+- nano 实测数字来自所链接教程（文内标注文件与节号）；本文没有把这些数字重新解释为 GPU 或生产规模证据。复现命令、环境口径和输出锚见各模块 README。
 - declared vs real toy 严格区分：nano-verl L3 的 GB/ms 数字为 COST 声明模型算术，toy 流量为实测但规模是 28K 参数——两类数字在本文均按其原始口径标注。
 - [TODO: verify] 遗留五项：Kimi K3 正文层；MOPD 正文层；Qwen3.5 配方细节；DeepSeek-V4 技术报告；MOPD 与 survey 同名方法的同一性。
 - 本文不引入任何 C 层单论文方法作为教学内容（§八）；MAD-OPD / Uni-OPD 等只作为机制类别的载体出现，不补造 arXiv ID。

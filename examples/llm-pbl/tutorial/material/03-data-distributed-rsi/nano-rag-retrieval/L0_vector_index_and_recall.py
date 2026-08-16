@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """nano-rag-retrieval L0 — embedding 索引 + 向量相似度检索 + 检索评估，纯 Python 本质模拟。
 
-它在模拟真实系统的哪一面（L0 验收标准，ROADMAP §二）：
+它在模拟真实系统的哪一面（L0 验收标准，L0 验收契约）：
   [1] embedding = 把文本映射进几何空间的函数：相似度 ≈ 距离近；函数的质量决定检索的天花板。
       L0 用 lexical embedding（词哈希 + 字符 trigram，feature hashing [0902.2206]），并让它的失败模式
       （同义词盲 / 词序盲 / 哈希碰撞假相似）可见——这正是神经语义 embedding 存在的动机（L1 接真实模型）；

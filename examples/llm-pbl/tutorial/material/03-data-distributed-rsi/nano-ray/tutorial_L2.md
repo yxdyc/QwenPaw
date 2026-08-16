@@ -133,15 +133,15 @@ takeaway: 同一个去重语义——task 写法把状态藏在一次性任务�
           并发都免疫。L3 进 object store / plasma。
 ```
 
-写作当日（2026-08-07）定稿版 3 连跑 + 任意 CWD 复跑 1 遍：全部 EXIT=0；掩掉计时
+2026-08-07 的 3 次连续运行 + 1 次任意 CWD 复跑：全部 EXIT=0；掩掉计时
 数字后输出逐字节一致（diff 核验）；计时行随机器负载浮动（区间见 §11）。[2b] 的
 lost update 是 barrier 构造的**决定性**复现，不依赖调度巧合，三遍跑三遍同。
 
-**收尾轮（同日 16:3x）独立复跑 7 遍**（含任意 CWD 3 遍）：全部 EXIT=0。7 遍跨两次
+**同日独立复跑 7 遍**（含任意 CWD 3 遍）：全部 EXIT=0。7 遍跨两次
 措辞修正：前 3 遍为修正前基线，第 4–5 遍在 [5] 一行修正后，第 6–7 遍在 [4] 收尾
 修正后——掩计时后同版本内逐字节一致，跨版本差异恰且仅为被修正的行。最后 2 遍与
-上方粘贴输出掩计时后 diff 零差异。修正背景：定稿版「收敛点 task（本规模墙钟更优）」
-在收尾批不成立——收敛点 14.4–24.3 ms vs 批量喂 12.2–14.8 ms，同量级、先后随负载
+上方粘贴输出掩计时后 diff 零差异。早期运行中的「收敛点 task（本规模墙钟更优）」
+没有在后续复测中稳定成立——收敛点 14.4–24.3 ms vs 批量喂 12.2–14.8 ms，同量级、先后随负载
 翻转（定稿批恰是收敛点略快）；代码与上方粘贴已同步改为「与批量 actor 同量级、
 无常驻成本」与「本规模下吞吐不是选 actor 的理由」——只陈述跨批稳定的事实。两批
 计时并集见 §11。
@@ -192,7 +192,7 @@ def register(self, sig, row_id):
 
 ## 4. 输出逐段解读
 
-**[0] 契约复验。** `ray.init` 2.6–4.5s（写作批 2.6–2.9s、收尾复验批 3.0–4.5s，
+**[0] 契约复验。** `ray.init` 2.6–4.5s（两批独立测量分别为 2.6–2.9s、3.0–4.5s，
 随负载浮动；当日首跑冷启动到 4.5s，如实记录）。串行参照漏斗 3360→2358→2110 与
 重复对账本（248 对 / 跨分区 236 对）在 L2 现场重算并断言——actor 实验还没开始，
 基线先钉死。
@@ -246,9 +246,9 @@ L1 / nano-data-juicer L2 完全一致——跨模块契约第三次闭合。
 
 **[4] 成本账（见 §5.5 深挖）。** 搬进：收敛点 6.14 MB vs 索引路线 94 KB（65x）；
 搬出：5.50 MB vs 6.2 KB。但墙钟上 actor 路线开不出差距：收敛点与批量喂**同量级、
-先后随负载翻转**（写作批 11.5 vs 14.4 ms，收尾批 14.4–24.3 vs 12.2–14.8 ms）≪
-逐条喂（811–1022 ms）——**RPC 笔数是真成本**（写作批：2358 × 0.37 ms ≈ 872 ms 对
-实测 811 ms；收尾批：2358 × 0.40–0.69 ms ≈ 939–1616 ms 对实测 877–1022 ms，同量级
+先后随负载翻转**（第一批 11.5 vs 14.4 ms，第二批 14.4–24.3 vs 12.2–14.8 ms）≪
+逐条喂（811–1022 ms）——**RPC 笔数是真成本**（第一批：2358 × 0.37 ms ≈ 872 ms 对
+实测 811 ms；第二批：2358 × 0.40–0.69 ms ≈ 939–1616 ms 对实测 877–1022 ms，同量级
 对账两批都成立），批量把 4 笔 RPC 摊到与收敛点同量级。选 actor 的理由从来不是
 这个量级的吞吐。
 
@@ -279,7 +279,7 @@ actor 是 Ray 给第三种住所的名字——一个有 pid、有实例属性�
 不需要锁」的默认保证，代价是方法级吞吐上限 = 单次方法耗时。
 
 `max_concurrency=N` 是对这份合同的**显式违约声明**：N 个同名方法可在 actor 进程内
-并发执行（threaded actor 走进程内线程；并发执行的精确 C++ 位置本轮未逐行定位，
+并发执行（threaded actor 走进程内线程；并发执行的精确 C++ 位置尚未逐行定位，
 `[TODO: verify source]`，行为侧由 [2b] 的 barrier 实验实证——两个线程确实同时在
 方法体内）。换来的后果也写在同一份 docstring 里：执行顺序不再保证
 （`ray/actor.py:L1662-1666`），且 `allow_out_of_order_execution` 自动翻成 True
@@ -347,7 +347,7 @@ min-row_id 的免疫性来自一条代数性质：`min` 是可交换、可结合
 ——sig 是定长 32 字节，样本是变长 KB 级。
 
 但账还有另一半：RPC 笔数。逐条喂 = 2358 次方法调用 × ~0.37 ms/次 ≈ 872 ms 的预测，
-与实测 811 ms 同量级对账（收尾批单价漂到 0.40–0.69 ms，对账仍成立）——**每次方法
+与实测 811 ms 同量级对账（另一批单价漂到 0.40–0.69 ms，对账仍成立）——**每次方法
 调用都是一笔真实的 RPC**（序列化、提交、调度、返回），actor 不是本地对象。批量
 （4 次 `register_many`）把这笔账摊到与收敛点同量级。所以本规模的诚实结论是：
 
@@ -375,7 +375,7 @@ actor 在 4-CPU 预算上全部并发运行（8 个不同 pid，`available_resou
 | threaded actor 默认串行 | [2a] 200 条零丢失 | `DEFAULT_MAX_CONCURRENCY_THREADED = 1`（`ray/_private/ray_constants.py:L468`）；默认值设置 `ray/actor.py:L1808-1813` | 安装包行号（2026-08-07 本机验证）+ 行为断言 |
 | max_concurrency 的顺序代价 | [2b] lost update 反例 | docstring "execution order is not guaranteed when max_concurrency > 1"（`ray/actor.py:L1662-1666`）；`allow_out_of_order_execution` 默认翻转 `ray/actor.py:L2037-2038` | 同上 |
 | threaded 并发执行的载体 | [2b] barrier 双线程 | 进程内线程并发；精确 C++ 位置未逐行定位 | 行为实证；`[TODO: verify source]` |
-| actor 方法白名单解析 | §9.1 调试史（`safe.get` AttributeError） | `inspect.getmembers` 收集 `ray/actor.py:L1221`；`_method_shells` `L2281`；`__getattr__` 严格校验 `L2442-2476` | 安装包行号 + 报错现场复现 |
+| actor 方法白名单解析 | §9.1 实现陷阱（`safe.get` AttributeError） | `inspect.getmembers` 收集 `ray/actor.py:L1221`；`_method_shells` `L2281`；`__getattr__` 严格校验 `L2442-2476` | 安装包行号 + 报错现场复现 |
 | 默认 actor num_cpus=None | §5.5 双探针 | `ray/_common/ray_option_utils.py:L137`（无 default）vs `L179`（task default=1）；`_actor_only_options` `L226` 起无覆盖 | 安装包行号 + runtime metadata + 行为探针 |
 | actor handle 作为 task 参数 | [3b] `feed_partition` | —（行为级特性） | 行为验证 |
 | ObjectRef 参数自动解引用 | [3b] pair_refs 进 task | 同 L1（`ray/_common/signature.py` 无特殊分支、C++ core worker 解引用） | L1 已验证，此处复用 |
@@ -426,7 +426,7 @@ actor 在 4-CPU 预算上全部并发运行（8 个不同 pid，`available_resou
 
 ## 9. 反例与边界
 
-1. **写作调试史（如实记录）**：`SafeCounter` 第一版漏写了 `get` 方法，
+1. **self-check 捕获的失败**：`SafeCounter` 第一版漏写了 `get` 方法，
    `safe.get.remote()` 当场抛 `AttributeError: 'ActorHandle' object has no
    attribute 'get'`。第一反应怀疑 runtime，查了 `ray/actor.py` 才确认是自己漏写：
    ray 2.56 的 actor 方法解析是**白名单**——`inspect.getmembers` 在装饰时收集方法
@@ -450,7 +450,7 @@ actor 在 4-CPU 预算上全部并发运行（8 个不同 pid，`available_resou
    索引要跨批次复用的场景才兑现成吞吐或架构优势。别拿本文的墙钟去推销 actor。
 6. **范围外**：多节点行为、plasma 零拷贝、actor 状态持久化、async actor
    （max_concurrency 默认 1000 的另一套并发模型）→ `[TODO: verify on real system]`
-   （Machine B 通道）与 L3。
+   （真实 GPU/多机环境）与 L3。
 
 ## 10. 阶梯预告
 
@@ -471,16 +471,16 @@ actor 在 4-CPU 预算上全部并发运行（8 个不同 pid，`available_resou
   site-packages 逐条核对。
 - **GitHub 锚点**：tag ray-2.56.1（2026-08-07 raw 通道可达，已抓取
   `src/ray/core_worker/core_worker.cc` 与 `python/ray/_raylet.pyx` 用于定位并发执行
-  路径；threaded actor 并发执行的精确 C++ 位置本轮未逐行钉死，标
+  路径；threaded actor 并发执行的精确 C++ 位置尚未逐行钉死，标
   `[TODO: verify source]`）。Ray 论文 arXiv:1712.05889（Moritz et al.）。
 - **语料**：seed=42 合成语料（非真实语料），与 nano-data-juicer L2 / nano-ray L1
   同一构造；L2 主题是 actor 的状态与并发语义，语料内容不影响验证。
-- **计时口径**：所有 ms/s 为写作当日（2026-08-07）**两批**同机观测的并集区间
-  （写作批 10:3x 3 连跑 + 收尾复验批 16:3x 7 遍含任意 CWD 3 遍），随机器负载浮动：
+- **计时口径**：所有 ms/s 为 2026-08-07 **两批**同机观测的并集区间
+  （第一批 3 遍；第二批 7 遍，其中任意 CWD 3 遍），随机器负载浮动：
   init 2.6–4.5s（当日首跑冷启动 4.5s 如实记录）；单次 RPC 0.29–0.69 ms；逐条喂
   641–1022 ms；批量并发喂 11–15 ms（预热后）；收敛点 11.0–24.3 ms；actor 创建
   55–630 ms（双峰，见 §9.3）。收敛点与批量喂的先后顺序在两批之间翻转（同量级
   噪声），本文选材结论不依赖该顺序。计数类输出（漏斗、账本、翻转数、RPC 对账的
   结构部分）两批共 11 遍掩计时后逐字节一致（diff 核验），不随计时波动。
 - **范围外**：多节点行为、plasma 零拷贝、actor 持久化、async actor → `[TODO:
-  verify on real system]`，Machine B 通道与 L3 接续。
+  verify on real system]`，真实 GPU/多机环境与 L3 接续。

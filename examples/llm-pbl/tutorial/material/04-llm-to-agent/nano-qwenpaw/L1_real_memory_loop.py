@@ -18,7 +18,7 @@ The experiment measures three policies on the SAME real conversation:
                model recalls a seq span on demand. No summarization —
                nothing is lost (the full turns stay in the store).
 
-Declarations (ROADMAP §3 contract):
+Declarations (course runnability contract):
   * WindowModel is a DECLARED mock with exactly two properties:
       (a) a hard window cut — it sees only the last W estimated tokens;
       (b) extractive answers — it answers by picking the best-scoring
@@ -130,7 +130,7 @@ SOURCES = {
     "history.py":        REPO_ROOT / "src/qwenpaw/agents/context/scroll/history.py",
     "SOUL.md":           REPO_ROOT / "coach/profile/SOUL.md",
 }
-PADDING_SOURCES = [PBL_ROOT / "README.md", PBL_ROOT / "ROADMAP.md",
+PADDING_SOURCES = [PBL_ROOT / "README.md", PBL_ROOT / "tutorial/material/README.md",
                    REPO_ROOT / "README.md"]
 
 # pinned snapshot: verbatim slices captured 2026-08-06 (sha256 in tutorial
@@ -296,7 +296,7 @@ def build_facts(texts: dict) -> list:
 
 
 def build_padding(rng: random.Random, facts: list) -> list:
-    """Real prose paragraphs (LLM-PBL README/ROADMAP). Purity rule: no
+    """Real prose paragraphs (LLM-PBL README/learning navigation). Purity rule: no
     padding paragraph may contain a fact's answer/keyword PHRASE verbatim
     (token-level overlap is TF-IDF's designed behavior, not leakage)."""
     pool = []

@@ -28,10 +28,10 @@ python3 -B data_methodology_sim.py   # 纯标准库，CPU 秒级，确定性输�
 
 - `data_methodology_sim.py`（本目录）md5 `897abf29927e18130bda9e6f94dcc72d` / 581 行。
   纯标准库（hashlib/math/random），seed 固定、无计时行，跨运行逐字节一致。
-- 本文写作当日（2026-08-12）双独立 CWD 复跑：EXIT=0 ×2、stderr 0 B、两遍 BYTE-IDENTICAL；
+- 2026-08-12（2026-08-12）双独立 CWD 复跑：EXIT=0 ×2、stderr 0 B、两遍 BYTE-IDENTICAL；
   输出 md5 `db8359c8c93ce1f18ef9b2c64ed3dc72` / 139 行；self-check **26/26 PASS**；
   digest（关键指标 md5）`41a90839b75f20fb115674c835201a4b`。
-- sim 是**本质模拟**（ROADMAP §三可运行性契约）：真实算法语义（真实 MinHash/LSH、真实乘性权重重加权、
+- sim 是**本质模拟**（课程可运行性契约）：真实算法语义（真实 MinHash/LSH、真实乘性权重重加权、
   真实 n-gram 重叠）+ toy 尺度。真实生产规模（15T token / 280M–8B 模型 / 6,000 H100 hours）
   标 `[TODO: verify on real system]`，本文只引论文一手数字。
 - **[C] 配比机制面在 nano 侧无现成实测锚**，以本 sim 为可运行锚点（显式声明）；
@@ -132,7 +132,7 @@ sim [A] 在 toy 尺度复现全部四个机制（真实 MinHash/LSH，非伪代�
 
 （输出锚 md5 `db8359c8…`，§0 声明；A1–A4 全部 self-check PASS。）
 
-**工程侧实测锚（nano 材料，只读引用）**——去重在分布式执行下的真实失败形态与账本：
+**工程侧实测锚（nano 材料，交叉引用）**——去重在分布式执行下的真实失败形态与账本：
 
 - 去重漏斗契约（三执行器逐位一致）：3360 → 2358 → 2110；重复对账本 248 对
   （同分区 12 + 跨分区 236）；naive 分区各做各的泄漏 236 条。
@@ -429,7 +429,7 @@ n-gram 重叠探针的量化源头（Lee et al.，与 §1 同文）：
 
 ---
 
-## §6 SOTA 对齐（对齐日 2026-08-12，ROADMAP §八三层锚点）
+## §6 SOTA 对齐（对齐日 2026-08-12，课程的证据时效性分层三层锚点）
 
 ### 6.1 A 层经典锚点（机制仍是地基，长期保留）
 
@@ -474,8 +474,8 @@ n-gram 重叠探针的量化源头（Lee et al.，与 §1 同文）：
 
 - 本 deepdive 教学主体（A/B 层四机制面）在对齐日无「被取代」风险——它们是地基层机制；
   前沿更替发生在「过滤激进度」策略层（FineWeb-Edu/DCLM 激进 → Nemotron-CC 回调），已按 B 层记录。
-- `[TODO: verify]`：2025–2026 是否有更新的旗舰级数据方法论报告（本轮 export.arxiv.org API
-  于 18:3x 恢复后可用，但未做 submittedDate 倒序全量扫描；16:30 轮 API 429 时亦无法扫描）。
+- `[TODO: verify]`：2025–2026 是否有更新的旗舰级数据方法论报告；本次没有完成按
+  submittedDate 倒序的全量扫描，不能把已有来源集合解释为穷尽性检索。
 - `[transient/单源]`：FineWeb-2（多语版）等单源条目未逐一核验，不展开。
 
 ---
@@ -534,17 +534,16 @@ n-gram 重叠探针的量化源头（Lee et al.，与 §1 同文）：
 | 2412.02595 | Nemotron-CC: Transforming Common Crawl into a Refined Long-Horizon Pretraining Dataset | 2024-12-03 / 2025-05-30 | Dan Su | export.arxiv.org API（摘要六探针全 HIT） |
 
 API 批次：`https://export.arxiv.org/api/query?id_list=…` HTTP 200 / 20,141 B / 7 entries
-（16:30 轮该 API 持续 429，曾以 arxiv.org/abs 规范页 + ar5iv 双通道核验；18:3x 轮 API 恢复后
-本轮全量复核，两通道结论一致）。抓取件落 workspace `b30ab44c…/sota_align_03_r2/`。
+API 暂时返回 429 时改用 arxiv.org/abs 规范页 + ar5iv 双通道核验；API 恢复后的复核与两通道结论一致。
 
 ### 8.2 引文核验方法
 
-本文 46 处逐字引文全部经 **2026-08-12 本轮 fresh 重抓**的 ar5iv 全文机器核验：
+本文 46 处逐字引文全部经 **2026-08-12 抓取**的 ar5iv 全文机器核验：
 空白折叠后逐字匹配（EXACT）或归一化（引号/破折号变体、引用编号 `[ N ]` 剥离、
 公式双写如 `4 % 4\%`→`4%`）后匹配，46/46 在位；DCLM Table 4 的 16 个数字逐一 grep HIT。
 核验脚本与抓取件同目录（`verify_quotes.py`）。
 
-### 8.3 转录误差纠正记录（16:30 轮对齐文档 → 本轮源文纠正，共 5 处）
+### 8.3 转录误差纠正记录（早期转录 → 源文纠正，共 5 处）
 
 1. FineWeb 传递聚类句尾：误录 "8 ma[tching hashes]" → 源文 "8 matching MinHashes in any bucket with each other"。
 2. DCLM-baseline 发布句：误录 "we release DCLM-baseline" → 源文 "We **also** release DCLM-baseline"。
@@ -554,7 +553,7 @@ API 批次：`https://export.arxiv.org/api/query?id_list=…` HTTP 200 / 20,141 
 另两处口径说明（非误差）：F10 句尾源文尚有 "in the 28B token ablations"（本文补全）；
 F12/D6 源文用双引号与 "6.6×"（本文从源文）。
 
-### 8.4 nano 实测锚点表（关联的数据/Agent 轨材料，只读引用，2026-08-12 盘上行号）
+### 8.4 nano 实测锚点表（跨轨相关材料，交叉引用，2026-08-12 盘上行号）
 
 | 锚点 | 数字 | 位置 |
 |------|------|------|

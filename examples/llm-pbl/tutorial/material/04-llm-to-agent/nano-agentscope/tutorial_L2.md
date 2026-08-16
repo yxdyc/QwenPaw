@@ -26,7 +26,7 @@ critic……「planner 先出计划再执行」这条路线本身有论文谱系
 > 放在一个没有契约和终止条件的协议里，照样可以永远循环下去。
 > 整体可靠性是**协议**的属性，必须单独设计、单独测试。
 
-三个显式声明（对应 ROADMAP §三契约，代码头部同文）：
+三个显式声明（对应 课程可运行性契约，代码头部同文）：
 
 1. **PlannerAgent / ExecutorAgent / StuckExecutor / CorruptingExecutor /
    RecklessPlanner 都是声明过的 rule-based 测试向量，不是模型**——与 L1 的
@@ -258,7 +258,7 @@ L1 讲过 sticky 失败让「重试算术」失效；L2 的活锁是它的孪生
 
 ## 6. 与权威实现对照（AgentScope v2.0.6 main + v1.0.0 tag，2026-08-10 codeload tarball 现场核验）
 
-L1 的锚点核验于 08-06；本轮（08-10）重新抓取 main 时发现版本已跃迁到
+L1 的锚点核验于 08-06；08-10 重新抓取 main 时发现版本已跃迁到
 **v2.0.6**（`_version.py`），且有一处架构级变化值得单独讲（见差异 3）。
 全部行号取自 08-10 快照。
 
@@ -285,7 +285,7 @@ L1 的锚点核验于 08-06；本轮（08-10）重新抓取 main 时发现版本
    流式与多轮：一个 agent 的 reply 可能在流式中途被 INTERRUPTED、可能因
    EXCEED_MAX_ITERS 带着不完整的 structured_output 结束——这些状态必须跟着消息
    走，因为下游消费的是消息而不是会话。我们的会话级 status 是它的最小形态。
-3. **编排原语从核心退场——本轮核验发现的真演化**。v1.0.0 的
+3. **编排原语从核心退场——复验发现的架构演化**。v1.0.0 的
    `pipeline/ + msghub` 是 AgentScope 的招牌抽象（顺序/扇出/广播的组合子）；
    v2.0.6 的 core 包里它们**已被整体移除**（全树 grep 零命中，examples 也换成
    agent_service/rag/web_ui 等服务化形态）。与此同时，`Msg` 契约不但保留还
@@ -387,13 +387,13 @@ agent 互相礼貌地确认」比「一个 agent 犯错」更难防？（提示�
 - **AgentScope 快照（双份，2026-08-10 于 codeload.github.com 现场抓取核验）**：
   main 分支 tarball（7,524,950 B，`__version__ = "2.0.6"`）与 v1.0.0 tag
   tarball（7,702,712 B）。§6 全部行号取自这两份快照；L1 教程记录的 08-06
-  锚点在本轮复验中：`ReActConfig` / `Acting·Reasoning·Exit` /
+  锚点在复验中：`ReActConfig` / `Acting·Reasoning·Exit` /
   `_json_loads_with_repair`（`_utils/_common.py:L86`）/ `Toolkit`
   （`tool/_toolkit.py:L66`）/ `Msg`（L67）零漂移，`while True` 循环与
   `_next_action` 分别漂移到 L863-869 / L3050（机制不变）。canonical 仓库
   `github.com/agentscope-ai/agentscope`。
-- **论文**：ReAct arXiv:2210.03629（L1 于 08-06 首验，本轮 08-10 于
-  arxiv.org 复验标题页）；Plan-and-Solve arXiv:2305.04091（本轮 08-10 于
+- **论文**：ReAct arXiv:2210.03629（L1 于 08-06 首验，08-10 于
+  arxiv.org 复验标题页）；Plan-and-Solve arXiv:2305.04091（08-10 于
   arxiv.org 核验标题：*Plan-and-Solve Prompting: Improving Zero-Shot
   Chain-of-Thought Reasoning by Large Language Models*）——planner-executor
   「先拆解后执行」的谱系锚点。
@@ -402,6 +402,6 @@ agent 互相礼貌地确认」比「一个 agent 犯错」更难防？（提示�
   89 行）；全部断言在代码内（self-check 块）。`list_dir` 冻结于 L2 定稿
   时刻的八件清单（含 `L2_planner_executor.py` 与 `tutorial_L2.md` 自身），
   声明在代码内，纪律沿用 L1。
-- **写作过程修掉的真实 bug**（self-check 当场抓出）：CorruptingExecutor
+- **self-check 捕获并修复的真实 bug**（self-check 当场抓出）：CorruptingExecutor
   初版漏掉 first-only 条件，每条 result 都被污染——[2] 实测 violations=2
   与断言冲突，一次复跑定位。

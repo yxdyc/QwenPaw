@@ -21,10 +21,10 @@
     - 共享块全程只读：radix 世界不需要 copy-on-write（节点不可变，
       写入只发生在请求自己的新块上）——SYS 脊柱块字节全程不变（断言）。
 
-声明（ROADMAP §三 可运行性契约）：
+声明（课程可运行性契约）：
     - 模型为 L1 的随机初始化 GQA GPT（3,148,032 参数，state_dict 共享，
       逐参数断言相等）——真实权重 + 真实引擎（vLLM/SGLang on GPU）留
-      Machine B 攒批通道 `[TODO: verify on real system]`。
+      真实 GPU/多机环境 `[TODO: verify on real system]`。
     - radix tree 前缀缓存是真的：真实树结构 / match-split-insert / LRU 叶子驱逐 /
       lock_ref 保护 / 块级物理共享——不是 API 包装，是最小同构实现。
       与 SGLang radix_cache.py、vLLM v1 block_pool.py 的逐条对照见 tutorial_L3 §7

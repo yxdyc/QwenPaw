@@ -12,9 +12,9 @@
     ④ 代价模型对照：用 [2] 拟合的 (a, b) 去**预测** [3] 的墙钟，
        检验 L0 模型形式（仿射）在真实硬件上的预测力与失效位置。
 
-声明（ROADMAP §三 可运行性契约）：
+声明（课程可运行性契约）：
     - 模型为**随机初始化的小 GPT**（GQA 结构，固定 seed）——真实权重 + 真实引擎
-      （vLLM/SGLang on GPU）留 L2 / Machine B 攒批通道 `[TODO: verify on real system]`。
+      （vLLM/SGLang on GPU）留 L2 / 真实 GPU/多机环境 `[TODO: verify on real system]`。
       机制本身是真的：真实 forward、真实 KV 张量、真实 greedy 解码、真实墙钟。
     - 本机为 Apple Silicon CPU 执行（torch，fp32，threads=4）。
       **CPU decode 是 compute-bound，不是 GPU 的 memory-bandwidth-bound**——
@@ -500,7 +500,7 @@ def main():
     print("\ntakeaway: L0 的机制在真实模型上全部成立——语义（算什么、多少迭代、")
     print("          多少浪费）由计划决定，与 L0 模拟器逐位一致；代价（墙钟、固定项")
     print("          占比）由硬件决定，CPU 与 GPU 物理不同。L2 上真实引擎（vLLM/SGLang,")
-    print("          GPU, Machine B）把这份账对到生产数字。")
+    print("          再在真实 GPU 环境把这份账对到生产数字。")
 
 
 if __name__ == "__main__":

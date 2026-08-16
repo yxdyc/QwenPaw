@@ -25,7 +25,7 @@ K+1 目标（相对 L1）：
 
     ⚠️ 声明（可运行性契约）：本文件用**真实 Ray**（ray 2.56.1，pip 安装，
     本机 CPU），无任何 mock；全部 actor / task 行为为真实 worker 进程内行为。
-    多节点行为不在本机范围，见 [TODO: verify on real system]（Machine B 通道）。
+    多节点行为不在本机范围，见 [TODO: verify on real system]（真实 GPU/多机环境）。
     语料为 seed=42 合成语料（与 nano-data-juicer L2 / nano-ray L1 同一构造）。
 
 依赖：ray（pip install ray）；同目录 L1_ray_pipeline.py（import 复用语料/OP/

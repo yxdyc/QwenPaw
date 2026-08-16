@@ -23,9 +23,9 @@
 - L0：零外部依赖（纯标准库），CPU 即跑。
 - L1：torch（CPU 单线程基线，threads=1；约 2.5 分钟，含 ~47s 探针模型预训练）。
   绝对毫秒数为 CPU 小模型口径，结构结论（线性/压缩/G≫T）可外推，绝对值不可。
-- L2：零外部依赖（纯标准库），CPU 瞬时（<0.1s）。本级为可运行的本质模拟（ROADMAP §三 L2 契约）：
+- L2：零外部依赖（纯标准库），CPU 瞬时（<0.1s）。本级为可运行的本质模拟（课程可运行性契约）：
   建模 slime 源码背书的双 regime 控制流 + 引擎代价模型；真实 SGLang/Megatron 验证
-  `[TODO: verify on real system]` 走 GPU 通道。
+  `[TODO: verify on real system]` 需在真实 GPU 环境验证。
 - L3：源码对照级；GPU / 真机验证通道。
 
 ## 核心要讲清的点

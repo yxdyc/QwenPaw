@@ -4,7 +4,7 @@
 > 释放的块带着哈希留在队里等复用。这套机制能省，但**省多少全凭运气**——FIFO 不懂「前缀」，
 > 它只按释放顺序发货。L3 把缓存的组织换成一棵 **radix tree**（SGLang RadixAttention 的最小
 > 同构实现）：共享是节点、驱逐是剪叶、调度看树选请求——「省算力」从运气变成策略。
-> 顺带，L3 的压力场景还从 L2 里挖出一个真竞态（§6）——那是本轮最值钱的教学材料。
+> 顺带，L3 的压力场景还从 L2 里挖出一个真竞态（§6）——这是本节的重要教学材料。
 
 ---
 
@@ -17,10 +17,10 @@
 $ python3 L3_radix_prefix_sharing.py
 ```
 
-**可运行性契约声明（ROADMAP §三）**——输出开头也打印了同样的声明：
+**可运行性契约声明（课程可运行性契约）**——输出开头也打印了同样的声明：
 
 - **权重是 L1 的随机初始化 GQA GPT**（3,148,032 参数，`state_dict` 共享，逐参数断言相等）。
-  真实权重 + 真实引擎（vLLM/SGLang on GPU）留 Machine B 攒批通道 `[TODO: verify on real system]`。
+  真实权重 + 真实引擎（vLLM/SGLang on GPU）仍待真实 GPU/多机环境验证 `[TODO: verify on real system]`。
 - **radix tree 不是模拟、不是 API 包装**：真实树结构 / match-split-insert / LRU 叶子驱逐 /
   lock_ref 保护 / 块级物理共享都是最小同构真实现——只是规模小、跑在 CPU、请求顺序执行。
 - **[4] 的 L2 对照组跑在修复后的 L2 引擎上**：L2 的 `paged_prefill` 曾被本模块的压力场景
@@ -302,7 +302,7 @@ bug**——L2 自己的场景从未触发它，但 L2 docstring 自载的
 
 对早期 L3 版本运行旧 workload（[4]：F1/F2 = 16 tok，budget 20）：
 `[4]` 的 L2 对照组里 rA2（命中 SYS 32 tok）生成 `[436, 188, 4, 195]`，L1 参考
-`[436, 346, 507, 21]`——**tok0 相同、tok1 起发散**，且无任何报错。一个只读引用 L1/L2
+`[436, 346, 507, 21]`——**tok0 相同、tok1 起发散**，且无任何报错。一个交叉引用 L1/L2
 的独立仪表化探针复现了相同事件序：
 
 ```
@@ -329,7 +329,7 @@ SYS 的 8 个命中块（0-7）正躺在 FIFO free queue 里（上一个使用�
 
 触发条件 = **缓存命中 + 块压力**同时成立（命中块恰在 FIFO 头部 + 后缀需要分配）。
 双对照坐实：每请求 fresh pool（无跨请求缓存）7/7 语义正确；budget 放宽到 60
-（无复用压力）7/7 语义正确。L2 自身场景两个条件从不同叠加，所以历轮全绿。
+（无复用压力）7/7 语义正确。L2 自身场景两个条件从不同叠加，所以重复运行均通过。
 
 ### 6.3 权威实现怎么处理同一个问题：vLLM 的两阶段分配
 
@@ -480,11 +480,11 @@ main 即其直接演化）。
 ## 10. 反例与边界
 
 **toy 尺度计时，诚实定位**。[3] 的 elapsed 行用 136-tok 长 prompt、3 遍取最快测得
-冷跑 vs 全命中 ≈ 3.9×（本轮 4.22/1.07 ms）——比 52-tok 整请求计时的 ~1.1× 有意义得多
+冷跑 vs 全命中 ≈ 3.9×（参考运行 4.22/1.07 ms）——比 52-tok 整请求计时的 ~1.1× 有意义得多
 （后者被 Python 开销主导，撑不起「计算整个跳过」的直觉），但仍远小于 token 比
 （136/1）。原因与 L2 §5「为什么只有 2.6×」讨论同款：命中路径仍要付树操作 + 至少一格重算 +
 decode 的钱，且 CPU 小模型下固定开销占比高。**所有墙钟不可外推到 GPU kernel 尺度**，
-真实引擎的命中收益见 [TODO: verify on real system]（Machine B 通道）。
+真实引擎的命中收益见 [TODO: verify on real system]（真实 GPU/多机环境）。
 
 **竞态的边界教训（本节一等教材）**。§6 的竞态揭示了 block_pool 类设计的一条边界：
 **带缓存条目的 free queue 不可简化为一个普通 free list**。空闲块同时是缓存条目
@@ -516,7 +516,7 @@ nano-vllm-sglang 的阶梯到此走完：L0 算术账（KV 显存/吞吐曲线/�
 小模型（开销分解/gemm 悬崖/调度墙钟）→ L2 真实分页内存（block table/refcount/
 哈希链前缀缓存/CoW/抢占）→ L3 radix tree 前缀缓存（共享/叶优先驱逐/LPM）+ 一条
 从压力场景里挖出来的竞态教材。下一步不在本模块内：真实引擎（vLLM/SGLang on GPU）
-的吞吐/KV 显存测量走 Machine B 攒批通道 `[TODO: verify on real system]`；03 轨的
+的吞吐/KV 显存测量需在真实 GPU/多机环境验证 `[TODO: verify on real system]`；03 轨的
 数据方法论深挖（sota-deepdive）已覆盖「数据侧怎么喂引擎」；01 轨 RL rollout 与
 04 轨 agent 的推理后端需求，是这套机制的下游买主。
 
@@ -569,14 +569,12 @@ add_local_computed_blocks:L230 / block_pool.touch:L267；cache_config.py
 DEFAULT_BLOCK_SIZE=16:L48。vllm 行号 vs tutorial_L2 §14 的 08-06 快照有 ±1–17 微漂移
 （main 提交频繁），本教程全部按 2026-08-13 抓取重录。
 
-**内部实测锚**：L3 掩码输出锚 `90c2fcffeac2d328e81116f53543c784`/67 行（口径
+**可复现锚**：L3 掩码输出锚 `90c2fcffeac2d328e81116f53543c784`/67 行（口径
 `sed '/^[[:space:]]*elapsed/d'`，raw 68 行删 1 行；双独立 CWD 两遍 BYTE-IDENTICAL，
 本节 paste 块即该掩码输出）；L3 代码 md5 `14c9b7450f1f906375fe90e309bc7d96`/672 行；
-L2 修复前后自场景掩码输出不变，锚 `cced3a908c09aa543d42a6ab549f8d87`/63 行（第 5 次
-收敛），L2 修复后代码 md5 `24d37d15c001c5b9cffff9c46b69f47e`/686 行（备份
-`s61_verify/L2_real_paged_memory.py.bak-before-s61` `d9921fb0…`/669）；竞态探针
-`s61_verify/probe_race_s61.py`（事件序/DUP_IN_TABLE/发散 token 逐位录值）；[4] 参数
-经 `s61_verify/proto_workload.py` 网格搜索（flood ∈ {24,32,40,48} × budget ∈
+L2 修复前后自场景掩码输出不变，锚 `cced3a908c09aa543d42a6ab549f8d87`/63 行；
+L2 修复后代码 md5 `24d37d15c001c5b9cffff9c46b69f47e`/686 行。竞态探针逐位记录
+事件序、`DUP_IN_TABLE` 与发散 token；[4] 参数经网格搜索（flood ∈ {24,32,40,48} × budget ∈
 {18,20,24}，选 flood=32/budget=20：对比成立且预算继承原值）。跨模块引用：
 L2 前缀缓存与 2.6× 计时先例（tutorial_L2 §1/§5/§7，锚点在其 §14）；L1 连续池参考
 （tutorial_L1）。

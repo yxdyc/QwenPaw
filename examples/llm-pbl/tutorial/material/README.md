@@ -2,9 +2,7 @@
 
 > 这里是 `tutorial/material` 的统一入口。单篇教程回答“这个机制怎样跑起来”；
 > 本页回答“为什么先学它、下一篇读什么、同一个机制在别的轨道怎样复用”。
->
-> 内容快照：2026-08-14。模块仍在持续演进；**是否已有某一级，
-> 以对应模块 README 的阶梯表为准**，不要仅凭轨道 README 中的概览判断。
+> **是否已有某一级，以对应模块 README 的阶梯表为准**；轨道概览只负责解释知识依赖。
 
 ---
 
@@ -25,16 +23,21 @@ flowchart LR
     P --> A["Agent + transactional runtime"]
     A --> T["运行轨迹、失败与反馈"]
     T --> D0
-    E["Evaluator / promotion / rollback"] -. "当前核心缺口" .-> P
-    E -. "治理闭环" .-> D0
-    E -. "长程可靠性" .-> A
+    P --> C["Candidate snapshot"]
+    C --> E["Paired + epoch-aware Evaluation Gate"]
+    E -->|"PROMOTE"| X["Durable activation journal"]
+    X --> O["Outbox + generation-guarded router"]
+    O --> A
+    E -->|"REJECT / rollback target"| P
 ```
 
-图里的实线已有较强的可运行材料。虚线的 **evaluator / promotion / rollback** 已有一个跨轨
-[Capability Factory L0](cross-track-capability-factory/tutorial_L0.md) 把 multi-teacher OPD、
-candidate-parent gate、lineage 和 rollback 接成最小闭环，但真实模型、隐藏评估与 evaluator succession
-仍待 L1–L3。不要把“数据能回流”或“toy gate 跑通”误读成“系统已经证明会持续自我改进”。
-详细审计见 [CURRICULUM-AUDIT.md](CURRICULUM-AUDIT.md)。
+图中的 [Capability Factory L0](cross-track-capability-factory/tutorial_L0.md) 负责产生 candidate；
+[Evaluation Gate L0](cross-track-evaluation-gate/tutorial_L0.md) 用配对证据、隐藏 sentinel、关键回归与成本门
+决定是否批准；[L1](cross-track-evaluation-gate/tutorial_L1.md) 再把批准变成 crash-safe activation 与实际
+rollback；[L2](cross-track-evaluation-gate/tutorial_L2.md) 继续治理 evaluator drift、re-baseline 与连续候选的
+总误报预算；[L3a](cross-track-evaluation-gate/tutorial_L3.md) 再把批准发布到独立 router，以 outbox、receipt、
+generation CAS 与 reconcile 暴露并修复跨事务域裂缝。它们仍是单机 toy：不要把协议 self-check 误读成真实
+网络、GPU serving 或持续自我改进已经得到证明。
 
 ---
 
@@ -66,6 +69,10 @@ candidate-parent gate、lineage 和 rollback 接成最小闭环，但真实模�
 7. [KV cache、continuous batching 与分页](03-data-distributed-rsi/nano-vllm-sglang/tutorial_L0.md)
 8. [ReAct 单 agent 闭环](04-llm-to-agent/nano-agentscope/tutorial_L0.md)
 9. [事务化副作用与崩溃恢复](04-llm-to-agent/nano-agent-runtime/tutorial_L0.md)
+10. [配对评测、隐藏 sentinel 与晋升门](cross-track-evaluation-gate/tutorial_L0.md)
+11. [durable promotion、崩溃恢复与实际回滚](cross-track-evaluation-gate/tutorial_L1.md)
+12. [evaluator epoch、漂移冻结与连续检验](cross-track-evaluation-gate/tutorial_L2.md)
+13. [outbox、外部 router、generation guard 与对账](cross-track-evaluation-gate/tutorial_L3.md)
 
 完成后应能画出“数据 → 训练 → 采样 → agent → 轨迹回流”的整张图，并指出每个箭头的
 状态、成本、证据与失败模式分别住在哪里。
@@ -92,7 +99,8 @@ candidate-parent gate、lineage 和 rollback 接成最小闭环，但真实模�
 4. [数据方法论 deep-dive](03-data-distributed-rsi/sota-deepdive/data-methodology.md)：去重、质量、配比、去污染；
 5. [reward signals 与 Goodhart](01-post-training-rl-sft/nano-trinity-rft/tutorial_L2.md)：反馈不等于真目标；
 6. [harness engineering](04-llm-to-agent/sota-deepdive/harness-engineering.md)：让失败可发现、状态可续接；
-7. 回到 [课程审计的 RSI 缺口](CURRICULUM-AUDIT.md#p1-1-把数据飞轮补成受治理的-rsi-闭环)，设计 promotion gate。
+7. [Evaluation Gate L0→L3a](cross-track-evaluation-gate/)：先裁决 candidate-parent，再把批准变成可恢复状态转移，
+   治理 evaluator 换代与连续 candidate 的误报预算，最后用 outbox/receipt 把命令送到独立 router。
 
 这条路线的验收不是“成功训练过一次”，而是能回答：候选是否真的优于 parent、谁批准晋升、
 评估器有没有漂移、失败怎样回滚、何时应该停止。
@@ -107,8 +115,11 @@ candidate-parent gate、lineage 和 rollback 接成最小闭环，但真实模�
 4. [后训练算法演进 §6](01-post-training-rl-sft/sota-deepdive/post-training-algorithm-evolution.md#6-opd蒸馏与-rl-的合流点)：OPD 的生产定位；
 5. [Capability Factory L0](cross-track-capability-factory/tutorial_L0.md)：full-vocabulary / sampled-token
    两种估计器、teacher routing、能力保留向量与 promotion gate；
-6. [事务化 Agent runtime L0](04-llm-to-agent/nano-agent-runtime/tutorial_L0.md)：让副作用可授权、幂等和恢复；
-7. [课程审计的跨轨毕业项目](CURRICULUM-AUDIT.md#建议的跨轨毕业项目)：把 toy 升成真实受治理闭环。
+6. [Evaluation Gate L0](cross-track-evaluation-gate/tutorial_L0.md)：把均值、区间、hidden/critical 回归和成本拆成独立门；
+7. [Evaluation Gate L1](cross-track-evaluation-gate/tutorial_L1.md)：让批准、激活、重试和 rollback 进入 append-only journal；
+8. [Evaluation Gate L2](cross-track-evaluation-gate/tutorial_L2.md)：先按独立 cluster 聚合配对证据，再让 evaluator drift、re-baseline 和 stopping budget 进入 lineage；
+9. [Evaluation Gate L3a](cross-track-evaluation-gate/tutorial_L3.md)：让外部 router 发布具备 outbox、generation guard、receipt 与 reconcile；
+10. [事务化 Agent runtime L0](04-llm-to-agent/nano-agent-runtime/tutorial_L0.md)：把同一事务思想扩到授权后的通用外部副作用。
 
 完成后应能区分：能力生产可以并行、能力表示仍会纠缠、集成完成不等于 candidate 应当晋升。
 
@@ -123,7 +134,7 @@ candidate-parent gate、lineage 和 rollback 接成最小闭环，但真实模�
 | policy version / staleness | [actor-learner split](01-post-training-rl-sft/nano-verl/tutorial_L2.md) | [slime buffer](01-post-training-rl-sft/nano-slime/tutorial_L0.md) · [HybridFlow colocate](01-post-training-rl-sft/nano-verl/tutorial_L3.md) | 给 trajectory 加 `policy_version`，定义最大可接受滞后与丢弃策略 |
 | 显存与吞吐 | [ZeRO 账本](02-pretraining-cpt/nano-fsdp/tutorial_L0.md) | [TP/PP/SP](02-pretraining-cpt/nano-megatron/) · [paged/radix KV](03-data-distributed-rsi/nano-vllm-sglang/) | 分开算训练状态、activation、KV cache 与通信峰值 |
 | 状态、血缘与恢复 | [lakehouse snapshot](03-data-distributed-rsi/nano-data-platform/tutorial_L0.md) | [pretraining exact resume](02-pretraining-cpt/nano-pretraining-loop/tutorial_L0.md) · [EpisodeRecord batch round-trip](cross-track-episode-record/tutorial_L1.md) · [transaction runtime](04-llm-to-agent/nano-agent-runtime/tutorial_L0.md) | 分别恢复训练状态、轨迹事实、派生 batch 与外部副作用，说明 round-trip 为何不等于 exactly-once admission |
-| 评估与治理 | [RAG metrics](03-data-distributed-rsi/nano-rag-retrieval/tutorial_L0.md) | [reward proxy 失效](01-post-training-rl-sft/nano-trinity-rft/tutorial_L2.md) · [Capability Factory gate](cross-track-capability-factory/tutorial_L0.md) · [对抗自检](04-llm-to-agent/nano-qwenpaw/tutorial_L2.md) | 做 candidate-parent 配对评估，加入隐藏 sentinel、回滚与停止条件 |
+| 评估与治理 | [RAG metrics](03-data-distributed-rsi/nano-rag-retrieval/tutorial_L0.md) | [reward proxy 失效](01-post-training-rl-sft/nano-trinity-rft/tutorial_L2.md) · [Evaluation Gate L0-L3a](cross-track-evaluation-gate/) · [对抗自检](04-llm-to-agent/nano-qwenpaw/tutorial_L2.md) | 比较不同 cluster lineage/权重下的结论敏感性；待 Agent runtime 接口稳定后，再把本地 router 替身换成 HTTP mock |
 | 多教师能力集成 | [nano-opd](01-post-training-rl-sft/nano-opd/) | [Capability Factory](cross-track-capability-factory/) · [FSDP/TP 系统代价](02-pretraining-cpt/) | 比较 full-vocabulary 与 sampled-token OPD，注入错路由并检查最坏领域回归 |
 | 配置是可执行契约 | [pipeline config](03-data-distributed-rsi/nano-data-juicer/tutorial_L0.md) | [Trinity schema / registry](01-post-training-rl-sft/nano-trinity-rft/tutorial_L3.md) | 让非法组合在运行前失败，并记录 resolve 后的最终配置 |
 
@@ -142,6 +153,7 @@ candidate-parent gate、lineage 和 rollback 接成最小闭环，但真实模�
 | 01 | [nano-opd](01-post-training-rl-sft/nano-opd/) | L0 · L1 |
 | 跨轨 | [Capability Factory](cross-track-capability-factory/) | L0 |
 | 跨轨 | [EpisodeRecord](cross-track-episode-record/) | L0 · L1 |
+| 跨轨 | [Evaluation Gate](cross-track-evaluation-gate/) | L0 · L1 · L2 · L3a |
 | 02 | [nano-pretraining-loop](02-pretraining-cpt/nano-pretraining-loop/) | L0 |
 | 02 | [nano-fsdp](02-pretraining-cpt/nano-fsdp/) | L0 · L1 · L2 · L3 |
 | 02 | [nano-megatron](02-pretraining-cpt/nano-megatron/) | L0 · L1 · L2 · L3 |

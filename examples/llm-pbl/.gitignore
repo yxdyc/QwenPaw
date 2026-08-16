@@ -2,8 +2,7 @@
 __pycache__/
 *.pyc
 
-# Private authoring/review operations. The public mirror contains a distilled
-# QUALITY-REPORT.md instead of machine-, identity-, and scheduler-specific logs.
+# Private authoring, review, and scheduler operations (never publish)
 /PROGRESS.md
 /REVIEW-REPORT.md
 /REVIEW-REPORT-B.md

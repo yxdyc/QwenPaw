@@ -24,7 +24,7 @@ format contract with measurable probability. L1 makes this real:
 
 Dependencies: torch only (CPU). Run:  python L1_real_agent_loop.py
 
-Declarations (ROADMAP §3 contract):
+Declarations (course runnability contract):
   * TinyReActLM IS a real language model (learned distribution, sampled
     outputs), but a ~94K-param char-level one — it memorizes trajectories,
     it does not reason. Real hosted-model behavior: [TODO: needs key].

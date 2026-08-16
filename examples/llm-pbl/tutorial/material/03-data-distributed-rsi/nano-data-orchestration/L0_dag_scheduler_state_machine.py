@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """nano-data-orchestration L0 — DAG 调度器：任务状态机 + 调和循环 + 失败语义，纯 Python 本质模拟。
 
-它在模拟真实系统的哪一面（L0 验收标准，ROADMAP §二）：
+它在模拟真实系统的哪一面（L0 验收标准，L0 验收契约）：
   [1] DAG = 一等公民的依赖结构：环与未知依赖在执行前被拒（fail fast，校验成本 0，运行时拒绝成本 = 整次运行）；
   [2] 任务状态机 + 调和循环（reconciliation loop）：调度器不是「跑一个脚本」，而是每 tick 扫描状态、施加转移
       规则——状态是完整记录，崩溃恢复 / 可观测性 / 重试都从状态长出来（Airflow 的 TaskInstance 状态机即此本质）；

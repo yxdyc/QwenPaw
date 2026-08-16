@@ -315,9 +315,9 @@ L1 把三个玩具换成真的：真实小模型 + torch 梯度下降，在本�
 (input_ids, attention_mask, labels) 上跑一个最小 SFT 循环——验证本节的断言：
 labels 遮罩不动训练循环分毫，却完全决定模型学到什么。数据用内置微样本起步
 （一键可跑），再换真实小样本；观察训练前后生成行为的变化与 loss 曲线。
-L2 进入 DPO：偏好对数据用同一套 template/mask 机器构造（真实入口
-`collator.py:L553` `PairwiseDataCollatorWithPadding`），加 reference-model KL
-约束——按 ROADMAP §八，DPO 属 A 层经典锚点，届时须写明其当今定位。
+L2 进入 DPO：偏好对数据用同一套 template/mask 机器构造（当前源码锚点
+`collator.py:L564` `PairwiseDataCollatorWithPadding`），加 reference-model KL
+约束，并把 DPO 定位为经典机制地基而非当前全部后训练配方的代名词。
 L3 对照 LLaMA-Factory 的配置体系：一个配置切换 SFT/DPO/PPO 的抽象取舍。
 
 ---

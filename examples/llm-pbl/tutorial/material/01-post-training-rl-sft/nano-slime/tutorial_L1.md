@@ -183,7 +183,7 @@ run1 的 B=2 是 48.26ms，比 B=1 还慢（0.81x）；另两遍是 36.24 / 43.3
 从 B≥4 才起步），而单条 decode 固定开销的测量方差有 ±15%——信噪比 <1 的
 地方不配谈单调性。所以 self-check 只断言结构性质：**B≥4 单调压缩**、
 **B=16 显著压缩（≥1.33x）**、任何批大小不灾难性变慢（>1.5x）。
-教训：断言要落在结构性质上，不要落在噪声带上——本轮写作里两次被这条咬到
+教训：断言要落在结构性质上，不要落在噪声带上——实验中两次被这条咬到
 （第一次还误以为是 B=2 的物理异常，探针实验证明是线程调度，见下）。
 
 ### 4.3 探针：批与线程是耦合的旋钮
@@ -366,7 +366,7 @@ configurable staleness"——把 staleness 直接做成可配置旋钮，正是 
 ## 13. 阶梯预告与交叉引用
 
 - **L2**：把自写的 `generate()` 换成真实推理引擎（SGLang/vLLM）做 rollout，
-  对照 nano-vllm-sglang 的代价模型；真机部分走 Machine B 通道
+  对照 nano-vllm-sglang 的代价模型；真机部分需在真实 GPU/多机环境验证
   `[TODO: verify on real system]`。
 - **L3**：对照 slime 源码——data buffer 实现、权重同步（delta weight sync）、
   rollout 调度与 update 时机 `[TODO: verify source]`。

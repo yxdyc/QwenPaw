@@ -6,8 +6,8 @@ post_training_evolution_sim.py — 01 轨 sota-deepdive（post-training-algorith
 
 这是什么
 ========
-deepdive 正文的机制论断此前全部锚在 关联的后训练/预训练轨 nano 模块（nano-verl / nano-opd /
-nano-llamafactory，只读引用）与一手论文/博客引文上；GRPO 族变体修复的缺陷
+deepdive 正文的机制论断此前全部锚在 相关训练模块 nano 模块（nano-verl / nano-opd /
+nano-llamafactory，交叉引用）与一手论文/博客引文上；GRPO 族变体修复的缺陷
 （ratio 粒度、长度偏置）在正文里只有摘要/博客层引文。本文件把其中四件「可以用
 算术和 toy 训练直接跑出来」的机制变成本主题自己的实测锚：
 
@@ -27,12 +27,12 @@ nano-llamafactory，只读引用）与一手论文/博客引文上；GRPO 族变
       发现；[D2] 在可全支撑枚举的缩小版上用精确求和复现 nano-opd L0 的驻点
       算术：锁模点上正确估计器≈0、教师采样估计器系统性指向谷（§6）。
 
-可运行性契约（ROADMAP §三）
+可运行性契约（课程可运行性契约）
 ==========================
 - 本文件是**本质模拟**：toy 尺度（V=6 词表、T=8 位、分解式策略——每位置一个
   softmax，即「仍有 token 级 logprob 的最小语言模型」），演示机制、不外推量级。
   真实系统行为见 deepdive §2–§7 的一手来源（arXiv 2402.03300 / 2507.18071 /
-  2503.20783 / TM OPD 博客 2025-10-27 等）与 关联的后训练/预训练轨 nano-verl / nano-opd 实测锚。
+  2503.20783 / TM OPD 博客 2025-10-27 等）与 相关训练模块 nano-verl / nano-opd 实测锚。
 - 纯标准库（math / random / hashlib），零外部依赖，CPU 秒级。
 - seed=3 固定，无计时行，跨运行逐字节一致（digest 见输出末行）。
 - 方法学继承 nano-opd L0：关键算术用**精确求和**——分解式策略的 KL/期望有闭式
@@ -327,7 +327,7 @@ print(f"    [B2] 组均值基线的标准差: G=4 → {std4:.4f} | G=16 → {std
 DIGEST["b2_decay"] = round(decay, 4)
 check("B2 基线精度随 G 按 1/sqrt(G) 提升（采样预算换统计质量）", 0.15 < decay < 0.38,
       f"decay={decay:.3f}")
-print("    declared 算术（非实测，口径 = nano-verl tutorial_L3 §5 COST 模型，关联的后训练/预训练轨只读锚）:")
+print("    declared 算术（非实测，口径 = nano-verl tutorial_L3 §5 COST 模型，相关训练模块锚）:")
 print("    PPO 训练态 ≈ policy P + critic P + 两套 Adam m/v + 梯度 ≈ 8P；")
 print("    GRPO 去掉 critic 及其优化器态 → 4P 口径（nano-verl L3: 4P/N，7B@N=4 ≈ 34 GB/rank）。")
 

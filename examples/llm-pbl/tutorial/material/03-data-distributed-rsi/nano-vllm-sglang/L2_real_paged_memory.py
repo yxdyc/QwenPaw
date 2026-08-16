@@ -17,10 +17,10 @@
       greedy）——分页只改「KV 住在哪」，不改「算什么」；
     - 前缀共享 / CoW / 抢占重算后的生成序列与无共享无压力参考逐 token 一致。
 
-声明（ROADMAP §三 可运行性契约）：
+声明（课程可运行性契约）：
     - 模型为 L1 的随机初始化 GQA GPT（3,148,032 参数，state_dict 共享，
       逐参数断言相等）——真实权重 + 真实引擎（vLLM/SGLang on GPU）留
-      Machine B 攒批通道 `[TODO: verify on real system]`。
+      真实 GPU/多机环境 `[TODO: verify on real system]`。
     - 分页管理本身是真的：真实 block table / refcount / 块级 gather-scatter /
       内容哈希前缀缓存——不是对 vLLM 的 API 包装，是最小同构实现。
       与 vLLM V1 源码的逐条对照见 tutorial_L2 §7（2026-08-06 main 快照锚点）。

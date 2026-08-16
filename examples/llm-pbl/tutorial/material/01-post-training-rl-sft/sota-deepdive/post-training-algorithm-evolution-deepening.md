@@ -2,21 +2,21 @@
 
 > **关系**：本文是 [post-training-algorithm-evolution.md](post-training-algorithm-evolution.md)（下称**主文档**，2026-08-11 首版）的深化 companion，不修改主文档正文。
 > **状态**：✅ 首版完成并在 2026-08-13 重跑机制模拟与来源对齐。
-> **SOTA 对齐日期**：2026-08-13（ROADMAP §八，B 层主题必做；主文档对齐日 2026-08-11）。18 个 arXiv ID 今日经 export.arxiv.org API 复验零漂移；4 篇一手报告全文今日现场重抓（Kimi K3 / MOPD / OPD survey v4 / DeepSeek-V4）；主文档 §10.3 五项 [TODO: verify] 闭合四项（详见 §6）。
+> **SOTA 对齐日期**：2026-08-13（课程的证据时效性分层，B 层主题必做；主文档对齐日 2026-08-11）。18 个 arXiv ID 今日经 export.arxiv.org API 复验零漂移；4 篇一手报告全文今日现场重抓（Kimi K3 / MOPD / OPD survey v4 / DeepSeek-V4）；主文档 §10.3 五项 [TODO: verify] 闭合四项（详见 §6）。
 > **sim 复现声明**：本文 §1 paste 块派生自 `post_training_evolution_sim.py`。2026-08-13 在两个新建空 CWD 中以 `python3 -B` 运行，均 EXIT=0、stderr 0 B、raw 82 行、self-check 24/24、digest `8ffa91ffddbf90d146516a65d9ee9285`，两次输出逐字节一致。该证据只覆盖当前 toy simulator，不外推生产训练吞吐或稳定性。
 
 ---
 
 ## §0 这篇深化是什么
 
-主文档的机制论断锚在两类来源上：一手文献引文（18 个 arXiv ID + 两篇博客）与关联 nano 模块实测（nano-verl / nano-opd / nano-llamafactory，只读引用）。有两个缺口：
+主文档的机制论断锚在两类来源上：一手文献引文（18 个 arXiv ID + 两篇博客）与关联 nano 模块实测（nano-verl / nano-opd / nano-llamafactory，交叉引用）。有两个缺口：
 
 1. **GRPO 族变体修复的缺陷**（主文档 §4：ratio 粒度、长度偏置）只有摘要/博客层引文，没有本主题自己的实测锚——「token 级 ratio 更噪声」「sum 聚合 ∝ 长度」这些论断能不能在 toy 上直接跑出来？
 2. **五个 [TODO: verify]**（主文档 §10.3：Kimi K3 正文层 / MOPD 正文层 / Qwen3.5 配方 / DeepSeek-V4 报告 / MOPD 同一性）——对齐两天后有没有机会闭合？
 
 本文做两件事：
 
-- **四机制面可运行 sim**（§1–§5）：`post_training_evolution_sim.py` 把 [A] IS+clip 地基、[B] GRPO 组基线、[C] ratio 粒度、[D] OPD 合流做成纯标准库、确定性、带 self-check 的本质模拟（ROADMAP §三 可运行性契约：toy 尺度演示机制、不外推量级）。这是 01 轨 deepdive 的 native sim，对齐 02/03 轨 deepdive 的既有形态（`deepseek_v3_mechanisms_sim.py` / `data_methodology_sim.py`）。
+- **四机制面可运行 sim**（§1–§5）：`post_training_evolution_sim.py` 把 [A] IS+clip 地基、[B] GRPO 组基线、[C] ratio 粒度、[D] OPD 合流做成纯标准库、确定性、带 self-check 的本质模拟（课程可运行性契约：toy 尺度演示机制、不外推量级）。这是 01 轨 deepdive 的 native sim，对齐 02/03 轨 deepdive 的既有形态（`deepseek_v3_mechanisms_sim.py` / `data_methodology_sim.py`）。
 - **SOTA 重对齐**（§6–§7）：18 ID 复验零漂移 + 四篇一手报告全文重抓，闭合四个 [TODO: verify]，其中 DeepSeek-V4 的闭合强度超过原转述来源（V4 报告正文直接坐实），并录一次 survey v3→v4 版本漂移。
 
 与主文档的分工：主文档讲「演进为什么走这条路」（三坐标轴 + 六机制面 + 2026 格局）；本文把其中「可以用算术和 toy 训练直接跑出来」的四件变成本主题自己的实测锚，并把摘要层证据推进到正文层。主文档正文不因本 companion 改写。
@@ -25,13 +25,13 @@
 
 ## §1 运行与输出
 
-**可运行性契约声明（ROADMAP §三）**：本质模拟。toy 尺度（V=6 词表、T=8 位、分解式策略 = 每位置一个 softmax——「仍有 token 级 logprob 的最小语言模型」），纯标准库（math/random/hashlib），seed=3 固定，无计时行，跨运行逐字节一致。机制回声对象 = 主文档 §2（PPO）§3（GRPO）§4（GRPO 族）§6（OPD）；**全部数字为 sim 实测，论文侧只作机制对照、不外推量级**。关键算术用精确求和（分解式策略的 KL/期望有 O(T·V) 闭式；[D2] 缩小版全支撑 3^6=729 条枚举）——方法学继承 nano-opd L0「偏差不是噪声」。
+**可运行性契约声明（课程可运行性契约）**：本质模拟。toy 尺度（V=6 词表、T=8 位、分解式策略 = 每位置一个 softmax——「仍有 token 级 logprob 的最小语言模型」），纯标准库（math/random/hashlib），seed=3 固定，无计时行，跨运行逐字节一致。机制回声对象 = 主文档 §2（PPO）§3（GRPO）§4（GRPO 族）§6（OPD）；**全部数字为 sim 实测，论文侧只作机制对照、不外推量级**。关键算术用精确求和（分解式策略的 KL/期望有 O(T·V) 闭式；[D2] 缩小版全支撑 3^6=729 条枚举）——方法学继承 nano-opd L0「偏差不是噪声」。
 
 ```
 $ python3 -B post_training_evolution_sim.py   # 任意空 CWD 可跑
 ```
 
-以下为 2026-08-13 本轮实测输出（新建空独立 CWD，`-B`；两遍 BYTE-IDENTICAL，md5 `8638d805f1982569430b81a5a60f967e`/82 行）：
+以下为 2026-08-13 实测输出（新建空独立 CWD，`-B`；两遍 BYTE-IDENTICAL，md5 `8638d805f1982569430b81a5a60f967e`/82 行）：
 
 ```
 ========================================================================
@@ -63,7 +63,7 @@ toy: V=6, T=8, 分解式策略(每位置 softmax) | seed=3 | 纯标准库
     PASS  B1 组均值基线降低梯度估计方差（>1.3×）  [ratio=2.10]
     [B2] 组均值基线的标准差: G=4 → 0.2548 | G=16 → 0.1235 | G=64 → 0.0586  (std64/std4 = 0.230, 理论 1/sqrt(16) = 0.250)
     PASS  B2 基线精度随 G 按 1/sqrt(G) 提升（采样预算换统计质量）  [decay=0.230]
-    declared 算术（非实测，口径 = nano-verl tutorial_L3 §5 COST 模型，关联的后训练/预训练轨只读锚）:
+    declared 算术（非实测，口径 = nano-verl tutorial_L3 §5 COST 模型，相关训练模块锚）:
     PPO 训练态 ≈ policy P + critic P + 两套 Adam m/v + 梯度 ≈ 8P；
     GRPO 去掉 critic 及其优化器态 → 4P 口径（nano-verl L3: 4P/N，7B@N=4 ≈ 34 GB/rank）。
 
@@ -257,7 +257,7 @@ ar5iv 全文重抓（1,307,024 B）。主文档 §7.4 停在摘要层的论断�
 - **正文层**：MOPD 论文 [2606.30406] ar5iv 全文重抓（204,940 B）。摘要逐字坐实主文档 §6.3 所引（per-domain RL teachers → 「distill these teachers into the student **on its own rollouts**」/「eliminates exposure bias and provides a dense optimization signal」/ 优于 Mix-RL、Cascade RL、Off-Policy Finetune、Param-Merge / deployed in MiMo-V2-Flash）。新增：「enables parallel, independent development of domain teachers, removing the cross-domain coupling」。
 - **署名**：Peking University + **LLM Core, Xiaomi** + HKU + Renmin University（footnote: work done during internship at Xiaomi）。
 - **同一性裁决证据链**：MiMo-V2-Flash 报告 [2601.02780]（Xiaomi LLM-Core Team，2026-01-06，v2 01-08，abs 页今日核验）摘要**自己命名**该范式：「introduces a novel Multi-Teacher On-Policy Distillation (**MOPD**) paradigm...domain-specialized teachers...provide dense and token-level reward」。MOPD 论文出自同一团队（Xiaomi LLM Core），是同一生产技术的论文化。**同一性成立**。
-- **对主文档 §6.3 括注的更正**：「survey v3 方法表所载同名 MOPD」——今日 survey v4 全文 grep「MOPD」= **0 命中**；其方法表 MiMo-V2-Flash 行写作「Multi-teacher logit + reward」并引 MiMo-V2，**从未使用 MOPD 名**，且 v4 修订（06-18）早于 MOPD 论文（06-29）11 天、未引用。同一性的依据是「团队署名 + 技术内容 + 时间线」，不是 survey 命名。（主文档正文冻结不改，更正录于本文。）
+- **对主文档 §6.3 括注的更正**：「survey v3 方法表所载同名 MOPD」——survey v4 全文 grep「MOPD」= **0 命中**；其方法表 MiMo-V2-Flash 行写作「Multi-teacher logit + reward」并引 MiMo-V2，**从未使用 MOPD 名**，且 v4 修订（06-18）早于 MOPD 论文（06-29）11 天、未引用。同一性的依据是「团队署名 + 技术内容 + 时间线」，不是 survey 命名。主文档仍保留旧括注时，应以此更正与一手报告为准。
 
 ### 6.5 Qwen3.5 配方细节 — 仍 [TODO: verify]（负结果录值）
 
@@ -283,7 +283,7 @@ MiniLLM [2306.08543, 2023-06]（A 层经典锚点）
 主文档 §7 的论断「算法选择直接增删 infra 步骤」今日获得两个新的正文级锚点：
 
 1. **信号粒度决定 infra 形态**（对照主文档 §7.2 的 GSPO/verl 案例）：token 级 OPD（TM/K3 路线）复用 RL 框架本身——TM「call the RL importance-sampling loss function」逐字、K3「dense reward signal seamlessly integrates into our RL framework, naturally enabling...partial rollout training」；全词表 OPD（DSV4 路线）则必须新建一整套 teacher 调度 infra（§6.3 所列 §5.2.2 三件：权重按需加载 / hidden states 缓存重建 logits / teacher index 排序）。**同一个算法家族，信号粒度的选择直接决定要不要建「teacher  logits 供给系统」这个子系统**——这是「算法-infra 共演化」在 OPD 内部的可指认形态。
-2. **长时程轨迹把 rollout 状态变成 infra 对象**（对照主文档 §7.4）：K3 的 partial rollout + external KV-cache retention + resumable microVM sandboxes，与 04 轨 harness engineering 的状态外化主题（主文档 §7.4 末段）在 infra 层合流——训练侧持久化 rollout 状态、推理侧外化 agent 状态，是同一枚硬币的两面（ROADMAP §一 RSI 闭环）。
+2. **长时程轨迹把 rollout 状态变成 infra 对象**（对照主文档 §7.4）：K3 的 partial rollout + external KV-cache retention + resumable microVM sandboxes，与 04 轨 harness engineering 的状态外化主题（主文档 §7.4 末段）在 infra 层合流——训练侧持久化 rollout 状态、推理侧外化 agent 状态，是同一枚硬币的两面（总导航的四轨闭环 RSI 闭环）。
 
 ---
 
@@ -311,9 +311,9 @@ MiniLLM [2306.08543, 2023-06]（A 层经典锚点）
 
 - sim 为 toy 尺度（V=6/T=8 分解式策略、纯标准库）：机制可迁移，量级不可外推；[A1] 的 unclipped 优势反转是 toy 边界（§2.3），[C1] 的 clip 比例方向是条件性的（§4.3）。
 - Kimi K3 / MOPD / DeepSeek-V4 正文核验到机制节（post-training / OPD / infra 节逐字摘取）；三篇的 benchmark 数字表未逐项核验，引用时仍以各报告摘要/正文标注为准，标 [TODO: verify]。
-- MOPD 论文实验表（Qwen3-30B-A3B 对比数字）本轮核验止于摘要+引言+署名层，正文实验表逐项核验标 [TODO: verify]。
-- survey v4 与 v3 的差异录值限于「DeepSeek-V4 / MOPD 两个字符串的存废」，未做 v3/v4 全文 diff（v3 抓取件在 nano-opd §15 所录 08-05 workspace，非本轮现场件）。
-- nano-verl L3 的 COST 数字属于声明式估算；本文只读引用，未把它升级为 GPU 实测。
+- MOPD 论文实验表（Qwen3-30B-A3B 对比数字）当前只核验到摘要、引言和署名层，正文实验表逐项核验标 [TODO: verify]。
+- survey v4 与 v3 的差异只核到「DeepSeek-V4 / MOPD 两个字符串的存废」，未做 v3/v4 全文 diff；v3 证据口径见 nano-opd §15。
+- nano-verl L3 的 COST 数字属于声明式估算；本文交叉引用，未把它升级为 GPU 实测。
 
 ---
 

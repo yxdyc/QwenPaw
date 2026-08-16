@@ -123,8 +123,7 @@ def fsdp_policy():
 # ---------------------------------------------------------------------------
 # [0] 激活账本：saved_tensors_hooks 直接量 autograd 为 backward 保存的字节
 #
-# SaveMeter 与 10:00 轮 scratch（workspace 9d88b729/fsdpL3/exp1_local.py，
-# 机器复现实验）同构：outer saved_tensors_hooks 记 live/peak。
+# SaveMeter 与早期局部探针同构：outer saved_tensors_hooks 记 live/peak。
 # 本正式版增加两个计数器，把「重算到底发生没有、hook 为什么看不见」量出来：
 #   body_calls  —— forward 体执行次数（在 forward 体内打点，重算必然计入）
 #   hook_calls  —— nn.Module forward hook 触发次数

@@ -20,7 +20,7 @@
 
 ## 来源清单（首版已核验，2026-08-11 现场核验）
 
-- [x] A 层经典锚点：PPO `[1707.06347]` / GAE `[1506.02438]` / DPO `[2305.18290]` / MiniLLM `[2306.08543]` / GKD `[2306.13649]` / DistiLLM `[2402.03898]` / HybridFlow `[2409.19256]`——全部经 export.arxiv.org API 当日核验，标题与 关联的后训练/预训练轨材料已录值逐词吻合。
+- [x] A 层经典锚点：PPO `[1707.06347]` / GAE `[1506.02438]` / DPO `[2305.18290]` / MiniLLM `[2306.08543]` / GKD `[2306.13649]` / DistiLLM `[2402.03898]` / HybridFlow `[2409.19256]`——全部经 export.arxiv.org API 当日核验，标题与 对应 nano 教程记录逐词吻合。
 - [x] B 层前沿主流：DeepSeekMath/GRPO `[2402.03300]` / DeepSeek-R1 `[2501.12948]` / DAPO `[2503.14476]` / Dr. GRPO `[2503.20783]` / CISPO（MiniMax-M1 `[2506.13585]` 内）/ GSPO `[2507.18071]` / Qwen3 `[2505.09388]` / OPD Survey `[2604.00626]`（v4 2026-06-18）/ MOPD `[2606.30406]` / Kimi K3 `[2607.24653]`。
 - [x] 一手博客当日重抓：GSPO 官方博客（qwenlm.github.io/blog/gspo/，2025-07-27）/ Thinking Machines On-Policy Distillation（2025-10-27，数字标 `[blog claims]`）。
 - [x] 2026-08-13 重对齐闭合四项：Kimi K3 正文层（ar5iv 全文）/ MOPD 正文层 + 同一性（Xiaomi LLM Core 署名 + MiMo-V2-Flash 报告自命名）/ DeepSeek-V4（报告 §5.1/§5.1.2 直接一手，强于 survey 转述；并录 survey v4 已移除该转述的版本漂移）。

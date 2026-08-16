@@ -10,9 +10,9 @@
 
 训练一个模型，算法论文给你 loss 函数，但**没人给你数据**。真实世界里数据散落在 CRM、日志、爬虫、人工标注、agent 轨迹里，格式各异、质量参差、权限敏感。数据平台（data platform）解决的就是这件事：**把散乱的数据源，变成训练和检索可以安全、可复现、算得起账来消费的东西**。
 
-在 LLM-PBL 的四轨依赖图里（ROADMAP §一），03 轨产出的数据喂给 02 预训练 / 01 后训练，04 轨 agent 的运行轨迹又回流 03——这个 data-model co-development（RSI）闭环**能不能在生产环境持续转起来，取决于数据平台这一层**。清洗算子写得再好（nano-data-juicer），如果数据接不进来、版本不可复现、权限管不住、成本算不清，飞轮就是空转。
+在 LLM-PBL 的四轨依赖图里（总导航的四轨闭环），03 轨产出的数据喂给 02 预训练 / 01 后训练，04 轨 agent 的运行轨迹又回流 03——这个 data-model co-development（RSI）闭环**能不能在生产环境持续转起来，取决于数据平台这一层**。清洗算子写得再好（nano-data-juicer），如果数据接不进来、版本不可复现、权限管不住、成本算不清，飞轮就是空转。
 
-本模块抓的核心机制链条（ROADMAP §七）：
+本模块抓的核心机制链条（课程的数据系统教学约定）：
 
 ```
 数据接入 → 分层存储（raw/curated）→ 治理（成本/权限/质量）→ 训练/检索消费
@@ -101,7 +101,7 @@ demo 的第一步就是声明平台并 apply：
 
 没有 state 文件，下一次 plan 就不知道现实长什么样，只能全量重建。**state 是「差量计算」的前提**——这一点 §8 的 drift 演示会再用到。
 
-注意本教程的 desired state 是一个 Python dict，不是 HCL。这不是偷懒：HCL 只是 Terraform 的配置**语法**，状态管理（desired/state/plan/apply）才是**机制**。ROADMAP §七 约定 Terraform/HCL 到 L2 才触及，L0 先把机制裸出来。
+注意本教程的 desired state 是一个 Python dict，不是 HCL。这不是偷懒：HCL 只是 Terraform 的配置**语法**，状态管理（desired/state/plan/apply）才是**机制**。课程的数据系统教学约定 约定 Terraform/HCL 到 L2 才触及，L0 先把机制裸出来。
 
 **思考题 3.1**：如果两个人同时改 desired state 再各自 apply，会发生什么？（提示：state 文件没有锁。真实系统用 state locking / 后端远端化解决——这正是 Terraform remote backend 存在的理由之一，L2 展开。）
 
@@ -213,7 +213,7 @@ def quality_gate(records):
 
 ## §7 机制面 [4]：治理 first-class —— 最小权限、secrets、成本账本
 
-ROADMAP §七 的硬性写作原则：**安全与成本不是附录，是机制的一部分**。L0 用三段演示兑现。
+本课程的一条硬约束是：**安全与成本不是附录，而是机制的一部分**。L0 用三段演示兑现。
 
 **（a）最小权限消费（default-deny）：**
 
@@ -319,9 +319,9 @@ plan 恰好给出 1 个 action——不重建 dataset、不重放已有授权。
 | Terraform state 两句引文（§3/§8） | 文献已有（逐字引文） | https://developer.hashicorp.com/terraform/language/state ，2026-08-12 抓取 |
 | Iceberg table spec 页存在、标题 "Spec - Apache Iceberg™"（§6） | 文献已有 | https://iceberg.apache.org/spec/ ，2026-08-12 抓取；行号级锚点 `[TODO: verify L2 源码锚点]` |
 | AWS S3 Pricing 页存在（§7，仅作真实价目指针，未引任何价格数字） | 文献已有 | https://aws.amazon.com/s3/pricing/ ，2026-08-12 抓取 `[TODO: verify 具体价目]` |
-| Iceberg/Delta/dbt/Terraform 为权威参照实现 | 纲领已有 | ROADMAP §五/§七 参照表（apache/iceberg、delta-io/delta、dbt-labs/dbt-core） |
+| Iceberg/Delta/dbt/Terraform 为权威参照实现 | 纲领已有 | 课程的实现参照与数据系统约定 参照表（apache/iceberg、delta-io/delta、dbt-labs/dbt-core） |
 | medallion（bronze/silver/gold）为 Databricks 推广的术语（§4） | 合理推断（术语溯源未给链接） | 概念性提及，不作数字声明 |
 | PRICE = {raw:1.0, curated:3.0}、toy-coins、全部漏斗数字（9→6、12→8、1161/1021 B、4224、digest 等） | 本实现实测（toy 设定） | `L0_lakehouse_and_iac_state.py` 本次运行输出，非真实云价、不可外推 |
-| 「Airbyte/Fivetran 类连接器解决多源接入」 | 纲领已有（ROADMAP §七 关键词） | 概念性提及，未引数字 |
+| 「Airbyte/Fivetran 类连接器解决多源接入」 | 纲领已有（课程的数据系统教学约定 关键词） | 概念性提及，未引数字 |
 
 下一站：**L1**——真实小数据集 + 增量物化（watermark）+ 可持久化的 catalog（DuckDB/SQLite 级），复现同一套漏斗语义；**L2**——对照 Iceberg/Delta/dbt 源码的 snapshot/commit/schema evolution 取舍分析 + Terraform HCL/state 实操（见 README 阶梯表）。

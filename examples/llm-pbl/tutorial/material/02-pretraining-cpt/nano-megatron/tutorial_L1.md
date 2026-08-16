@@ -255,7 +255,7 @@ gloo loopback（真实 TCP，本机 CPU）上三个消息大小的实测墙钟
    在本机这条消息要 ~24 ms。按 L0 的核算（每层 4 次 × 32 层 = 128 次/microbatch）
    纯算术外推：本机口径下每 microbatch 纯通信 ≈ 128 × 23.7 ms ≈ 3.0 s。
    这是本机 CPU/loopback 的基线数字，用来说明量级关系；
-   真实 GPU + NVLink 的耗时标 `[TODO: verify on real system]`（Machine B 攒批通道）。
+   真实 GPU + NVLink 的耗时标 `[TODO: verify on real system]`（真实 GPU/多机环境）。
 3. **fp16 探测**：本机 torch 2.4.1 + gloo **支持** fp16 all_reduce 且数值正确
    （`1.0 + 1.0 = 2.0` 实测）。L1 仍用 fp32，为的是舍入分析干净；
    生产混合精度训练是 NCCL/GPU 的事，行为不互相推定。
@@ -339,7 +339,7 @@ L0 的类比是阅卷分工：各科老师（rank）独立算自己那科的部�
 
 - **本机数字 ≠ GPU 数字**：全部计时来自 CPU + gloo + loopback，量级只说明
   「通信在关键路径上、有延迟地板」，不代表生产互连性能；
-  真机数字标 `[TODO: verify on real system]`（ROADMAP §三 Machine B 通道）。
+  真机数字标 `[TODO: verify on real system]`（课程的真机验证边界）。
 - **toy 形状**：`[128, 64] × [64, 256]`，计算微秒级，通信延迟完全主导；
   真实形状下计算/通信比会变化，但「每块 fwd 1 + bwd 1」的结构不变。
 - **未含 attention 块与 bias/LayerNorm**：attention 的 TP 是同构切法（L0 §5），
@@ -364,4 +364,4 @@ L0 的类比是阅卷分工：各科老师（rank）独立算自己那科的部�
 - **巧合声明**：§4 备注的 TP=2/TP=4 dX 误差相等为 seed=7 巧合，
   seed=99 复跑实测分离（`1.373e-04` / `1.984e-04`）。
 - fp16 支持结论为本机实测（torch 2.4.1 + gloo），不推广到其它后端/版本。
-- 未 ssh 远端；真机验证走 Machine B 攒批通道。
+- 本节未执行 GPU/多机实测。

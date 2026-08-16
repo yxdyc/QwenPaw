@@ -27,11 +27,11 @@ decode 迭代读一遍全部权重（与 batch 无关），batch 里每条序列
   3. 架构的第一性原理是让引擎忙：同步 regime 引擎利用率 = G/(G+T+S)，异步把它
      拉向 1。这也是 fully_async_rollout.py 背压设计（:L85-89/L148-152）的动机。
 
-诚实口径：本文件是**可运行的本质模拟**（ROADMAP §三 L2 契约）——本机没有 GPU，
+诚实口径：本文件是**可运行的本质模拟**（课程可运行性契约）——本机没有 GPU，
 跑不了真实 SGLang/vLLM；真实引擎的 continuous batching、KV 管理、多引擎分片、
 delta weight sync 均未建模。建模的是 slime 源码坐实的两个结构事实：两种训练循环
 的控制流（行号见上，快照溯源见 tutorial §10）与引擎「权重读被 batch 摊薄」的
-代价规律（nano-vllm-sglang L0 已独立讲透）。真机数字走 GPU 通道
+代价规律（nano-vllm-sglang L0 已独立讲透）。真机数字需在真实 GPU 环境验证
 [TODO: verify on real system]。
 依赖：零（纯标准库）。CPU 瞬时（<0.1s）。
 """

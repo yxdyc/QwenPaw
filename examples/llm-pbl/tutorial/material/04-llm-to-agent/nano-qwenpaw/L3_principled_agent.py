@@ -26,7 +26,7 @@ What is reproduced (mirrors, stdlib-only):
     capability itself (gap categories, mastery bands, thresholds) is
     parsed OUT OF THE INJECTED SKILL TEXTS, not out of harness memory.
 
-Declarations (ROADMAP §3 contract):
+Declarations (course runnability contract):
   * The workspace under tempfile is a DECLARED test fixture (removed at
     the end of a successful run; left in place on failure for forensics).
     Two skill documents (k-plus-one, feynman-check) are copied VERBATIM

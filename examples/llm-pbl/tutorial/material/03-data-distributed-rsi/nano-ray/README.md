@@ -22,7 +22,7 @@ L2 依赖同 L1（ray==2.56.1），import 复用同目录 `L1_ray_pipeline`（�
 `python3 L2_actor_dedup_index.py` 全自动自检，单机 4 CPU 即可。
 L3 依赖同 L1（ray==2.56.1 / numpy），import 复用同目录 `L1_ray_pipeline`（语料 + 漏斗常量），
 `python3 L3_object_store_zero_copy.py` 全自动自检（两个 Ray 会话：默认 store + 75 MB 小 store），
-任意 CWD 可跑；`[5]` 多节点 locality 为显式注明的本质模拟，真机验证走 Machine B 通道。
+任意 CWD 可跑；`[5]` 多节点 locality 为显式注明的本质模拟，真机验证需在真实 GPU/多机环境验证。
 
 ## 核心要讲清的点
 

@@ -4,7 +4,7 @@ L0 把一次调用包进 harness；L1 让 harness 有跨轮记忆；L2 把方法
 
 ## 1. 三个声明（什么是真的，什么是声明的）
 
-按 ROADMAP §3 可运行性契约，本节先声明三件事：
+按课程可运行性契约，本节先声明三件事：
 
 1. **fixture workspace 是声明的**。workspace 落在 tempfile 下：两份 skill 文档（k-plus-one、feynman-check）在运行时从真实 coach profile **逐字节**拷入（sha256[:8] 断言同一性）；其余是合成的边界埋点，逐一贴标签——onboard 有 manifest 条目但没有 SKILL.md；codex-delegate 有 SKILL.md 但没有 manifest 条目（镜像真实 profile 的同名 skill）；misnamed 的 frontmatter 说谎；feynman-check 被声明为 channels=[console]。成功运行结束时 fixture 被清理；失败则保留现场供取证。
 2. **判断席位是声明的 stand-in**。base model、Examiner-A、gap detector 是声明的确定性替身——真实系统里那里坐的是 LLM 的判断：`[TODO: needs key]`。结构上的一切是真的：真文件 I/O、真 JSON manifest、真 frontmatter 解析、真 sqlite ledger、每个源的 live sha256。
@@ -12,14 +12,14 @@ L0 把一次调用包进 harness；L1 让 harness 有跨轮记忆；L2 把方法
 
 ## 2. 先跑为敬
 
-真实输出（2026-08-11 运行，逐字节粘贴；输出 md5 = `2c6780dcf578e429be3b4328a5a71486`，166 行）。注入式组装：本 paste 块由运行输出直接注入，提取件 md5 与输出锚逐位吻合——`awk '/^```/{f++;next} f==1' tutorial_L3.md | md5`：
+真实输出（2026-08-14 复验，逐字节粘贴；输出 md5 = `475b3a26b67249d0cc6a3b41eaada36f`，166 行）。本块由运行输出直接注入；可用 `awk '/^```/{f++;next} f==1' tutorial_L3.md | md5` 复核：
 
 ```text
 ====================================================================
 nano-qwenpaw L3 — the principled agent: skills as data,
 assembly under SOUL
 ====================================================================
-python 3.13.13
+python 3.9.6
 declarations: fixture workspace under tempfile (two skill docs
   copied verbatim from the coach profile, byte-identity checked
   by sha256[:8]; the rest are labeled plantings); base model,
@@ -32,13 +32,13 @@ declarations: fixture workspace under tempfile (two skill docs
   different agents, one per request channel.
 
 [0] sources & freshness (line anchors re-derived live)
-    SOUL.md            sha256[:8]=78269f03  mode=live
+    SOUL.md            sha256[:8]=e143a057  mode=live
     k-plus-one.md      sha256[:8]=3cbf925a  mode=live
     feynman-check.md   sha256[:8]=bca18409  mode=live
-    cap_middleware.py  sha256[:8]=7047abe2  mode=live
-    manager.py         sha256[:8]=ea74a331  mode=live
-    history.py         sha256[:8]=f1913129  mode=live
-    builder.py         sha256[:8]=ffc7a268  mode=live
+    cap_middleware.py  sha256[:8]=5ea09476  mode=live
+    manager.py         sha256[:8]=6260c313  mode=live
+    history.py         sha256[:8]=48b71b62  mode=live
+    builder.py         sha256[:8]=abb6c3fc  mode=live
     registry.py        sha256[:8]=9b59216a  mode=live
     store.py           sha256[:8]=2f529ecd  mode=live
     builder.py anchors: skills_or_loaders L94 / _resolve_skill_loader_dirs L97 / not-injected log L117
@@ -90,12 +90,12 @@ declarations: fixture workspace under tempfile (two skill docs
     misnamed        name=other-name      -> would fail the contract (planted; never enabled, never injected)
 
 [5] prompt assembly: skills ride the system prompt, verbatim
-    channel=console: SOUL 1015 + skills 2538 est-tokens -> prompt 3568 est-tokens (3 skills)
-    channel=voice: SOUL 1015 + skills 1393 est-tokens -> prompt 2423 est-tokens (3 skills)
-    prompt delta: console - voice = 1145 est-tokens; block-only estimate = 1145 (whole-prompt integer rounding may differ by 1)
+    channel=console: SOUL 1096 + skills 2538 est-tokens -> prompt 3650 est-tokens (3 skills)
+    channel=voice: SOUL 1096 + skills 1393 est-tokens -> prompt 2504 est-tokens (3 skills)
+    prompt delta: console - voice = 1146 est-tokens; block-only estimate = 1145 (whole-prompt integer rounding may differ by 1)
     provenance (principle#5 at assembly time):
-      console: SOUL@78269f03 + daily-review@cd184fbd feynman-check@bca18409 k-plus-one@3cbf925a
-      voice: SOUL@78269f03 + daily-review@cd184fbd k-plus-one@3cbf925a voice-brief@3c064b1c
+      console: SOUL@e143a057 + daily-review@cd184fbd feynman-check@bca18409 k-plus-one@3cbf925a
+      voice: SOUL@e143a057 + daily-review@cd184fbd k-plus-one@3cbf925a voice-brief@3c064b1c
 
 [6] one SOUL-governed session (channel=console; learner mastery
     0.25 on 'token-budgeting', project 'cap-dashboard')
@@ -234,14 +234,14 @@ Per-request assembly：builder 按**请求**组装，不是按 workspace 组装�
 
 ## 7. 机制四：skills ride the prompt，不在 tools=
 
-[5] 实测组装结果：历史快照中 console prompt 比 voice 多 1145 est-tokens，等于 feynman-check block（1291）− voice-brief block（146）。`est_tokens` 是整除型粗估器；当 SOUL 或分隔符长度变化时，分别对整段取整与分别对 block 取整可能相差 1，因此代码断言的是 `abs(prompt_delta - block_delta) <= 1`。skill 仍是**以文本形式**进入 system prompt 的——builder.py:L94 `Toolkit(tools=tools, skills_or_loaders=skill_dirs)`，两条通道泾渭分明，skills 不在 tools= 列表上。
+[5] 实测组装结果：当前快照中 console prompt 比 voice 多 1146 est-tokens；按两个 skill block 分别估算则相差 1145。`est_tokens` 是整除型粗估器；分别对整段取整与分别对 block 取整可能相差 1，因此代码断言的是 `abs(prompt_delta - block_delta) <= 1`。skill 仍是**以文本形式**进入 system prompt 的——builder.py:L94 `Toolkit(tools=tools, skills_or_loaders=skill_dirs)`，两条通道泾渭分明，skills 不在 tools= 列表上。
 
 两种能力通道的本质区别：
 
 - **tools= 是功能性能力**：模型调用、harness 执行、有输入输出契约，能力在代码里；
 - **skills_or_loaders 是文本性能力**：模型阅读、模型遵循，harness 不解析正文（只解析 frontmatter 验契约），能力在文档里。
 
-所以「capability 在注入的文档里」不是修辞：feynman-check 的 gap 四分类、mastery band、阈值，是运行时**从注入文本里解析出来的**——[8] 证明了「从 workspace 拷贝解析的 rules == 从 coach 源文件解析的 rules」（4 gap categories、bands 4、thresh 80%/2，逐字段相等）。provenance 行（`SOUL@78269f03 + daily-review@cd184fbd feynman-check@bca18409 k-plus-one@3cbf925a`）则是原则 #5（反幻觉）在**组装时**的执行：注入即留痕。
+所以「capability 在注入的文档里」不是修辞：feynman-check 的 gap 四分类、mastery band、阈值，是运行时**从注入文本里解析出来的**——[8] 证明了「从 workspace 拷贝解析的 rules == 从 coach 源文件解析的 rules」（4 gap categories、bands 4、thresh 80%/2，逐字段相等）。provenance 行（`SOUL@e143a057 + daily-review@cd184fbd feynman-check@bca18409 k-plus-one@3cbf925a`）则是原则 #5（反幻觉）在**组装时**的执行：注入即留痕。
 
 ## 8. 机制五：capability 在注入文档，不在 harness——behavior delta = L2 通胀的技能缺失版
 
@@ -263,9 +263,9 @@ Per-request assembly：builder 按**请求**组装，不是按 workspace 组装�
 
 ## 9. 对照权威源码（行号以抓取日为准）
 
-声明：行号以 **2026-08-11 live 抓取**为准（sha256[:8] 与写作日 08-10 录值逐位吻合，零漂移；[0] 每轮运行 live 重推导，源文件若漂移，输出跟着变）。
+声明：下表行号以 **2026-08-14 live 抓取**为准；[0] 每次运行都会重新推导，源文件若漂移，输出也会改变。
 
-| 锚点 | 位置（2026-08-11） | nano 镜像 |
+| 锚点 | 位置（2026-08-14） | nano 镜像 |
 |------|--------------------|-----------|
 | per-request 组装：`Toolkit(tools=tools, skills_or_loaders=skill_dirs)` | builder.py:L94 | build_prompt()（[5]） |
 | `_resolve_skill_loader_dirs`（SKILL.md 准入门） | builder.py:L97-121 | resolve_skill_loader_dirs() |
@@ -275,7 +275,7 @@ Per-request assembly：builder 按**请求**组装，不是按 workspace 组装�
 | `get_workspace_skills_dir`（skills/ 优先） | store.py:L65-76 | get_workspace_skills_dir() |
 | legacy skill/ 原地 rename | store.py:L73 | [8] 实测 renamed=True |
 
-sha256[:8]（2026-08-11 现场复算）：arch 三源 builder `ffc7a268` / registry `9b59216a` / store `2f529ecd`；coach 六源 SOUL `78269f03` / k-plus-one `3cbf925a` / feynman-check `bca18409` / cap_middleware `7047abe2` / manager `ea74a331` / history `f1913129`。
+sha256[:8]（2026-08-14 现场复算）：arch 三源 builder `abb6c3fc` / registry `9b59216a` / store `2f529ecd`；coach 六源 SOUL `e143a057` / k-plus-one `3cbf925a` / feynman-check `bca18409` / cap_middleware `5ea09476` / manager `6260c313` / history `48b71b62`。
 
 取舍分析（nano 与权威实现的差异及原因）：
 
@@ -314,18 +314,18 @@ sha256[:8]（2026-08-11 现场复算）：arch 三源 builder `ffc7a268` / regis
 - PINNED fallback 模式：源文件 live 读取失败时，[0] 的行号锚点是 pinned slice 内的行号（非真实文件行号），输出以 mode=PINNED 区分。
 - 单机 stdlib 镜像：无异步、无多 workspace 并发、无全局/plugin skill 来源——真实 builder 的解析面更宽，funnel 形状一致。
 
-## 14. 写作过程 bug 录（三个，均自检抓出）
+## 14. self-check failure 记录（三个，均自检抓出）
 
 1. **mastery 记账混乱**（独立复现发现）：[7] 的 `m_voice = 0.25 + 0.05` 没有隔离 grading 学分——voice 席的 k-plus-one 同样注入，grading 同样 +0.05，两席终值都是 0.30，`assert m_voice > m` 确定性失败。修复：voice 同得 grading 学分，m_voice = M0 + delta_k + naive = 0.35，全部 print/ledger 改计算值（含 session-end ledger 的硬编码「mastery=0.25」）。
 2. **双转义正则 ×2**（独立复现发现）：`r'has no SKILL\\.md at'` / `r'legacy\\.rename\\(preferred\\)'` 匹配字面反斜杠，永远失配，`lineno_of` 静默返回 0。修复 = 还原单转义 + 全部推导值 assert > 0（[9] 新增检查项）。
-3. **onboard 埋点死分支**（本收尾批修复 bug 1 后运行面推进到 [9]，当场抓出）：`if name == "onboard"` 写在 SYNTHETIC_SKILLS 的循环体内，而该字典没有 onboard 键——分支是死代码，onboard 目录从未被创建，funnel 在 NO-DIR 而非 SKILL.md 门处丢弃它，not_injected 为空，[9] 的 gate 消息检查 IndexError。修复 = 循环后显式创建 onboard 目录（只有 README.txt）。
+3. **onboard 埋点死分支**（修复 bug 1、运行推进到 [9] 后抓出）：`if name == "onboard"` 写在 SYNTHETIC_SKILLS 的循环体内，而该字典没有 onboard 键——分支是死代码，onboard 目录从未被创建，funnel 在 NO-DIR 而非 SKILL.md 门处丢弃它，not_injected 为空，[9] 的 gate 消息检查 IndexError。修复 = 循环后显式创建 onboard 目录（只有 README.txt）。
 
-教训：**assert 链条像保险丝——第一根烧断会掩盖后面的所有保险丝**。bug 1 让运行停在 L729，bug 2（静默）与 bug 3（藏在 bug 1 之后）因此从未曝光。修复任何一个 bug 后必须整链重跑——这也是「对抗自检」在写作流程本身的形态。
+教训：**assert 链条像保险丝——第一根烧断会掩盖后面的所有保险丝**。bug 1 让运行停在 L729，bug 2（静默）与 bug 3（藏在 bug 1 之后）因此从未曝光。修复任何一个 bug 后必须整链重跑——这也是「对抗自检」在实现与验证流程中的形态。
 
 ## 15. 溯源与测量口径
 
 **输出锚**：paste 块 md5 = `5b04a9cad2d30d22c41a8407152ec389`（166 行）；公开镜像代码 `L3_principled_agent.py` 879 行、md5 = `1c95edbab49718dca200f30dc3446c81`（新增仓库根目录自动发现，并修正粗略 token 估算的整数取整断言）。
 
-**确定性**：无采样、无计时行、sqlite 落 tempfile（路径不打印）、fixture 成功运行后清理；2026-08-11 在四个彼此独立的临时工作目录中各运行一次，均 EXIT=0、stderr 0 B，且两两 diff 为空。注：与 L1/L2 相同，sha256 跟随源文件，源文件若被编辑，输出中的 sha 与解析数字随之改变（设计如此，漂移可见），届时本节 md5 锚需重新锚定。
+**确定性**：无采样、无计时行、sqlite 落 tempfile（路径不打印）、fixture 成功运行后清理。同一源码与 Python 环境下重复运行应得到相同输出；与 L1/L2 相同，sha256 跟随源文件，源文件若被编辑，输出中的 sha 与解析数字随之改变（设计如此，漂移可见），届时本节 md5 锚需重新锚定。
 
-**溯源**：权威源 = 本仓库 `src/qwenpaw/runtime/builder.py` / `src/qwenpaw/agents/skill_system/registry.py` / `src/qwenpaw/agents/skill_system/store.py` + `coach/profile/` 六源（SOUL.md + k-plus-one/feynman-check SKILL.md + scroll 三件）；锚点表见 §9（行号以 2026-08-11 抓取日为准）。交叉引用：mastery 通胀机制见 tutorial_L2 §5，claims gate 见 tutorial_L2 §7，token 预算与窗口机制见 tutorial_L1。
+**溯源**：权威源 = 本仓库 `src/qwenpaw/runtime/builder.py` / `src/qwenpaw/agents/skill_system/registry.py` / `src/qwenpaw/agents/skill_system/store.py` + `coach/profile/` 六源（SOUL.md + k-plus-one/feynman-check SKILL.md + scroll 三件）；锚点表见 §9（行号以 2026-08-14 抓取日为准）。交叉引用：mastery 通胀机制见 tutorial_L2 §5，claims gate 见 tutorial_L2 §7，token 预算与窗口机制见 tutorial_L1。

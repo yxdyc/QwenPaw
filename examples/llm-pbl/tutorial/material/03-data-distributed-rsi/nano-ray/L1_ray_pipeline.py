@@ -26,7 +26,7 @@ K+1 目标（相对 L0）：
 
     ⚠️ 声明（可运行性契约）：本文件用**真实 Ray**（ray 2.56.1，pip 安装，
     本机 CPU），无任何 mock；ray.init 单机模式启动本地 raylet + worker 进程。
-    多节点行为不在本机范围，见 [TODO: verify on real system]（Machine B 通道）。
+    多节点行为不在本机范围，见 [TODO: verify on real system]（真实 GPU/多机环境）。
     语料与 nano-data-juicer L2 同一确定性构造（seed=42 合成语料，非真实语料；
     L1 主题是执行机制，语料内容不影响验证）。
 

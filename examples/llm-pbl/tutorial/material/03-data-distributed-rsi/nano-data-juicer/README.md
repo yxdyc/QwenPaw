@@ -25,7 +25,7 @@ Data-Juicer 是用户日常工具，门槛低、价值直接。理解了「OP + 
 | **L2** | 分布式 pipeline：分区 + 真实多进程并行局部 OP + 全局 OP（dedup）收敛点（convergence vs shuffle）+ 分区级容错；对照 Data-Juicer `RayExecutor` / `PartitionedRayExecutor` 源码（对接 [nano-ray](../nano-ray/README.md) 的调度视角） | ✅ `L2_distributed_pipeline.py` + `tutorial_L2.md` |
 | **L3** | 对照 Data-Juicer 真实 OP 接口，复现一个 filter（text_length_filter）的完整行为 + 配置 schema：Registry/load_ops 构造链、两段式 compute_stats→process、stats 复用、区间与 reversed 语义、NON_STATS_FILTERS、`__init_subclass__` 守卫；含与 L2 漏斗逐位一致的跨级别契约 | ✅ `L3_filter_interface.py` + `tutorial_L3.md` |
 
-**环境依赖分级**：L0 零依赖（纯标准库）；L1 纯标准库，真实 LLM 模式需 `DASHSCOPE_API_KEY` / `OPENAI_API_KEY`（`--mock` 无需）；L2 纯标准库（`multiprocessing` 真实 worker 进程，CPU 即跑；本机未装 Ray，用多进程承载同一套分布式执行语义，显式声明见 `tutorial_L2.md` §10）；L3 纯标准库（同目录 import L2 模块，单进程复现接口语义，声明见 `tutorial_L3.md` §10）。
+**环境依赖分级**：L0 零依赖（纯标准库）；L1 纯标准库，真实 LLM 模式需 `DASHSCOPE_API_KEY` / `OPENAI_API_KEY`（`--mock` 无需）；L2 纯标准库（`multiprocessing` 真实 worker 进程，CPU 即跑；不把 Ray 设为必装依赖，多进程承载同一套分布式执行语义，显式声明见 `tutorial_L2.md` §10）；L3 纯标准库（同目录 import L2 模块，单进程复现接口语义，声明见 `tutorial_L3.md` §10）。
 
 ---
 

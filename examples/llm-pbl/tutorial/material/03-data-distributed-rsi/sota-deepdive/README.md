@@ -2,7 +2,7 @@
 
 > **深挖对象**：预训练数据方法论四机制面——去重（Lee et al. / FineWeb）、质量过滤（FineWeb-Edu / DCLM fastText）、数据配比（DoReMi Group DRO）、去污染（DCLM 工具哲学）（首版 ✅）；Nemotron-CC 为更新一代替代（摘要级，不作教学主体）。
 > **状态**：首版完成（SOTA 对齐日期 2026-08-12）
-> **对照基础**：nano-data-juicer L0–L3（25/25 转正）+ nano-ray L0–L2（24/25 转正）+ nano-vllm-sglang L0–L2（24/25 转正）——L2 锚点门槛满足（ROADMAP §四.4）
+> **可运行对照**：[nano-data-juicer L0–L3](../nano-data-juicer/) + [nano-ray](../nano-ray/) + [nano-vllm-sglang](../nano-vllm-sglang/)。
 
 ---
 
@@ -41,7 +41,7 @@
 - [x] **DoReMi** `[2305.10429]`（v4，2023-05-17 / 2023-11-21）——配比机制规范锚点；命题 / Group DRO 机制 / 280M→8B 30× / 6.5pp+2.6x / GLaM 泛化 / 同尺寸 4× 六处引文逐字核验（ar5iv 331,076 B）。
 - [x] **Scaling Data-Constrained** `[2305.16264]`（v5，2023-05-25 / 2025-06-28）——A 层经典锚点；≤4 epoch 重复近无损 + 算力价值衰减归零（摘要逐字，API 通道）。
 - [x] **RefinedWeb** `[2306.01116]`（v1，2023-06-01）——A 层经典锚点（标题级核验；谱系句经 FineWeb 转述核验）。
-- [x] **Nemotron-CC** `[2412.02595]`（v2，2024-12-03 / 2025-05-30）——更新一代替代，存在性坐实（API 摘要六探针全 HIT：90% 数据移除批评 / 分类器集成+合成改写+弱化启发式 / MMLU +5.6 over DCLM / 6.3T 四倍 unique real tokens / 15T 训练 +5 MMLU +3.1 ARC-C）；机制细节不作教学主体（ROADMAP §八 B 层处理）。
+- [x] **Nemotron-CC** `[2412.02595]`（v2，2024-12-03 / 2025-05-30）——更新一代替代，存在性坐实（API 摘要六探针全 HIT：90% 数据移除批评 / 分类器集成+合成改写+弱化启发式 / MMLU +5.6 over DCLM / 6.3T 四倍 unique real tokens / 15T 训练 +5 MMLU +3.1 ARC-C）；机制细节不作教学主体（课程的前沿证据层处理）。
 - [ ] 2025–2026 更新旗舰数据方法论报告：`[TODO: verify]`（submittedDate 倒序全量扫描未做，见 deepdive §6.4）；FineWeb-2 等多语单源条目 `[transient/单源]` 不展开。
 
 ## 权威实现与延伸

@@ -37,7 +37,7 @@ all-gather** 算 wgrad（L609-618）——所以 SP 是**显存优化，代价�
       可溯源的三段。CPU/gloo 上 MFU 很低（通信主导），这正是 MFU 的价值：
       它把 bubble/通信/小算子低效全部暴露成一个数字。
 
-可运行性声明（ROADMAP §三契约）：全部计算真跑（4 个真实进程、真实 gloo
+可运行性声明（课程可运行性契约）：全部计算真跑（4 个真实进程、真实 gloo
 集合通信 all-gather/reduce-scatter/all-reduce + 真实 p2p）；MFU 的峰值用
 GEMM 现场标定（不引用厂商标称值）；GPU/NCCL 上的绝对 MFU 与 SP 的真机
 显存收益标 [TODO: verify on real system]，本脚本不冒充。

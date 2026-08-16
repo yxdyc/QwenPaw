@@ -232,7 +232,7 @@ gsm8k.yaml` 尾部就有一段注释掉的 stages 模板（sft_warmup → rft）
 
 这张表就是 [2] 实验的设计图。两处值得停下来：其一，`dapo.yaml` 的
 `loss_agg_mode` 配的是 `token-mean`——DAPO §3.3 说的「token-level loss」在
-Trinity 里接的是 token-mean（[3](a) 会解释为什么这合理）；其二，README:L18
+Trinity 里接的是 token-mean（[3a] 会解释为什么这合理）；其二，README:L18
 明确警告**不要**同时设 `advantage_fn_args.std_threshold` 和管线过滤——同一个
 机制有两个接线位置，叠加会双重过滤。
 
@@ -557,7 +557,7 @@ L1 08-06 / L2 08-12 录值逐位零漂移；行号以 2026-08-13 抓取日为准
 | trinity/algorithm/algorithm.py:L48-118 / L120-140 / L142-175 / L263-305 | SFT / GRPO / DAPO / DPO 的 default_config + 类级标志 + check_config（DPO 强制 k2 L302-304、repeat_times L300-301；SFT 拒绝 both L67-76） |
 | trinity/algorithm/policy_loss_fn/ppo_policy_loss.py:L19-36, L69-95 | 非对称 clip 参数 / ratio 截断 ±20、clip(1−low,1+high)、clip_ratio_c（adv<0）、pg_clipfrac（改自 verl core_algos.py） |
 | trinity/algorithm/utils.py:L9-49 | aggregate_loss 四模式（token-mean / seq-mean-token-sum / seq-mean-token-mean / seq-mean-token-sum-norm） |
-| trinity/algorithm/advantage_fn/grpo_advantage.py:L97, L106-116, L160-163, L166-169, L178-194 | std_threshold / duplicate_experiences 参数与 docstring；过滤实现；(r−mean)/(std+ε)；复制补位实现（L2 锚点本轮复验零漂移） |
+| trinity/algorithm/advantage_fn/grpo_advantage.py:L97, L106-116, L160-163, L166-169, L178-194 | std_threshold / duplicate_experiences 参数与 docstring；过滤实现；(r−mean)/(std+ε)；复制补位实现（L2 锚点复验零漂移） |
 | trinity/algorithm/kl_fn/kl_fn.py（K2Fn）/ kl_fn/__init__.py:L4-15 | k2 = 0.5·(logp−ref_logp)²；KL_FN 注册表 7 项 |
 | trinity/common/rewards/dapo_reward.py:L34-97 | MathDAPORewardFn：accuracy ±1 + format_score；overlong 软惩罚原式（max−cache 起算） |
 | trinity/buffer/operators/__init__.py:L7-19 / operators/filters/reward_filter.py:L65-148, L151-172 | EXPERIENCE_OPERATORS 注册表 8 项（含 data_juicer）；DAPODynamicSamplingFilter（按 metrics["accuracy"] 判对错、dropped_all_correct/wrong 分账）；MaskResponseTruncatedOperator |

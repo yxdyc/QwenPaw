@@ -1,6 +1,6 @@
 # nano-data-platform
 
-> **抓的核心机制**：数据接入 → 分层存储（raw/curated）→ 治理（成本/权限/质量）→ 训练/检索消费（ROADMAP §七）。
+> **抓的核心机制**：数据接入 → 分层存储（raw/curated）→ 治理（成本/权限/质量）→ 训练/检索消费（课程的数据系统教学约定）。
 > L0 用纯 Python 裸出两个本质：**湖仓分层**（raw 不可变追加 + curated 版本化快照派生 + 质量门硬晋升）与 **infra-as-code 状态管理**（声明式 desired state + plan/apply + state 文件，幂等且最小 diff）。
 > L1 还清 L0 的两笔债（重启态蒸发 + 每次全量重算）：**watermark 增量接入**（单事务游标推进 + PK 去重 = exactly-once 物化）、**持久化 catalog**（SQLite 五表，重启幸存 + 血缘 SQL）、**增量物化**（merge/upsert 语义）、**双层对账**（raw 重放 == curated 账目 + 源↔raw 对账，跨级 digest 锚字节级复现 L0 漏斗）。
 > **对应真实系统**：[Apache Iceberg](https://github.com/apache/iceberg) / [Delta Lake](https://github.com/delta-io/delta) / [dbt](https://github.com/dbt-labs/dbt-core)；Terraform（HCL 到 L2 才触及）；云原生参照（AWS Glue / Redshift / Snowflake / ClickHouse / Airbyte / Fivetran）只作对照不锁定。
@@ -12,7 +12,7 @@
 
 清洗算子（nano-data-juicer）回答「数据怎么处理」，数据平台回答另一组问题：数据**从哪来、存在哪、谁能碰、花了多少钱、训练用的是哪一版**。这组问题不解决，RSI 闭环在生产环境就是空转——接不进、不可复现、管不住、算不清。
 
-L0 的选择是把「分层契约」和「声明式状态管理」这两个最本质的机制裸出来：不碰 HCL、不碰真实存储、不碰云 API——它们是语法和环境，不是机制（ROADMAP §七 写作原则）。
+L0 的选择是把「分层契约」和「声明式状态管理」这两个最本质的机制裸出来：不碰 HCL、不碰真实存储、不碰云 API——它们是语法和环境，不是机制。
 
 ---
 
@@ -24,7 +24,7 @@ L0 的选择是把「分层契约」和「声明式状态管理」这两个最�
 | **L1** | 接真实小数据集（公开小数据集或本地样本）：增量接入（watermark/游标）+ 增量物化 build + 持久化 catalog（SQLite/DuckDB 级）+ 全量回测对账（raw 重放 == curated 账目），复现 L0 漏斗语义 | ✅ `L1_incremental_sync_catalog.py` + `tutorial_L1.md` |
 | **L2** | 对照权威实现源码做取舍分析：Iceberg/Delta 的 snapshot/manifest/commit protocol（乐观并发、time travel、schema evolution）+ dbt 的分层派生模型；Terraform HCL/provider/state locking 实操（§七：HCL 只在 L2 触及）；可运行的本质模拟 + 显式注明 | 🔲 |
 
-**环境依赖分级**：L0 零依赖（纯标准库，CPU 秒级，任意 CWD 可跑，输出确定——双跑 stdout md5 `3ee6512a5f1b5c773357696ab6d7f137`/48 行 BYTE-IDENTICAL）；L1 零依赖（纯标准库 `sqlite3`，实测 Python 3.13.13 / SQLite 3.53.1，任意 CWD 可跑——双跑 stdout md5 `b02aad91a525ad34d72168f46f916477`/73 行 BYTE-IDENTICAL，self-check 25/25）；L2 按可运行性契约（ROADMAP §三）允许「可运行的本质模拟 + 显式注明」，真实集群路径标 `[TODO: verify on real system]`。
+**环境依赖分级**：L0 零依赖（纯标准库，CPU 秒级，任意 CWD 可跑，输出确定——双跑 stdout md5 `3ee6512a5f1b5c773357696ab6d7f137`/48 行 BYTE-IDENTICAL）；L1 零依赖（纯标准库 `sqlite3`，实测 Python 3.13.13 / SQLite 3.53.1，任意 CWD 可跑——双跑 stdout md5 `b02aad91a525ad34d72168f46f916477`/73 行 BYTE-IDENTICAL，self-check 25/25）；L2 按可运行性契约（课程可运行性契约）允许「可运行的本质模拟 + 显式注明」，真实集群路径标 `[TODO: verify on real system]`。
 
 ---
 

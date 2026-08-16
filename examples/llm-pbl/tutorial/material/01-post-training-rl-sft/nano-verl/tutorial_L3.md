@@ -20,7 +20,7 @@ L2 把 actor 与 learner 拆成了两个 lockstep 进程，并观察到不同设
   `register(dispatch_mode=...)` 在其中的角色？
 - 权重从训练分片到推理引擎的 resharding 之路，真实系统走了哪几步？代价多大？
 
-**可运行性声明（ROADMAP §三 L2/L3 契约）**：真实 verl 需要 Ray + FSDP/Megatron + vLLM + 多 GPU，
+**可运行性声明（课程可运行性契约）**：真实 verl 需要 Ray + FSDP/Megatron + vLLM + 多 GPU，
 本机跑不了 `[TODO: verify on real system]`。本节是**可运行的本质模拟**：计算是真的
 （真实 char-LSTM、真实 PPO 梯度、真实权重流动），显存与时钟按声明式 COST 模型折算（§5/§6 显式区分
 「实测玩具数字」与「声明规模算术」，绝不混用）。模拟的**语义**与 verl 一致，且被代码末尾
@@ -295,7 +295,7 @@ CPU；进 train 相，rollout 引擎睡觉（vLLM sleep mode，权重与 KV 都�
   `update_weights`（L846）→ `resume(tags=["kv_cache"])`（L851）。先住权重、再开 KV，
   因为 update_weights 本身要有地方放新权重。
 - `generate_sequences`（L1043-1071）把整个三明治包起来：`rollout_mode()`（L1063）→
-  生成（L1067）→ `trainer_mode()`（L1070）。（`trainer_mode` 的定义位置本轮未定位到
+  生成（L1067）→ `trainer_mode()`（L1070）。（`trainer_mode` 的定义位置尚未定位到
   fsdp_workers.py 内 `[TODO: verify]`——调用点与语义（rollout_mode 的逆操作）已核验。）
 
 [3] 的显存表（COST 声明模型，budget = 80 GB/卡）：
@@ -431,13 +431,13 @@ overlap），而类比里的搬运是免费的；另外真实餐馆还可以开�
 2. **声明数字不是实测**：§5/§6 的 GB/ms 全部来自 COST 块声明常数（7B/13B 折算），
    本机没有任何 GPU 测量；玩具流量（101,602 KB）是实测但规模是 28K 参数。两类数字
    在输出里分开标注（`declared` vs `real toy`），引用时不可混用。
-3. **时效性**（ROADMAP §八）：锚点基准 v0.7.1 是保留经典目录结构的最后一个 release。
+3. **时效性**（课程的证据时效性分层）：锚点基准 v0.7.1 是保留经典目录结构的最后一个 release。
    main 分支（2026-08-07 抓取）已重构：`verl/workers/fsdp_workers.py` 与
    `sharding_manager/` 消失，worker 层改组为 `engine_workers.py` 等新布局；
    最新 release v0.8.0。机制（单控制器+SPMD、两相复用、resharding）未变，
    但**行号锚点不可外推到 main**——引用 main 时须重新核验（§11 录了 main 的
    README/protocol/decorator sha256 供漂移检测）。
-4. **DP 透明性有前提**：[1](b) 的 bit-identical 依赖 per-row 计算无跨行归约；
+4. **DP 透明性有前提**：[1b] 的 bit-identical 依赖 per-row 计算无跨行归约；
    advantage 归一化这类跨行操作必须留在 driver 侧对全量做（verl 的
    `compute_advantage` 正是 driver 侧函数）——若把它塞进 rank 内对 chunk 做，
    语义就错了（每 rank 各归一各的 ≠ 全局归一）。
@@ -446,8 +446,8 @@ overlap），而类比里的搬运是免费的；另外真实餐馆还可以开�
 
 ## §11 溯源
 
-**权威实现锚点**（verl-project/verl @ v0.7.1，raw.githubusercontent.com 抓取于
-2026-08-07 21:3x CST，本机 `/tmp/verl_anchor/v071/`）：
+**权威实现锚点**（verl-project/verl @ v0.7.1，2026-08-07 从
+raw.githubusercontent.com 抓取）：
 
 | 文件 | sha256 | 用到的行号锚点 |
 |------|--------|----------------|
@@ -476,7 +476,7 @@ verl/single_controller/base/decorator.py sha256
 确定性：强制 CPU + `torch.manual_seed(42)` + rank 序归约 + (SEED, step, rank) 采样种子；
 单次运行内部的两遍训练得到相同 metrics md5（`5cba79e6a5bb5f8ff192f5f888837983`）。
 
-**调试史**（§3 已展开）：reward 行序错配导致 GAE 噪声化、训练发散
+**实现陷阱**（§3 已展开）：reward 行序错配导致 GAE 噪声化、训练发散
 （reward 0.875→0.291 / entropy 0.53→2.55）；修正行序与 padding 索引后收敛（0.875→0.978）。
 [4b] 判据从「曲线差 ≤0.05」放宽为「收敛可比」（曲线差 ≤0.15 + 终值均 ≥0.9 且差 ≤0.05），
 原因：不同 DP 宽度下 batch 组成本质不同，轨迹相同才是异常。

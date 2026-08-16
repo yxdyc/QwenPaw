@@ -2,8 +2,8 @@
 
 > **深挖对象**：SOTA agent harness 的工程实践——上下文工程、状态外化与事务化、工具与技能设计、验证与评测、多角色编排。
 > **状态**：✅ 首版完成（2026-08-11）
-> **对照基础**：nano-agentscope L0–L3（25/25 满阶）+ nano-qwenpaw L0–L3（25/25 满阶）——本文所有「nano 实测」引用均指向这两个模块的可运行材料。
-> **SOTA 对齐日期**：2026-08-11（ROADMAP §八）。全部一手来源当日现场重抓复验，见 §9 溯源表。
+> **可运行对照**：[nano-agentscope L0–L3](../nano-agentscope/) + [nano-qwenpaw L0–L3](../nano-qwenpaw/)；本文所有「nano 实测」均指向这两个模块的可运行材料。
+> **SOTA 对齐日期**：2026-08-11（课程的证据时效性分层）。全部一手来源当日现场重抓复验，见 §9 溯源表。
 
 ---
 
@@ -49,7 +49,7 @@ Anthropic 确立该术语的一篇一手文《Effective harnesses for long-runni
 - 「Out of the box, Claude is a poor QA agent.」——开箱即用的模型做不好质检，QA 角色需要刻意调校。
 - 「the space of interesting harness combinations doesn't shrink as models improve」——模型升级时，harness 组合的空间不缩小；正确的动作是升级后重新测试脚手架，拆掉不再「load-bearing」（承重）的部分、补上新能力。
 
-这两句合起来划出了 harness engineering 的学科边界：它不是模型弱时的临时补丁，而是与模型能力**共同演化**的工程层。**推断**：这与训练侧的 data-model co-dev 同构——模型越强，「如何组织模型」的工程问题越重要而非越消失（ROADMAP §一 RSI 闭环的 04 轨视角）。
+这两句合起来划出了 harness engineering 的学科边界：它不是模型弱时的临时补丁，而是与模型能力**共同演化**的工程层。**推断**：这与训练侧的 data-model co-dev 同构——模型越强，「如何组织模型」的工程问题越重要而非越消失（总导航的四轨闭环 RSI 闭环的 04 轨视角）。
 
 **nano 实证**：nano-qwenpaw L0 用同一个 mock LLM 对照「裸调用 vs 套上 system prompt + 输出自检的最小 harness」，行为差异完全来自 harness；L2/L3 进一步实测了方法论注入前后的行为差（见 §5.3）。跑一遍 `nano-qwenpaw/L0_harness_loop.py` 即可看到最小形态。
 
@@ -224,7 +224,7 @@ nano-agentscope L2→L3 的阶梯增量正是编排面的工程进化（对照 A
 
 ## §7 2026 格局：三层锚点与自动化趋势
 
-### 7.1 三层锚点定位（ROADMAP §八，对齐日 2026-08-11）
+### 7.1 三层锚点定位（课程的证据时效性分层，对齐日 2026-08-11）
 
 | 层 | 本主题的条目 | 处理 |
 |----|--------------|------|
@@ -242,7 +242,7 @@ The Last Harness You'll Ever Build [2604.21003]（2026-04-22，Seong et al.，v3
 
 ### 7.3 上游在动：锚点会漂移
 
-nano-agentscope 阶梯的锚点记录了一个实证：AgentScope main 分支从 L1 写作（2026-08-06）到 L2 写作（2026-08-10）跃迁至 v2.0.6，行号锚漂移（`_agent.py` L858-874/L3019 → L863-869/L3050），v2 core 整体移除 pipeline/msghub。**harness 框架本身处于快速演化期**——这是本 deepdive 一切行号锚都带「以抓取日为准」声明的原因，也是 §八 季度再校准机制在本主题的具体形态。
+nano-agentscope 阶梯的锚点记录了一个实证：AgentScope main 分支从 L1 快照（2026-08-06）到 L2 快照（2026-08-10）跃迁至 v2.0.6，行号锚漂移（`_agent.py` L858-874/L3019 → L863-869/L3050），v2 core 整体移除 pipeline/msghub。**harness 框架本身处于快速演化期**——这是本 deepdive 一切行号锚都带「以抓取日为准」声明的原因，也是 §八 季度再校准机制在本主题的具体形态。
 
 ---
 
@@ -314,9 +314,9 @@ nano-agentscope 阶梯的锚点记录了一个实证：AgentScope main 分支从
 | 2601.11868 | Terminal-Bench: Benchmarking Agents on Hard, Realistic Tasks in Command Line Interfaces（摘要内自称 Terminal-Bench 2.0） | 2026-01-17 | §5.2, §5.3 |
 | 2604.21003 | The Last Harness You'll Ever Build | 2026-04-22（v3 2026-05-01） | §7.2（摘要层） |
 
-**负对照**：`2506.07989` = *Photon rings in a holographic toy model*（Stéphane Detournay et al.，2025-06-09）——物理论文，**不是** τ²-bench。04:30 轮研究转录曾误归属，本轮复验纠正并全程只用 `2506.07982`。
+**负对照**：`2506.07989` = *Photon rings in a holographic toy model*（Stéphane Detournay et al.，2025-06-09）——物理论文，**不是** τ²-bench。早期转录曾误归属；复验后本文只使用 `2506.07982`。
 
-### 9.2 内部对照材料（本仓库可运行锚点）
+### 9.2 课程内对照材料（本仓库可运行锚点）
 
 - nano-qwenpaw L0–L3：`../nano-qwenpaw/`（harness 最小形态 / 记忆三政策实测 / 方法论注入与相关盲点 / skill-as-data 五性质；L3 输出锚 md5 `2c6780dc…`，见其 README 锚点表）
 - nano-agentscope L0–L3：`../nano-agentscope/`（ReAct 循环 / 可靠性代数 / 消息契约与终止即数据 / 类型化契约与广播；L2 输出锚 `997344ec…`，见其 README）

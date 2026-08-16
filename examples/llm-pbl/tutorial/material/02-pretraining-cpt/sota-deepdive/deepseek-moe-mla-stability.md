@@ -1,9 +1,8 @@
 # SOTA Deep-Dive — DeepSeek-V3：MoE 路由、MLA 压缩、FP8 训练与训练稳定性
 
 > **深挖对象**：DeepSeek-V3 技术报告（arXiv:2412.19437）+ 官方推理源码（github.com/deepseek-ai/DeepSeek-V3）。
-> **轨道**：[02 预训练 / CPT](../README.md)。本文件是 02 轨 sota-deepdive 首版（关联的数据/Agent 轨产出）。
+> **轨道**：[02 预训练 / CPT](../README.md)。
 > **可运行锚点**：同目录 [`deepseek_v3_mechanisms_sim.py`](deepseek_v3_mechanisms_sim.py)——四个机制面的可运行本质模拟（toy 尺度 + 真实格式语义），单文件、仅依赖 torch、CPU 即跑、seed=3 跨运行逐字节一致。
-> **状态**：✅ 首版（2026-08-12）。门槛 = nano-megatron L0–L3 25/25（关联的后训练/预训练轨材料，只读引用）。
 
 ---
 
@@ -20,7 +19,7 @@ DeepSeek-V3 是「**用一组相互咬合的工程选择，把 671B MoE 模型�
 
 **怎么读**：每个机制面都按「**为什么**（本质矛盾）→ **一手来源逐字引文**（论文节号 + 源码行号）→ **sim 实测双证**（可运行锚点的真实输出）→ **nano 交叉引用**（本仓库已跑通的实测锚点）」展开。全部数字可溯源，拿不到一手来源的地方显式标 `[TODO: verify]`。
 
-**可运行性契约（ROADMAP §三）**：本文的实证锚点 = `deepseek_v3_mechanisms_sim.py`。它是**本质模拟**——MoE 路由、MLA 压缩、FP8 量化、梯度裁剪四个机制面在 nano 侧没有现成实测锚，sim 用 toy 尺度 + 真实格式语义（如真实 `float8_e4m3fn` 量化-反量化）演示机制；并行 / MFU 侧的实测锚由 nano-megatron L0–L3 提供（§5 交叉引用）。真实系统行为见 DeepSeek-V3 官方仓库与 H800 集群口径（标 `[TODO: verify on real system]`）。
+**可运行性契约（课程可运行性契约）**：本文的实证锚点 = `deepseek_v3_mechanisms_sim.py`。它是**本质模拟**——MoE 路由、MLA 压缩、FP8 量化、梯度裁剪四个机制面在 nano 侧没有现成实测锚，sim 用 toy 尺度 + 真实格式语义（如真实 `float8_e4m3fn` 量化-反量化）演示机制；并行 / MFU 侧的实测锚由 nano-megatron L0–L3 提供（§5 交叉引用）。真实系统行为见 DeepSeek-V3 官方仓库与 H800 集群口径（标 `[TODO: verify on real system]`）。
 
 **复现命令**（本机实测，2026-08-12）：
 
@@ -296,7 +295,7 @@ V3 §4.2（Hyper-Parameters）披露的稳定性相关旋钮里，**梯度裁剪
 
 ## §5 与 nano-megatron 的实测锚交叉引用（并行 / 通信 / MFU）
 
-四个机制面要真正跑在 671B 上，必须与并行策略咬合。V3 的 infra（§3.2）与本仓库 nano-megatron L0–L3 的实测锚在同一组问题上相互印证——**nano-megatron 为 关联的后训练/预训练轨材料，此处只读引用、标锚点，不代写代改**。
+四个机制面要真正跑在 671B 上，必须与并行策略咬合。V3 的 infra（§3.2）与本仓库 nano-megatron L0–L3 的实测锚在同一组问题上相互印证；下文只交叉引用其可运行结果，不把 toy 数字外推到 V3 规模。
 
 ### 5.1 V3 的并行与通信（一手来源）
 
@@ -304,7 +303,7 @@ V3 §4.2（Hyper-Parameters）披露的稳定性相关旋钮里，**梯度裁剪
 - **跨节点 all-to-all 定制 kernel**（V3 §3.2.2）：「we customize efficient cross-node all-to-all communication kernels (including dispatching and combining) to conserve the number of SMs dedicated to communication. The implementation of the kernels is **co-designed with the MoE gating algorithm and the network topology** of our cluster.」——all-to-all 与 §1 的组限制路由（M=4 节点）是**协同设计**的：路由算法限制跨节点扇出，kernel 再压低通信 SM 占用。协同的量化结果（同节原文数字）：IB/NVLink 完全重叠下「each token can efficiently select an **average of 3.2 experts per node**」，故「it can scale up this number to a **maximum of 13 experts** (4 nodes × 3.2 experts/node) while preserving the same communication cost」，且「only **20 SMs** are sufficient to fully utilize the bandwidths of IB and NVLink」——节点内 NVLink 转发让「选 8 个专家」的通信成本能免费承载到 13 个，通信 kernel 只占 20 个 SM。
 - **极致省显存**（V3 §3.2.3）：重算 RMSNorm 与 MLA up-projection、优化器 EMA 放 CPU。
 
-### 5.2 nano-megatron L0–L3 实测锚（本仓库，关联的后训练/预训练轨只读）
+### 5.2 nano-megatron L0–L3 实测锚
 
 | 实测锚 | 数字 | 锚点 |
 |--------|------|------|
@@ -315,13 +314,13 @@ V3 §4.2（Hyper-Parameters）披露的稳定性相关旋钮里，**梯度裁剪
 | **MFU 三段分解**（GEMM 标定峰值，CPU/gloo） | MFU(dense)≈24.46% → MFU(TP+PP)≈3.96% → MFU(TP+PP+SP)≈2.03% | `nano-megatron/tutorial_L3.md` §8 |
 | **PP bubble 随 micro-batch 收敛**（公式 (N-1)/(m+N-1)） | m=1 gpipe 66.7%/1f1b 65.1% → m=8 49.7%/48.5%（公式 11.1%） | `nano-megatron/tutorial_L2.md` §[2] |
 
-**这些锚点与 V3 的对应关系**：nano-megatron 在 CPU/gloo 上实测的「SP 用 ~25% 额外 TP 通信换未切区域 1/t 激活显存」「PP bubble 随 m 收敛」「MFU 三段分解（计算上界 → 扣通信调度 → 扣 SP 开销）」，正是 V3 §3.2 在 H800/NCCL 上要解决的同一组 tradeoff 的**可运行版本**。V3 的答案（DualPipe 全隐藏通信、all-to-all kernel 与拓扑协同、组限制路由压跨节点扇出）是把 nano 实测里「通信主导、MFU 被扣」的部分用硬件与算法协同压回去。**CPU/gloo 绝对值低是通信主导的后端 artifact，GPU/NCCL 真机 MFU 与 SP 显存收益标 `[TODO: verify on real system]`，走 Machine B 真机验证通道**。
+**这些锚点与 V3 的对应关系**：nano-megatron 在 CPU/gloo 上实测的「SP 用 ~25% 额外 TP 通信换未切区域 1/t 激活显存」「PP bubble 随 m 收敛」「MFU 三段分解（计算上界 → 扣通信调度 → 扣 SP 开销）」，正是 V3 §3.2 在 H800/NCCL 上要解决的同一组 tradeoff 的**可运行版本**。V3 的答案（DualPipe 全隐藏通信、all-to-all kernel 与拓扑协同、组限制路由压跨节点扇出）是把 nano 实测里「通信主导、MFU 被扣」的部分用硬件与算法协同压回去。**CPU/gloo 绝对值低是通信主导的后端 artifact，GPU/NCCL 真机 MFU 与 SP 显存收益标 `[TODO: verify on real system]`，需在真实 GPU/多机环境验证**。
 
 ---
 
 ## §6 SOTA 对齐：2026 格局与三层锚点定位（对齐日 2026-08-11/12）
 
-按 ROADMAP §八 三层锚点策略，写作前做 SOTA 对齐（检索近 6 个月一手报告，确认有无更新一代替代）。对齐结果（**对齐日双录 2026-08-11/12**）：
+按课程的三层证据时效性分层策略，本节检索近 6 个月一手报告，检查是否存在更新一代替代。对齐结果（**核验日期 2026-08-11/12**）：
 
 ### 6.1 三层锚点定位
 
@@ -334,7 +333,7 @@ V3 §4.2（Hyper-Parameters）披露的稳定性相关旋钮里，**梯度裁剪
 
 ### 6.2 DeepSeek-V4：更新一代替代，但不作教学主体
 
-现场核验确认 **DeepSeek-V4 存在**（arXiv:2606.19348，标题「DeepSeek-V4: Towards Highly Efficient Million-Token Context Intelligence」，2026-04-26）——它是比 V3 更新的一代。**处理口径（ROADMAP §八 B 层规则）**：
+现场核验确认 **DeepSeek-V4 存在**（arXiv:2606.19348，标题「DeepSeek-V4: Towards Highly Efficient Million-Token Context Intelligence」，2026-04-26）——它是比 V3 更新的一代。**处理口径（课程的前沿证据层规则）**：
 
 - V4 的机制细节（如面向百万 token 上下文的 CSA / HCA / mHC 注意力分层、Muon 优化器等）**仅作摘要级提及**，逐一标 `[TODO: verify]`——本报告不展开、不作为教学主体。
 - 理由：V4 机制尚未经「≥2 个独立来源验证 / 权威框架集成 / 多机构复现」的晋升检验，且其一手技术细节本文未逐条现场核验到可教学的程度；把单代新论文的机制当 SOTA 教，正是 §八 警告的「追新」失败模式。
@@ -377,7 +376,7 @@ V3 §4.2（Hyper-Parameters）披露的稳定性相关旋钮里，**梯度裁剪
 - **MLA**：toy 省略真实 `kv_norm`（`model.py:L484` caching 前 RMSNorm），声明「机制同构」非逐行同一；不影响 absorbed 等价与解耦 RoPE 演示。
 - **FP8**：sim 用真实 E4M3 格式做量化-反量化，但矩阵计算仍在 fp32/fp64——**模拟量化误差，不模拟硬件 kernel**，也不模拟 H800 Tensor Core 的真实 14-bit 累加（[C2] 40.3% 为极端情形，与论文「近 2%」口径不同）。
 - **稳定性**：toy 为单参数梯度尖峰注入，**不模拟集群级 loss spike**（数据/架构/优化器/并行耦合现象）；只演示 clip 这一旋钮的机制。
-- **全部 GPU 绝对数字**（MFU、显存、吞吐、H800 累加精度）标 `[TODO: verify on real system]`，走 Machine B 真机验证通道；本机 CPU/gloo 数字只演示结构、不承诺量级。
+- **全部 GPU 绝对数字**（MFU、显存、吞吐、H800 累加精度）标 `[TODO: verify on real system]`，需在真实 GPU/多机环境验证；本机 CPU/gloo 数字只演示结构、不承诺量级。
 
 ---
 
@@ -400,12 +399,12 @@ V3 §4.2（Hyper-Parameters）披露的稳定性相关旋钮里，**梯度裁剪
 
 `class Gate` L535 / `Gate.forward` L566-598 / bias 仅 671B（dim==7168）L564 / sigmoid+组限制+top-8 L577-597 / 组 view L585 / 权重取原始分数 L594 / MLA absorbed（q_nope 吸收 wkv_b）L483 / caching 前 kv_norm L484 / latent 上 attention L486 / 输出侧 latent L494-495。
 
-### 8.3 内部对照材料（本仓库可运行锚点）
+### 8.3 课程内对照材料（本仓库可运行锚点）
 
 - `02-pretraining-cpt/sota-deepdive/deepseek_v3_mechanisms_sim.py`——本文可运行锚点（toy 尺度 + 真实格式语义；输出锚 md5 `45cf39f335c5b8940068506fc8df24c4`/4,957 B，digest `1e5fffacca552774c0fce81d6f9f3e35`，self-check 20/20）。
-- `02-pretraining-cpt/nano-megatron/tutorial_L2.md` / `tutorial_L3.md`（关联的后训练/预训练轨，只读）——PP bubble、TP×PP×SP 组合、SP 通信/显存账、MFU 三段分解（§5.2 表）。
-- `02-pretraining-cpt/nano-fsdp/tutorial_L3.md`（关联的后训练/预训练轨，只读）——混合精度显存账（mixed == fp32，MP 不减少模型状态）。
-- `03-data-distributed-rsi/nano-vllm-sglang/tutorial_L2.md`（关联的数据/Agent 轨）——paged KV cache 管理（与 MLA 正交）。
+- `02-pretraining-cpt/nano-megatron/tutorial_L2.md` / `tutorial_L3.md`（相关训练模块）——PP bubble、TP×PP×SP 组合、SP 通信/显存账、MFU 三段分解（§5.2 表）。
+- `02-pretraining-cpt/nano-fsdp/tutorial_L3.md`——混合精度显存账（mixed == fp32，MP 不减少模型状态）。
+- `03-data-distributed-rsi/nano-vllm-sglang/tutorial_L2.md`（跨轨相关模块）——paged KV cache 管理（与 MLA 正交）。
 
 ### 8.4 口径声明（四类信息区分）
 

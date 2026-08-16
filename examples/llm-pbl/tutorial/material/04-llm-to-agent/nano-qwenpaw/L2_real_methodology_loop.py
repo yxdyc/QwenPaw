@@ -11,7 +11,7 @@ number parsed out of the real coach files at runtime, plus the missing
 tool-result dimension of write-through (cap_middleware.py: token_cap +
 preview + recall pointer, and the degradation path).
 
-Declarations (ROADMAP §3 contract):
+Declarations (course runnability contract):
   * LearnerModel is a DECLARED mock with exactly three properties:
       (a) a latent ability theta; (b) logistic responding — a problem at
           difficulty d is answered correctly with p = 1/(1+exp(-(theta-d+1.5)));
@@ -486,7 +486,7 @@ def feynman_gaps(text: str, sources: dict) -> dict:
 
 def feynman_score(gaps: dict) -> tuple:
     """Declared rubric arithmetic (SKILL.md Phase 4 gives the axes; the
-    harness arithmetic stands in for the reviewer's judgment)."""
+    harness arithmetic stands in for independent LLM judgment)."""
     n_leap = len(gaps["Logical Leaps"])
     n_und = len(gaps["Undefined Terms"])
     n_err = len(gaps["Factual Errors"])

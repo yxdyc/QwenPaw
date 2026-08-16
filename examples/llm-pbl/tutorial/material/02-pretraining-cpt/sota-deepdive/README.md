@@ -2,7 +2,7 @@
 
 > **深挖对象**：DeepSeek-V3（MoE 路由 + MLA 压缩 + FP8 训练 + 训练稳定性，首版 ✅）；DeepSeek-V4 为更新一代替代（摘要级，不作教学主体）。
 > **状态**：首版完成（SOTA 对齐日期 2026-08-11/12）
-> **对照基础**：nano-megatron L0–L3（25/25 转正，关联的后训练/预训练轨材料，关联的数据/Agent 轨只读引用、标锚点；L2 锚点门槛超额满足，ROADMAP §四.4）
+> **可运行对照**：[nano-megatron L0–L3](../nano-megatron/)；混合精度补充见 [nano-fsdp L3](../nano-fsdp/tutorial_L3.md)，paged KV 补充见 [nano-vllm-sglang L2](../../03-data-distributed-rsi/nano-vllm-sglang/tutorial_L2.md)。
 
 ---
 
@@ -39,10 +39,10 @@
 - [x] **DeepSeek-V2** `[2405.04434]`（v5）——MLA 原始提出文；93.3% 口径（vs DeepSeek 67B）+ §2.1/§2.1.2/§2.1.3 节号实在。
 - [x] **DeepSeekMoE** `[2401.06066]` / **Aux-Loss-Free Load Balancing** `[2408.15664]`——A 层经典锚点。
 - [x] **官方推理源码**（github.com/deepseek-ai/DeepSeek-V3，main 2026-08-12 抓取）：`inference/model.py`（32,831 B，md5 `18498c730ab8e3460b93de313c2bc6cc`，行锚点 L483/L484/L486/L494-495/L535/L564/L566-598/L585/L594 逐一在位）+ `inference/configs/config_671B.json`（503 B，md5 `bb3ea9736753cadf24f8cd6f4275bd6c`，17 字段与 sim 逐项吻合）。行号以 2026-08-11/12 抓取日为准。
-- [x] **DeepSeek-V4** `[2606.19348]`（2026-04-26）——更新一代替代，存在性坐实；机制细节（CSA/HCA/mHC/Muon）仅摘要级、标 `[TODO: verify]`、不作教学主体（ROADMAP §八 B 层处理）。
+- [x] **DeepSeek-V4** `[2606.19348]`（2026-04-26）——更新一代替代，存在性坐实；机制细节（CSA/HCA/mHC/Muon）仅摘要级、标 `[TODO: verify]`、不作教学主体（课程的前沿证据层处理）。
 - [x] **SLAI T-Rex** `[2607.20145]`（2026-07-22 / v2 2026-07-30）——`[transient/单源]`，仅录不展开。
 
 ## 权威实现与延伸
 
-- 轨道 [02](../README.md)；落地参照 nano-megatron（L0–L3 满阶可运行锚点，关联的后训练/预训练轨只读）/ nano-fsdp（混合精度显存账，关联的后训练/预训练轨只读）/ nano-vllm-sglang（paged KV cache，关联的数据/Agent 轨）
+- 轨道 [02](../README.md)；落地参照 nano-megatron（TP/PP/SP/MFU）、nano-fsdp（混合精度显存账）和 nano-vllm-sglang（paged KV cache）。
 - 一手来源：DeepSeek-V3 技术报告 `[2412.19437]` + 官方推理源码（详见 deepdive §8.1/§8.2）

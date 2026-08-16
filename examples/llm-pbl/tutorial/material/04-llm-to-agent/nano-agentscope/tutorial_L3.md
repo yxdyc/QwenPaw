@@ -14,7 +14,7 @@ L1 把真实（微小）模型放进**单 agent** 循环，测出违规率 p，�
 2. **编排从点对点变成广播群聊**（v1.0.0 快照）：`MsgHub` 在进入时**重接每个参与者的订阅表**，此后每条发言自动扇出给全房间；第三个角色 verifier 因此**免费**获得全屋知识。`SequentialPipeline`（线性 fold）作为对照组——同样的 agent、同样的契约，三种接线，三种认知状态。
 3. **真模型接回 planner 席**：L1 的 TinyReActLM 按**同一配方重训**（params/loss 与 L1 锚点逐位一致），贪心路径上它的每个输出都变成一次过校验的类型化 crossing；采样路径上测协议级的可靠性代数。L2 §9 遗留的「真模型 planner 失败模式」在这里第一次有实测数据。
 
-四个显式声明（对应 ROADMAP §三契约，代码头部同文）：
+四个显式声明（对应 课程可运行性契约，代码头部同文）：
 
 1. **planner 后端 = L1 的 TinyReActLM 重训**——真实学习分布、采样输出，但字符级记忆、不推理。托管模型路径 `HostedBackend` 代码就绪、`[TODO: needs key]`（复用 L1 [6] 已过本地契约服务器验证的 OpenAI-compatible 客户端）；无 key 时确定性 fallback = 本地小模型（L1 先例）。
 2. **ExecutorAgent / VerifierAgent / RulePlanner / PrematurePlanner / WrongAnswerPlanner 都是声明的 rule-based 测试向量，不是模型**——L1/L2 同款纪律，每个失败都是构造出来的，且构造处都有标签。
@@ -209,7 +209,7 @@ L2 的 `validate_msg` 在**消息进入共享日志之前**执行（门口）；
 
 v2 把 tool call 从「消息里的一行 JSON」升格为**带状态机的 block**：`PENDING→ASKING→ALLOWED→SUBMITTED→FINISHED`，迁移图写在 `ToolCallBlock` 的 docstring 里——pending 可被 permission DENY 直达 finished、可 ASK 进 asking（等人确认）、可 ALLOW 进 allowed；allowed 本地执行到 finished 或外部提交到 submitted。nano 复用全量词汇、实跑 `pending→allowed→finished` 主路，声明 asking/submitted 不演练。本质只有一条：**agent 不能单方面推进自己请求的世界状态**——executor 拒绝执行 state≠allowed 的 call，`pending→submitted`（跳过 permission）是非法边。这与 L2 的 T4（orchestrator 不信 planner 的账本）是同一课的不同讲法：活性与权限永远不托付给模型侧的自觉。v2 还给了 `suggested_rules: list[PermissionRule]`——permission 是规则系统，不是一个 if。
 
-### 5.4 critique 通道是未设防的输入通道（写作中真抓的 bug）
+### 5.4 critique 通道是未设防的输入通道（可复现的实现缺陷）
 
 L1 的 critique 模板把 parser 的 `(kind: payload)` 原样回填进 prompt。L3 的宽扫描（600 个 T=0.7 任务）第一次踩中后果：模型生成未闭合 JSON 时，`json.JSONDecodeError` 的消息是 **"Unterminated string starting at..."**——大写 'U' 不在字符级模型的词表里，critique 一进 prompt 就在 embedding 查表处 KeyError。L1 的 seeded 扫描从未抽到这种 payload，所以 PASS 材料里埋着这颗哑弹。修复是声明式的：critique 在进 prompt 前**按后端词表安全化**（char-level 后端把越界字符换成 '?'；托管 tokenizer 后端没有 .stoi、不需要）。一般化教训：**凡是把异常文本回流进模型 prompt 的通道（parser 错误、工具报错、验证反馈），都是未设防的输入通道**——字符表、编码、长度、注入面，全都可能在那里出事。真实系统里这通常表现为「retry 路径偶发崩溃且难以复现」，因为只有在特定违规种类下才触发。
 
@@ -221,7 +221,7 @@ L2 的 planner 先发一条 plan 消息——那是它对 executor 和 orchestra
 
 ## 6. 与权威实现对照（双快照，2026-08-10 18:3x codeload 现场重抓核验）
 
-2026-08-11 在写作前**重新抓取**双 tarball：main 7,525,108 B（md5 `bb76351534b542c79a2391670a5e126c`）——较早快照（7,524,950 B）**+158 B 漂移**，`diff -rq` 定位漂移仅限 `model/_gemini/_model.py` + `tests/model_gemini_test.py`（gemini 适配器，与本节无关），**材料所用全部锚点零漂移**，`__version__` 仍 2.0.6；v1.0.0 tag 7,702,712 B（md5 `ea8ddb7e636bead9eec37c58bc2bf873`）与早先快照字节尺寸一致（tag 不可变）。下表行号全部取自此次新鲜快照。
+2026-08-11 在本节定稿前**重新抓取**双 tarball：main 7,525,108 B（md5 `bb76351534b542c79a2391670a5e126c`）——较早快照（7,524,950 B）**+158 B 漂移**，`diff -rq` 定位漂移仅限 `model/_gemini/_model.py` + `tests/model_gemini_test.py`（gemini 适配器，与本节无关），**材料所用全部锚点零漂移**，`__version__` 仍 2.0.6；v1.0.0 tag 7,702,712 B（md5 `ea8ddb7e636bead9eec37c58bc2bf873`）与早先快照字节尺寸一致（tag 不可变）。下表行号全部取自此次新鲜快照。
 
 | nano L3 部件 | AgentScope 对应物（核验行号） |
 |------|------|
@@ -295,7 +295,7 @@ L2 的 planner 先发一条 plan 消息——那是它对 executor 和 orchestra
 ## 11. 溯源与口径
 
 - **AgentScope 快照（双份，2026-08-10 18:3x 于 codeload.github.com 现场重抓）**：main tarball 7,525,108 B（md5 `bb76351534b542c79a2391670a5e126c`；较同日 00:36 快照 7,524,950 B 漂移 +158 B，`diff -rq` 定位仅 `model/_gemini/_model.py` + `tests/model_gemini_test.py`，材料锚点零漂移；`__version__ = "2.0.6"`）；v1.0.0 tag tarball 7,702,712 B（md5 `ea8ddb7e636bead9eec37c58bc2bf873`，与 00:36 快照尺寸一致，tag 不可变）。§6 全部行号取自这两份 18:3x 快照；canonical 仓库 `github.com/agentscope-ai/agentscope`（原 modelscope/agentscope 301 重定向）。
-- **论文**：ReAct arXiv:2210.03629（*ReAct: Synergizing Reasoning and Acting in Language Models*，Yao et al.）与 Plan-and-Solve arXiv:2305.04091（*Plan-and-Solve Prompting: Improving Zero-Shot Chain-of-Thought Reasoning by Large Language Models*，Wang et al.）——双 ID 标题页本轮 08-10 于 arxiv.org 复抓核验，与 L1/L2 录值逐词一致。
+- **论文**：ReAct arXiv:2210.03629（*ReAct: Synergizing Reasoning and Acting in Language Models*，Yao et al.）与 Plan-and-Solve arXiv:2305.04091（*Plan-and-Solve Prompting: Improving Zero-Shot Chain-of-Thought Reasoning by Large Language Models*，Wang et al.）——双 ID 标题页于 08-10 从 arxiv.org 复抓核验，与 L1/L2 录值逐词一致。
 - **测量口径**：全程 seeded、无计时行；公开脱敏版于 2026-08-14 完整复跑一次（md5 `8786f888db882b3710f4bed2dbe23595`，120 行），全部断言在代码内（self-check 块）。训练锚点与 L1 逐位同一（93,731 params / loss 0.0218——同 seed 同配方，L3 的 planner 就是 L1 的模型）。环境：Python 3.13.13 / torch 2.13.0 / CPU；跨版本/硬件需重新核验。
 - **工具层口径**：L1 的 `list_dir` 冻结清单（六件，2026-08-06 定稿时刻）+ realpath 沙箱 `read_file` 整体 import——L3 **不**重新冻结目录清单，原因 = 模型在 L1 观察串上受训（§1 声明 3）；L1/L2 的冻结清单继续保护各自锚点，L3 进目录不击穿任何上级锚。
-- **写作过程修掉的真实 bug**（self-check 当场抓出，§5.4 展开）：① critique 通道 KeyError 'U'——`json.JSONDecodeError` 的 "Unterminated string..." 携带词表外字符回流进 char-LM 的 prompt（L1 seeded 扫描未触发、L3 宽扫描触发），修复 = 按后端词表安全化 critique；② RulePlanner 的 `n_subtask` 双计数（`subtask_msg` 与 `observe_result` 各推进一次），首跑 AttributeError/流程错位抓出，修复 = 单一推进点。两处都是对抗式自检（先跑再交付）的直接收益。
+- **self-check 捕获并修复的真实 bug**（self-check 当场抓出，§5.4 展开）：① critique 通道 KeyError 'U'——`json.JSONDecodeError` 的 "Unterminated string..." 携带词表外字符回流进 char-LM 的 prompt（L1 seeded 扫描未触发、L3 宽扫描触发），修复 = 按后端词表安全化 critique；② RulePlanner 的 `n_subtask` 双计数（`subtask_msg` 与 `observe_result` 各推进一次），首跑 AttributeError/流程错位抓出，修复 = 单一推进点。两处都是对抗式自检（先跑再交付）的直接收益。

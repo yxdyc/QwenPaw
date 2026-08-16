@@ -461,7 +461,7 @@ CPU/gloo 没有这种 overlap，开销全裸。所以本节只声明相对趋势
 torch 2.13.0），gloo backend，2 个真实进程，CPU。全部计算真跑，无 mock；
 显存只计模型状态（params+grads+Adam m/v，与 L0/L1 口径一致），不含
 activations/buffer/OS 开销。GPU 上的绝对数字与吞吐结论标
-`[TODO: verify on real system]`（Machine B 真机验证通道，独立攒批）。
+`[TODO: verify on real system]`（真实 GPU/多机环境，后续验证）。
 
 **输出锚点**：掩码口径 `sed '/^[[:space:]]*elapsed/d'`（6 行计时浮动：5 行
 `elapsed[mode]:` + 1 行 `elapsed:` 总计）；掩码后输出 md5 =
@@ -490,4 +490,4 @@ activations/buffer/OS 开销。GPU 上的绝对数字与吞吐结论标
 - 通信量是**逻辑体积**（leading term），不是物理线上字节数；ring 实现还有
   (W−1)/W 系数，W=2 时恰为 1/2，两种口径的相对结论一致。
 - 未覆盖：真实 GPU 显存（nvidia-smi 口径）、mixed precision、activation、
-  HYBRID_SHARD 跨节点形态、FSDP2 对照——L3 与真机攒批处理。
+  HYBRID_SHARD 跨节点形态、FSDP2 对照——L3 与真实 GPU/多机验证处理。

@@ -23,7 +23,7 @@ between agents. L2 isolates exactly that layer:
 
 Dependencies: Python standard library only. Run:  python L2_planner_executor.py
 
-Declarations (ROADMAP §3 contract):
+Declarations (course runnability contract):
   * PlannerAgent / ExecutorAgent / StuckExecutor / CorruptingExecutor /
     RecklessPlanner are declared rule-based test agents, NOT models — the
     same test-vector discipline as L1's Playback/FaultModel. Every failure

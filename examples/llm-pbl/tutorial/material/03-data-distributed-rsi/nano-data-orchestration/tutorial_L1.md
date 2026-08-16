@@ -24,7 +24,7 @@ L1 的定义（README 阶梯行）就是还清这两笔债：
 
 ## §2 先跑一遍
 
-**可运行性契约声明（ROADMAP §三）**：L0/L1 必须可跑。本文件是**真 L1，无 mock**——调度器与任务都是真实进程，kill -9 是真 kill（SIGKILL 整个进程组），续跑是真续跑（新调度器进程从盘上状态继续调和）。唯一的实验设计有二：其一是**失败日程显式**（同 L0 fixture 声明的口径——`ingest_crm` 只败第 1 次、`ingest_web` 永远败且被故意误分类为 transient、`publish_report` 故意不授权），失败是机制对象不是事故；其二是**故障模型选定为「宿主死亡」**（kill -9 整个进程组，调度器与正在跑的任务同死）——另一种故障模型（调度器死、任务活）在 §5(c) 与 §11 明确为 L2 课题。
+**可运行性契约声明（课程可运行性契约）**：L0/L1 必须可跑。本文件是**真 L1，无 mock**——调度器与任务都是真实进程，kill -9 是真 kill（SIGKILL 整个进程组），续跑是真续跑（新调度器进程从盘上状态继续调和）。唯一的实验设计有二：其一是**失败日程显式**（同 L0 fixture 声明的口径——`ingest_crm` 只败第 1 次、`ingest_web` 永远败且被故意误分类为 transient、`publish_report` 故意不授权），失败是机制对象不是事故；其二是**故障模型选定为「宿主死亡」**（kill -9 整个进程组，调度器与正在跑的任务同死）——另一种故障模型（调度器死、任务活）在 §5(c) 与 §11 明确为 L2 课题。
 
 ```bash
 $ python3 L1_subprocess_state_and_crash_recovery.py
@@ -427,7 +427,7 @@ L0 的成本恒等式（`总 9 = 有效 5 + 重试救回 1 + 浪费 3`，L0 chec
 | cron 触发 / sensor | L0 §9 曾指向 L1；本级兑现其 wall-clock 面（退避/epoch/elapsed）；「何时触发一次全新运行」属触发面，与「运行内如何调和」是两层机制 | Airflow scheduler loop / triggerer 对照（口径调整在此明示）|
 | SLA / backfill / trigger rules 配置化 | 独立机制面 | L2 |
 | 状态后端升级（state.json → SQLite/Postgres）| 单文件 JSON 在 toy 规模下机制等价、可读性最高 | Airflow metadata DB 形态对照；原子写模式不变 |
-| Agentic 自愈（ROADMAP §七 关键词）| 需要 L0–L1 全部机制为前置 | L2（agent 驱动的管线修复）|
+| Agentic 自愈（课程的数据系统教学约定 关键词）| 需要 L0–L1 全部机制为前置 | L2（agent 驱动的管线修复）|
 
 ---
 
@@ -441,9 +441,9 @@ L0 的成本恒等式（`总 9 = 有效 5 + 重试救回 1 + 浪费 3`，L0 chec
 | XComs 引文「If the first task was not successful then on every retry task XComs will be cleared to make the task run idempotent.」（§8） | 文献已有（逐字引文） | https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/xcoms.html ，2026-08-14 抓取（118,246 B；h1 "XComs"） |
 | `EX_TEMPFAIL 75 /* temp failure; user is invited to retry */`（§3） | 文献已有（逐字引文，本机文件在盘核验） | BSD 系标准头文件 sysexits.h，本机路径 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sysexits.h:L111（5,472 B，2026-08-14 核验） |
 | L0 状态机规则 A/B/C、PIPELINE/GRANTS fixture、终态向量期望值（checks 01–03）、成本恒等式（check 07）、合流性质 | 纲领/前级已有 | `L0_dag_scheduler_state_machine.py`（冻结锚 `a391f8e6…`/191 行）+ `tutorial_L0.md` §4–§7 |
-| 「落数据 → 推游标」「逻辑时钟从 catalog 重建」的同构类比（§4） | 姊妹模块已有 | nano-data-platform L1 `tutorial_L1.md`（锚 `d6bf53b0…`/382 行，只读引用） |
+| 「落数据 → 推游标」「逻辑时钟从 catalog 重建」的同构类比（§4） | 姊妹模块已有 | nano-data-platform L1 `tutorial_L1.md`（锚 `d6bf53b0…`/382 行，交叉引用） |
 | 「exit code 是进程边界唯一通用通道」「两种故障模型（宿主死亡 vs 孤儿）」「幂等三形态（天然/去重键/原子发布）」「stale 字段由状态守卫赋义」「崩溃税的 at-least-once 解读」 | 合理推断 | 机制层归纳 / 本教程自论证，无外部引文；POSIX exit code 约定为通用常识 |
 | 全部 seq / attempts / backoffs / digest / coins 数字与 0.6s 退避基数、1.5s on-call 窗、1.2s 长任务时长 | 本实现实测（toy 设定） | `L1_subprocess_state_and_crash_recovery.py` 本次运行输出（§2 paste 块即其掩码形态）；非真实云价、时长为 demo 尺度、不可外推 |
 | 双跑确定性锚 | 本实现实测 | 两个新建空独立 CWD、`python3 -B` 双跑：全 EXIT=0、stderr 0 B；raw 98 行/10,510 B（md5 因 elapsed 行不同）；掩码口径 `sed '/^[[:space:]]*elapsed/d'` 后 md5 `9e1bec41263dca2108190e0262590914`/92 行/10,139 B，RUN1==RUN2 BYTE-IDENTICAL（Python 3.13.13，2026-08-14） |
 
-下一站：**L2**——对照权威实现源码做取舍分析：Airflow（scheduler loop / TaskInstance 状态机 / trigger rules / executor 与 pool / heartbeat-zombie 连续形态）+ Dagster（asset graph / concurrency）+ Prefect（flow run 状态）；真实并行与资源池；CI/CD 参照（GitHub Actions / GitLab CI）；Agentic 管线自愈（ROADMAP §七）；按可运行性契约允许「可运行的本质模拟 + 显式注明」（见 README 阶梯表）。
+下一站：**L2**——对照权威实现源码做取舍分析：Airflow（scheduler loop / TaskInstance 状态机 / trigger rules / executor 与 pool / heartbeat-zombie 连续形态）+ Dagster（asset graph / concurrency）+ Prefect（flow run 状态）；真实并行与资源池；CI/CD 参照（GitHub Actions / GitLab CI）；Agentic 管线自愈（课程的数据系统教学约定）；按可运行性契约允许「可运行的本质模拟 + 显式注明」（见 README 阶梯表）。

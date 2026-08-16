@@ -11,11 +11,11 @@
 
 ## 1. 运行与输出
 
-**可运行性契约声明（ROADMAP §三）**：本节是 **L2 允许的本质模拟**——本机没有 GPU，
+**可运行性契约声明（课程可运行性契约）**：本节是 **L2 允许的本质模拟**——本机没有 GPU，
 跑不了真实 SGLang/vLLM 引擎。模拟核心（离散事件模拟器 + 引擎代价模型）本身可运行、
 零依赖、输出完全确定；它建模的两个结构事实都有 slime 源码背书（§4/§10 逐行给锚点），
 未建模的部分在 §13 逐条列清。真机（SGLang 引擎 + Megatron 权重同步）验证标
-`[TODO: verify on real system]`，走 GPU 通道，不在写作轮内执行。
+`[TODO: verify on real system]`，需在真实 GPU 环境验证，本节未执行。
 
 跑法（零依赖，纯标准库，任意 CWD，<0.1s）：
 
@@ -326,8 +326,7 @@ rollout 用的旧版权重被显式保留下来给 old-logprob 计算。这是�
 ## 10. 溯源与口径声明
 
 **slime 源码快照**：codeload main 分支 tarball，2026-08-14 04:05 抓取，
-6,010,274 B，md5 `5215fd1640781770486e4ce7ec2ea838`（存于写作 workspace
-`faa68d5e…/s75_slimeL2/sources/slime-main/`，未入材料树）。**本文全部行号以此快照为准**，
+6,010,274 B，md5 `5215fd1640781770486e4ce7ec2ea838`。**本文全部行号以此快照为准**，
 2026-08-14 现场逐一 grep 核验（非凭记忆）：
 
 | 锚点 | 内容 |
@@ -347,8 +346,7 @@ rollout 用的旧版权重被显式保留下来给 old-logprob 计算。这是�
 **论文锚点**（引擎侧背景，非本节数字的来源）：vLLM PagedAttention `[2309.06180]`、
 SGLang `[2312.07104]`——2026-08-14 04:05 经 export.arxiv.org API 核验
 （标题逐字："Efficient Memory Management for Large Language Model Serving with
-PagedAttention" / "SGLang: Efficient Execution of Structured Language Model Programs"，
-证据件 `arxiv_two.xml` 同 workspace）。
+PagedAttention" / "SGLang: Efficient Execution of Structured Language Model Programs"）。
 
 **跨模块锚点**：引擎代价模型常数 = nano-vllm-sglang `L0_kv_cache_batching.py:L26-27`
 （W_READ/KV_STEP）、`iter_time` L38-40；L1 实测比例 = 本目录 tutorial_L1.md §5
@@ -422,7 +420,7 @@ tutorial_L0.md §4-6；IS 修正 = nano-verl tutorial_L1.md。
 4. **模拟的边界就是 L3 的入口**：引擎内部（continuous batching、KV、
    radix 前缀共享）→ nano-vllm-sglang L0–L3；权重同步内部（分块/delta/轮转）
    与 data buffer 实现 → 本模块 L3（见 §14）；真机数字 → `[TODO: verify on real system]`
-   （GPU 通道攒批验证，写作轮不 ssh）。
+   （真实 GPU 环境验证，本节未执行远端任务）。
 
 ---
 

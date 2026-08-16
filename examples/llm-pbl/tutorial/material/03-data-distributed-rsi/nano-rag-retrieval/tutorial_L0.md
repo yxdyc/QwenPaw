@@ -12,7 +12,7 @@ LLM 有两个绕不开的知识边界：**训练截止**（它不知道你上周
 
 在 LLM-PBL 的闭环里检索的位置：04 轨 agent 运行时查私有知识库，检索质量直接决定生成质量（检索回来的垃圾会直接变成幻觉的燃料，§6）；而 agent 轨迹与新文档不断回流成新的语料——语料必须是**可重建、可钉住版本**的（nano-data-platform L0 的快照语义，`../nano-data-platform/tutorial_L0.md` §6），索引才谈得上可复现。
 
-本模块抓的核心机制链条（ROADMAP §七）：
+本模块抓的核心机制链条（课程的数据系统教学约定）：
 
 ```
 embedding 索引 → 向量检索 →（混合检索 → 重排序）→ 检索评估
@@ -234,7 +234,7 @@ def evaluate(index, eval_set, k):
 
 ## §7 机制面 [4]：治理 first-class —— 成本账本与 ANN 的动机
 
-ROADMAP §七 的硬性写作原则：**安全与成本不是附录，是机制的一部分**。检索侧的成本有两本账：
+本课程的一条硬约束是：**安全与成本不是附录，而是机制的一部分**。检索侧的成本有两本账：
 
 ```text
 [1] 索引构建：14 篇文档 → 每篇一个 256 维归一化向量（lexical embedding：词 + 字符 trigram）
@@ -307,7 +307,7 @@ self-check: 13/13 PASS
 | feature hashing（词/n-gram 哈希进固定维，§3） | 文献已有 | Weinberger et al., arXiv:[0902.2206]，v1 2009-02-12 / v5 2010-02-27，abs 页 2026-08-13 重抓 |
 | FLAT = Brute-Force = most accurate + filter ratio 判据；「index typically lowers the recall rate」两句引文（§4） | 文献已有（逐字引文） | Milvus 官方文档 *Index Explained*：milvus-io/web-content `v2.6.x/site/en/userGuide/indexes/index-explained.md`（官方站 milvus.io/docs/index.md 当日 bot 拦截，经 GitHub 文档源抓取核验，2026-08-13） |
 | HNSW = 分层可导航小世界图 ANN，对数复杂度（§4/§7） | 文献已有 | Malkov & Yashunin, arXiv:[1603.09320]，v1 2016-03-30 / v4 2018-08-14，abs 页 2026-08-13 重抓（摘要核验） |
-| Milvus / OpenSearch / Weaviate 为权威参照实现 | 纲领已有 | ROADMAP §五/§七 参照表；三 repo 页面 2026-08-13 重抓坐实（milvus-io/milvus / opensearch-project/OpenSearch / weaviate/weaviate） |
+| Milvus / OpenSearch / Weaviate 为权威参照实现 | 纲领已有 | 课程的实现参照与数据系统约定 参照表；三 repo 页面 2026-08-13 重抓坐实（milvus-io/milvus / opensearch-project/OpenSearch / weaviate/weaviate） |
 | BM25/IDF 下权高频词、混合检索（§5（b）/§9/§10） | 机制类别的概念性提及 | 不作数字声明；L2 展开时补一手锚点 `[TODO: verify L2 锚点]` |
 | 全部实测数字（0.2449 / 0.0000 / 0.2052 / 0.6880 / recall 0.625·0.750 / MRR 0.6875 / 0.2410 / 0.2224 / 0.3298→0.2589 / 0.1925 / 0.1448 / 0.2503 / 28672 B / 3584 ops / digest 等） | 本实现实测（toy 设定） | `L0_vector_index_and_recall.py` 本次运行输出与同代码探针实测，非真实系统 benchmark、不可外推 |
 | 「向量索引与 payload 分离存储」（§7（a）） | 合理推断（机制同类） | 概念性提及；行号级源码锚点 `[TODO: verify L2 源码锚点]` |

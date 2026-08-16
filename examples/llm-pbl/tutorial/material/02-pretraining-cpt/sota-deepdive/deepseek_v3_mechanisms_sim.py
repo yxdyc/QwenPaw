@@ -3,7 +3,7 @@
 deepseek_v3_mechanisms_sim.py — DeepSeek-V3 四个机制面的可运行本质模拟
 
 本文件是 02 轨 sota-deepdive（deepseek-moe-mla-stability.md）的可运行锚点。
-显式声明（可运行性契约，ROADMAP §三）：这是**本质模拟**——nano-megatron 阶梯
+显式声明（可运行性契约，课程可运行性契约）：这是**本质模拟**——nano-megatron 阶梯
 覆盖了并行/MFU 侧的实测锚点，但 MoE 路由、MLA 压缩、FP8 量化、梯度裁剪四个
 机制面在 nano 侧没有现成实测锚，本文件用 toy 尺度 + 真实格式语义演示其机制。
 真实系统行为见 DeepSeek-V3 官方仓库 inference/model.py（github.com/deepseek-ai/DeepSeek-V3）。

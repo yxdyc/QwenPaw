@@ -192,7 +192,7 @@ elapsed: 3.2s total (计算真跑; 计时行浮动, 锚点口径见 tutorial §2
 
 autograd 为 backward 保存的每个张量都要经过 `saved_tensors_hooks` 的 pack/unpack
 ——在外层挂一对钩子记字节数，就得到「forward 结束后为 backward 驻留的激活」的
-精确账本（脚本 `SaveMeter`，与 10:00 轮 scratch 实验同构，见 §13 溯源）。
+精确账本（脚本 `SaveMeter`；局部探针与复验口径见 §13）。
 这不是估算：`after_fwd` 就是 backward 开始前驻留的保存张量总字节。
 
 实测（batch=(8,16)，TinyLM 2 层）：
@@ -492,7 +492,7 @@ GPU 机器上默认 mesh 正常工作，标 `[TODO: verify on real system]`。
 |------|--------------|------------------------------------------|----------|
 | 激活计量 | saved_tensors_hooks 逻辑字节 | `torch.cuda.max_memory_allocated` / nvidia-smi（含 allocator 碎片、buffer、NCCL 缓冲） | nano 要可复现的精确账；真实显存还有账外项 |
 | 重算调度 | 全 block checkpoint | Megatron selective recomputation（arXiv:2205.05198 §5，只重算 attention 段） | nano 演示机制；生产要「省得值」 |
-| MP 通信计量 | 逻辑字节（dtype×元素数） | NCCL 实流量 + overlap/prefetch（FSDP streams、limit_all_gathers） | 逻辑口径才能对公式；物理口径是 GPU 攒批的事 |
+| MP 通信计量 | 逻辑字节（dtype×元素数） | NCCL 实流量 + overlap/prefetch（FSDP streams、limit_all_gathers） | 逻辑口径才能对公式；物理口径是 真实 GPU 验证的事 |
 | master weights | [2] 最小复现布局 | DeepSpeed fp32 分片 + bucket 化 + CPU offload（ZeRO-Offload 系） | nano 露语义；DeepSpeed 要吞吐与显存极限 |
 | AC 与分片组合 | FSDP1 官方 API 直用 | FSDP2 + torch.compile 图级处理 / Megatron 与 TP/SP 复合 | 组合形态在演进，语义（正交叠加）不变 |
 | 设备 | CPU/gloo（确定性、可复现） | GPU/NCCL | 机制同构，绝对数字不可外推 |
@@ -569,7 +569,7 @@ selective recomputation 则是「只重翻最容易皱的那几页」。
   两维——nano-megatron L3 实测了 SP 把激活按序列维切开（TP 未切区域激活恰
   1/t），与 L3 的 checkpoint/MP 三轴可以组合成完整的显存策略空间
   （HYBRID_SHARD + TP + SP + selective AC 是 7B+ 训练的常见配方）。
-- **真机验证攒批**（Machine B 通道，独立活动）：GPU 上的
+- **真机验证**（真实 GPU/多机环境，独立活动）：GPU 上的
   `torch.cuda.max_memory_allocated` 全账（含 allocator 碎片）、NCCL 物理带宽下
   的 67.5% 通信节省兑现为多少吞吐、FSDP2 默认 mesh 在 GPU 的行为。
 - **02 轨状态**：nano-fsdp L0–L3 阶梯完成（本节为满阶最后缺件），与
@@ -582,8 +582,8 @@ selective recomputation 则是「只重翻最容易皱的那几页」。
 **运行环境**：macOS（arm64），`python3`
 （Python 3.13.13，torch 2.13.0），gloo backend，2 个真实进程，CPU。全部计算真跑
 （真实 bf16/fp32 kernel、真实 gloo 集合通信、真实 FSDP1/FSDP2），无 mock；
-GPU 绝对数字与吞吐结论标 `[TODO: verify on real system]`（Machine B 真机验证
-通道，独立攒批）。
+GPU 绝对数字与吞吐结论标 `[TODO: verify on real system]`（独立 GPU/多机实测
+通道，后续验证）。
 
 **输出锚点**：整行删除口径 `sed '/^[[:space:]]*elapsed/d'`（3 行计时浮动：
 `elapsed[single-process]:` / `elapsed[distributed]:` / `elapsed:` 总计）；掩码后
@@ -591,11 +591,9 @@ GPU 绝对数字与吞吐结论标 `[TODO: verify on real system]`（Machine B �
 CWD 逐字节一致）；raw 119 行；指标 digest = `47e7ffd99c93628cea14f9feac4716e4`
 （输出内印，跨遍一致）。
 
-**scratch 出处**：`[0]` 的 SaveMeter 与 10:00 轮 scratch 实验同构——workspace
-`9d88b729-2b4d-479d-a0d2-620d54968fb2/fsdpL3/exp1_local.py`（3,778 B，md5
-`1a7030e3998039215fa6b5f5fc550735`，2026-08-11 记录；多次独立运行复验）。现场复跑与既有记录逐位吻合
+**SaveMeter 复验**：`[0]` 的局部探针经多次独立运行，结果逐位吻合
 （fp32 1,750,532→298,500 B / bf16 减半 / loss ckpt 前后逐位一致）；exp1b 的
-grad_dtype 探针并入 `[1]`（修正了 scratch 中赋值在 try 外的瑕疵），exp1 的
+grad_dtype 探针并入 `[1]`（并修正赋值在 try 外的瑕疵），早期探针的
 fwd_calls 计数疑点（ckpt 下 hook 不增）由 §4 的源码机制解释。
 
 **源码锚点**（torch 2.13.0 本机安装，全部 2026-08-11 现场核验）：
@@ -626,7 +624,7 @@ L134、`partition_gradients` L222、「ZeRO-2 if partition_grads else ZeRO-1」L
 `single_partition_of_fp32_groups.append` L506、优化器 param_group 指向 fp32 分片
 L511-513、`bf16_master_weights_and_gradients` / `bf16_optimizer_states` 标志
 L178-179、reduce-scatter 合法 dtype L305。上游持续演进（08-08 抓取为 154,425 B /
-blob `85dd6ffb…`，三日 +2,226 B），行号以抓取日为准、本轮逐一现场核验在位。
+blob `85dd6ffb…`，三日 +2,226 B），行号以抓取日为准，所列锚点已逐一核验在位。
 
 **arXiv**（全部经 export.arxiv.org API 2026-08-11 现场核验标题/日期）：
 
@@ -645,7 +643,7 @@ blob `85dd6ffb…`，三日 +2,226 B），行号以抓取日为准、本轮逐�
   Recomputation，摘要原话「most of this redundant compute is unnecessary」）。
   节号与 nano-megatron L3 修订后口径（ar5iv 独立复抓）一致。
 - 2304.11277「PyTorch FSDP: Experiences on Scaling Fully Sharded Data Parallel」
-  （2023-04-21）——FSDP 论文，本轮新录；2411.00284「SimpleFSDP: Simpler Fully
+  （2023-04-21）——FSDP 论文；新增引用 2411.00284「SimpleFSDP: Simpler Fully
   Sharded Data Parallel with torch.compile」（2024-11-01）——标题级引用
   （compile 集成方向，内容未展开，不引其数字）。
 
@@ -658,4 +656,4 @@ MixedPrecisionPolicy 引文出处（§6.1/§8）。
 
 **未覆盖**：真实 GPU 显存全账（allocator/buffer/碎片）、NCCL 物理带宽、
 selective recomputation 实现、ZeRO-R 的 partitioned activation（需模型并行
-配合）、HYBRID_SHARD 跨节点形态——真机攒批与后续模块处理。
+配合）、HYBRID_SHARD 跨节点形态——真实 GPU/多机验证与后续模块处理。

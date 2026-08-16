@@ -39,7 +39,7 @@ Experiments:
 Dependencies: torch (CPU) via the L1 import. Run:  python L3_typed_msghub.py
 Total runtime ~3-5 min (dominated by the ~2 min training, L1 precedent).
 
-Declarations (ROADMAP §3 contract):
+Declarations (course runnability contract):
   * The planner backend is L1's TinyReActLM, retrained HERE on the SAME
     recipe (real learned distribution, sampled outputs — it memorizes
     trajectories, it does not reason). The hosted-model planner path

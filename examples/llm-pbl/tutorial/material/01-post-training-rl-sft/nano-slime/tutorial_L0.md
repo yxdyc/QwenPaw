@@ -301,7 +301,7 @@ L1 把 G/T 从模拟常数变成**实测数字**，验证本节的输入假设�
    的机制在小模型上同样成立，只是绝对值小）；
 3. 用实测的 G/T 重跑本节模拟器，看解耦收益的预测是否跟着变。
 
-L2 接真实推理引擎（SGLang/vLLM）做 rollout、走 Machine B 真机验证通道
+L2 接真实推理引擎（SGLang/vLLM）做 rollout、需在真实 GPU/多机环境验证
 `[TODO: verify on real system]`；L3 对照 slime 源码（data buffer 实现、
 权重同步、rollout 调度），摘掉全部 `[TODO: verify source]`。
 
@@ -318,7 +318,7 @@ L2 接真实推理引擎（SGLang/vLLM）做 rollout、走 Machine B 真机验�
   RL 框架——**后者为 README 自述，未独立核验** `[TODO: verify]`。
 - vision blog：README 给出 <https://lmsys.org/blog/2025-07-09-slime/>
   （*slime: An SGLang-Native Post-Training Framework for RL Scaling*），
-  本轮网络不稳未核验可达性 `[TODO: verify]`。
+  当前未核验可达性 `[TODO: verify]`。
 - 全部时间/吞吐数字为 toy 模拟常数的算术输出（§2 toy 口径声明），非真机
   benchmark；真机数字留 L1/L2。
 - 概念交叉引用：nano-verl L0（actor-learner 流水线重叠）、nano-verl L1

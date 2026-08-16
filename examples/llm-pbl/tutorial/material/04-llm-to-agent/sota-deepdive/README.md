@@ -2,7 +2,7 @@
 
 > **深挖对象**：SOTA agent harness 的工程实践——上下文工程、工具设计、记忆、评测、可靠性。
 > **状态**：✅ 首版完成（SOTA 对齐日期 2026-08-11）
-> **对照基础**：nano-agentscope L0–L3（25/25）+ nano-qwenpaw L0–L3（25/25）双满阶（L2 锚点门槛满足，ROADMAP §四.4）
+> **可运行对照**：[nano-agentscope L0–L3](../nano-agentscope/) + [nano-qwenpaw L0–L3](../nano-qwenpaw/)。
 
 ---
 
@@ -31,5 +31,5 @@
 
 ## 权威实现与延伸
 
-- 轨道 [04](../README.md)；落地参照 nano-agentscope / nano-qwenpaw（双满阶可运行锚点）
+- 轨道 [04](../README.md)；落地参照 nano-agentscope / nano-qwenpaw 的 L0–L3 可运行材料。
 - 一手来源：Anthropic engineering 四篇（URL 与日期见 deepdive §9.1）；AgentScope 开源代码（行号锚以抓取日为准）；qwenpaw 本仓库 `coach/`

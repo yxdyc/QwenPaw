@@ -286,8 +286,8 @@ L1 把这个 toy 对上真实引擎：
    （Qwen2.5-0.5B 量级），测 tokens/s 随并发数的曲线，对照本节 [2] 的代价模型；
 2. 观察真实引擎里「batch 塞不满」的两种情形（请求不足 / KV 显存不足），
    判断各属于本节哪个机制的管辖范围；
-3. 本机（Mac，无 NVIDIA GPU）跑不了 CUDA 版 vLLM，真机部分走 Machine B
-   攒批验证通道 `[TODO: verify on real system]`。
+3. 本节没有运行 CUDA 版 vLLM；真机部分需在真实 GPU/多机环境
+   验证 `[TODO: verify on real system]`。
 
 ---
 

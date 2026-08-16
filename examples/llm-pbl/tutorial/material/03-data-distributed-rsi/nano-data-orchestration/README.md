@@ -1,6 +1,6 @@
 # nano-data-orchestration
 
-> **抓的核心机制**：工作流编排、依赖调度、失败重试、自动化测试/部署、Agent 驱动的管线自愈（ROADMAP §七）。
+> **抓的核心机制**：工作流编排、依赖调度、失败重试、自动化测试/部署、Agent 驱动的管线自愈（课程的数据系统教学约定）。
 > L0 用纯 Python 裸出 DAG 调度器的状态机内核：**DAG = 一等公民的依赖结构**（环 / 未知依赖执行前被拒）+ **任务状态机与调和循环**（每 tick 扫描状态、施加转移规则——状态是完整记录）+ **失败语义**（transient/permanent 分类 → 指数退避有界重试 vs 立即失败；上游失败急切传播，爆炸半径 = 下游锥）+ **治理 first-class**（capability default-deny，拒绝先于计算；attempt 成本账本，重试不是免费的）。
 > **对应真实系统**：[Apache Airflow](https://github.com/apache/airflow) / [Dagster](https://github.com/dagster-io/dagster) / [Prefect](https://github.com/PrefectHQ/prefect)；CI/CD 参照（GitHub Actions / GitLab CI）只作对照不锁定。
 > **轨道**：[03 数据/分布式/RSI/数据平台工程](../README.md) · **状态**：L0 ✅ · L1 ✅ · L2 🔲
@@ -23,9 +23,9 @@ L1 把这三个「环境」请回来——然后证明它们本身就是机制�
 |------|------|------|
 | **L0** | single-file 玩具（191 行，纯标准库）：DAG 静态校验（环/未知依赖 fail fast）；状态机 + 调和循环（PENDING/RUNNABLE/RUNNING/RETRYING + 三终态）；错误分类 → 指数退避有界重试 vs 立即失败；上游失败急切传播（下游锥 0 成本）；capability default-deny（attempts==0）；成本账本（9=5+1+3 恒等式）；确定性 digest | ✅ `L0_dag_scheduler_state_machine.py` + `tutorial_L0.md` |
 | **L1** | 任务换成真实 subprocess（exit code 分类通道：0 / 75=EX_TEMPFAIL / 其余 permanent）：状态落盘（state.json 原子写 + events.jsonl append-only，seq 以日志为源）+ 崩溃续跑（kill -9 进程组 [宿主死亡模型] → zombie 识别 → 回重试通道，已完成工作不重做）+ wall-clock 退避（计划等待是确定算术，醒来时刻落掩码行）+ 幂等正面登场（非幂等副作用重复 vs 原子发布收敛）；复现 L0 终态向量与成本恒等式，新增崩溃税（10=5+1+3+1） | ✅ `L1_subprocess_state_and_crash_recovery.py` + `tutorial_L1.md` |
-| **L2** | 对照权威实现源码做取舍分析：Airflow（scheduler loop / TaskInstance 状态机 / trigger rules / executor 与 pool / heartbeat-zombie）+ Dagster（asset graph / concurrency）+ Prefect（flow run 状态）；真实并行与资源池；CI/CD（GitHub Actions / GitLab CI）参照；Agentic 管线自愈（ROADMAP §七）；可运行的本质模拟 + 显式注明 | 🔲 |
+| **L2** | 对照权威实现源码做取舍分析：Airflow（scheduler loop / TaskInstance 状态机 / trigger rules / executor 与 pool / heartbeat-zombie）+ Dagster（asset graph / concurrency）+ Prefect（flow run 状态）；真实并行与资源池；CI/CD（GitHub Actions / GitLab CI）参照；Agentic 管线自愈（课程的数据系统教学约定）；可运行的本质模拟 + 显式注明 | 🔲 |
 
-**环境依赖分级**：L0 零依赖（纯标准库，CPU 秒级，任意 CWD 可跑，输出确定——双独立 CWD 双跑 stdout md5 `802aac9f48d5a7c81a5e61f695c8903d`/54 行 BYTE-IDENTICAL，EXIT=0、stderr 0 B）；L1 实测纯标准库（subprocess/signal/json，Python 3.13.13，CPU ~8.7s，任意 CWD）：双新建空独立 CWD 双跑全 EXIT=0、stderr 0 B，raw 98 行/10,510 B（md5 因 elapsed 行不同），掩码口径 `sed '/^[[:space:]]*elapsed/d'` 后 md5 `9e1bec41263dca2108190e0262590914`/92 行/10,139 B，RUN1==RUN2 BYTE-IDENTICAL；L2 按可运行性契约（ROADMAP §三）允许「可运行的本质模拟 + 显式注明」，真实集群路径标 `[TODO: verify on real system]`。
+**环境依赖分级**：L0 零依赖（纯标准库，CPU 秒级，任意 CWD 可跑，输出确定——双独立 CWD 双跑 stdout md5 `802aac9f48d5a7c81a5e61f695c8903d`/54 行 BYTE-IDENTICAL，EXIT=0、stderr 0 B）；L1 实测纯标准库（subprocess/signal/json，Python 3.13.13，CPU ~8.7s，任意 CWD）：双新建空独立 CWD 双跑全 EXIT=0、stderr 0 B，raw 98 行/10,510 B（md5 因 elapsed 行不同），掩码口径 `sed '/^[[:space:]]*elapsed/d'` 后 md5 `9e1bec41263dca2108190e0262590914`/92 行/10,139 B，RUN1==RUN2 BYTE-IDENTICAL；L2 按可运行性契约（课程可运行性契约）允许「可运行的本质模拟 + 显式注明」，真实集群路径标 `[TODO: verify on real system]`。
 
 ---
 

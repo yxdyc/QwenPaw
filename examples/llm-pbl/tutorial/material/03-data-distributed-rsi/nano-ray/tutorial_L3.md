@@ -61,7 +61,7 @@ python L3_object_store_zero_copy.py
 **可运行性契约声明**：`[0]–[4]` 用**真实 Ray**（本机 raylet + worker + plasma，
 无任何 mock）——零拷贝、spilling、restore、依赖等待全部是真实行为，证据含 raylet
 自身日志行；`[5]` 多节点 locality 本机不可跑，用**显式注明的本质模拟**（决策规则
-逐条对照 ray 2.56.1 源码），真机验证标 `[TODO: verify on real system]`（Machine B
+逐条对照 ray 2.56.1 源码），真机验证标 `[TODO: verify on real system]`（真实 GPU/多机环境
 通道）。下面 paste 块为掩去 `elapsed` 计时行后的输出（口径
 `sed '/^[[:space:]]*elapsed/d'`），该掩码输出在双独立 CWD 三遍运行逐字节一致
 （锚点见 §11）：
@@ -422,7 +422,7 @@ store，restore 延迟会吃掉全部收益——`[4]b` 的 1.3–1.6 s 就是�
 
 ### 5.5 数据密集任务的调度：pull data vs move computation（本质模拟）
 
-多节点行为本机不可跑（`[TODO: verify on real system]`，Machine B 通道），
+多节点行为本机不可跑（`[TODO: verify on real system]`，真实 GPU/多机环境），
 `[5]` 用显式注明的本质模拟，四条规则逐条镜像 ray 2.56.1 源码：
 
 | 规则 | 模拟行为 | ray 2.56.1 源码锚点（tag ray-2.56.1） |
@@ -443,7 +443,7 @@ R3 的注释值得逐字读：即使本地资源足够，只要依赖拉不动�
 在本地饿死，不如让计算搬家。模拟体省略了真实系统的资源准入、spread 策略
 （`local_lease_manager.cc:L484-489`：spread 调度宁可本地等 pull 也不
 spillback，以免破坏均匀分布——规则之外的二阶权衡）与多轮重试，真机行为
-待 Machine B 验证。
+待 真实 GPU/多机环境 验证。
 
 ---
 
@@ -465,7 +465,7 @@ spillback，以免破坏均匀分布——规则之外的二阶权衡）与多�
 - **分布式引用计数（ownership）只碰到行为面**。驱动持 ref = pinned 是实测的，
   但 owner 表、跨节点 ref 传递、引用计数消息协议（core worker 的
   `ReferenceCounter`）不在本级展开——它们是「对象何时被回收」的完整理论，
-  需要多节点真机才能演活，留给 Machine B 通道。
+  需要多节点真机才能演活，留给 真实 GPU/多机环境。
 - **spill 的 IO 栈没展开**（对象序列化到哪个目录、并发 restore 的吞吐核算、
   `min_spilling_size` 等旋钮）——本机单节点下这些是配置项而非机制面。
 - **plasma 的对象布局 / 分配器**（dlmalloc 的块头、对齐）只取了「+8 B」
@@ -576,7 +576,7 @@ nano-data-juicer L3 的缓存逐出同构——store 的经济学在栈的每一
   create_and_mmap_buffer(78643208, /tmp/ray/plasmaXXXXXX)`（2026-08-12 运行
   实录，行号与 tag 源码逐位吻合）；「Triggering object spilling」/「Spilled」/
   「Restored」日志行同批在位。
-- **计时口径**：所有 ms/s 为写作当日（2026-08-12）**五跑**（run3–run7，
+- **计时口径**：所有 ms/s 为记录当日（2026-08-12）**五跑**（run3–run7，
   含双独立 CWD）观测区间，随机器负载浮动：ray.init 2.5–5.8 s；小 store
   init 2.4–5.3 s；传引用 5.8–8.4 ms vs 传值 7.9–17.1 ms（传值恒慢，五跑无
   翻转）；顶层 ref 开始延迟 2.00–2.02 s；嵌套 ref 开工延迟 0.003–0.004 s；
@@ -598,4 +598,4 @@ nano-data-juicer L3 的缓存逐出同构——store 的经济学在栈的每一
   已全部修复为 print/docstring 路径同行替换，机制内容、断言、实验设计未改动；
   定版 md5 `b54e634970af1d890a6a486a9fc4b229`/566/31,447 B。
 - **范围外**：多节点 pull/spillback 真机行为、分布式引用计数协议、spill
-  IO 栈细节 → `[TODO: verify on real system]`（Machine B 通道）。
+  IO 栈细节 → `[TODO: verify on real system]`（真实 GPU/多机环境）。

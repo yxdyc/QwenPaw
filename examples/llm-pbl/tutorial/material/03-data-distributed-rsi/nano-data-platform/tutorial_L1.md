@@ -358,7 +358,7 @@ SELECT source, lsn, batch_id FROM raw_records WHERE rid='t007' ORDER BY source, 
 | 分布式 catalog / state locking | 需要多节点环境 | 云厂商实现仅作参照（§九 of L0），不锁定 |
 | 真实连接器生态（Airbyte/Fivetran 的 connector 协议细节） | 环境依赖重 | 概念与引文已对照，实操非本模块目标 |
 
-**L2 预告**（README 阶梯表 L2 行）：对照 Apache Iceberg / Delta Lake 源码的 snapshot/manifest/commit protocol（乐观并发、time travel、schema evolution）+ dbt 的分层派生模型 + Terraform HCL/provider/state locking 实操（ROADMAP §七：HCL 到 L2 才触及）——本级的 `curated_versions` / `catalog_digest` / 单事务提交，都会在 L2 找到它们的工业级对应物并做取舍分析。
+**L2 预告**（README 阶梯表 L2 行）：对照 Apache Iceberg / Delta Lake 源码的 snapshot/manifest/commit protocol（乐观并发、time travel、schema evolution）+ dbt 的分层派生模型 + Terraform HCL/provider/state locking 实操（课程的数据系统教学约定：HCL 到 L2 才触及）——本级的 `curated_versions` / `catalog_digest` / 单事务提交，都会在 L2 找到它们的工业级对应物并做取舍分析。
 
 ---
 
@@ -369,13 +369,13 @@ SELECT source, lsn, batch_id FROM raw_records WHERE rid='t007' ORDER BY source, 
 | cursor 定义两句引文 + append flavor「never be deleted or mutated」引文（§4/§5/§8） | 文献已有（逐字引文） | https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append ，2026-08-13 抓取（53,491 B，标题 "Incremental Sync - Append \| Airbyte Docs"） |
 | dbt `unique_key` 两句引文（§5） | 文献已有（逐字引文） | https://docs.getdbt.com/docs/build/incremental-models ，2026-08-13 抓取（120,752 B） |
 | Iceberg spec catalog 定位引文（§3）+ 快照乐观提交引文（§11） | 文献已有（逐字引文） | https://iceberg.apache.org/spec/ ，2026-08-13 重抓（883,921 B，标题 "Spec - Apache Iceberg™"，与 L0 2026-08-12 录值零漂移）；行号级源码锚点 `[TODO: verify L2 源码锚点]` |
-| Hive Metastore / Glue Data Catalog / Iceberg REST catalog / DuckDB 为 catalog 层的真实对应（§3） | 纲领已有 + 合理推断 | ROADMAP §五/§七 参照表；概念性提及，未引数字 |
+| Hive Metastore / Glue Data Catalog / Iceberg REST catalog / DuckDB 为 catalog 层的真实对应（§3） | 纲领已有 + 合理推断 | 课程的实现参照与数据系统约定 参照表；概念性提及，未引数字 |
 | CDC / Debezium 类、lsn/LSN 游标形态（§8 矩阵） | 合理推断（机制类别归纳） | 未引具体数字；Debezium 为概念性提及 |
 | 「首同 = watermark 为零的第一次增量」（§4a）与「接入层 append、转换层 merge」分工（§5） | 合理推断（机制归纳） | 与 Airbyte incremental 文档行为一致，未引数字 |
 | L0 v1 digest `4599c15439c026c8` | 文献已有（L0 录值） | `tutorial_L0.md` §5 输出块（L0 代码 `c5adc7d8…` 冻结件运行输出） |
 | L0 v2 digest `a12337250f5d4d79` | 本仓只读探针复算 | import 冻结 `L0_lakehouse_and_iac_state.py`（`main()` 有守卫，import 无副作用），按 L0 代码 L65-71 同款口径重算 |
 | 全部漏斗/扫描/digest 数字（9→6、12→8、14 events/1370 B、209 B/15.3%、`43567fee…`、`b69ebeb7…` 等） | 本实现实测（toy 设定） | `L1_incremental_sync_catalog.py` 本次运行输出（§2 paste 块与运行输出 BYTE-IDENTICAL），非真实云价、不可外推 |
-| Fivetran 与 Airbyte 同类（增量同步连接器） | 纲领已有（ROADMAP §七 关键词） | 概念性提及；其文档页为 JS 渲染、未获正文引文 `[TODO: verify]` |
+| Fivetran 与 Airbyte 同类（增量同步连接器） | 纲领已有（课程的数据系统教学约定 关键词） | 概念性提及；其文档页为 JS 渲染、未获正文引文 `[TODO: verify]` |
 
 **运行锚点**（2026-08-13，Python 3.13.13 / SQLite 3.53.1 实测）：代码 md5 `f3696d73d2b28458459d2a7b1625f802`/397 行；双跑 2 遍 × 新建空独立 CWD（`-B`）全 EXIT=0、stderr 0 B、stdout 73 行/4,495 B、md5 `b02aad91a525ad34d72168f46f916477`，RUN1==RUN2 BYTE-IDENTICAL；self-check 25/25 PASS。
 

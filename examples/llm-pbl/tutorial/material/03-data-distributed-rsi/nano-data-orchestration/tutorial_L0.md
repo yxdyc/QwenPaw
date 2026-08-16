@@ -8,11 +8,11 @@
 
 ## §1 为什么编排是数据飞轮的「神经系统」
 
-nano-data-platform 回答了数据**住在哪、谁能碰、花了多少钱、训练用的是哪一版**。但飞轮不是跑一次就完，而是**持续地跑**：接入 → 质检 → 构建 → 训练 → 评估 → 部署 → agent 轨迹回流再接入（ROADMAP §一 的 RSI 闭环）。每一步都可能失败——网络抖动、源系统宕机、权限过期、代码 bug——「持续跑」因此变成一个硬问题：**失败发生时，系统替谁做什么决定？**重试？止损？把失败传播给下游？还是拒绝执行？
+nano-data-platform 回答了数据**住在哪、谁能碰、花了多少钱、训练用的是哪一版**。但飞轮不是跑一次就完，而是**持续地跑**：接入 → 质检 → 构建 → 训练 → 评估 → 部署 → agent 轨迹回流再接入（总导航的四轨闭环 的 RSI 闭环）。每一步都可能失败——网络抖动、源系统宕机、权限过期、代码 bug——「持续跑」因此变成一个硬问题：**失败发生时，系统替谁做什么决定？**重试？止损？把失败传播给下游？还是拒绝执行？
 
 编排器（orchestrator）就是回答这组问题的组件。如果说数据平台是飞轮的器官（存储与供给），编排就是神经系统：什么时候动哪块肌肉、疼了怎么缩手。清洗算子写得再好（nano-data-juicer），如果「何时执行、失败怎么办」没有机制保障，管线要么停摆，要么——更糟——**在坏数据上继续跑**。
 
-本模块抓的核心机制链条（ROADMAP §七）：
+本模块抓的核心机制链条（课程的数据系统教学约定）：
 
 ```
 工作流编排、依赖调度、失败重试、自动化测试/部署、Agent 驱动的管线自愈
@@ -277,7 +277,7 @@ def downstream_cone(tasks, root):  # 爆炸半径：root 失败后，哪些任�
 
 ## §7 机制面 [4]：治理 first-class —— default-deny + 成本账本
 
-ROADMAP §七 的硬性写作原则：**安全与成本不是附录，是机制的一部分**。L0 用两段兑现。
+本课程的一条硬约束是：**安全与成本不是附录，而是机制的一部分**。L0 用两段演示兑现。
 
 **（a）capability default-deny：拒绝发生在计算之前。** 规则 C 的第一行不是执行任务，是查权限（上面代码摘录的前两行）：任务声明 `needs`（需要的能力），调度器对照 `grants`（授权表），缺能力直接抛 `PermanentError`——注意它发生在 `attempts[n] += 1` **之前**，于是被拒任务 `attempts == 0`（check 08）。
 
@@ -335,7 +335,7 @@ def cost_report(record):
 self-check: 15/15 PASS
 ```
 
-`build_curated` 的依赖是 `["gate_crm", "unit_tests"]`——数据质量门**和**自动化测试双就绪才构建；`deploy` 又等 `build_curated`。CI/CD 的「门禁」在这里不需要专门的门禁系统：**依赖边就是门**，「什么条件下才允许走下一步」被表达成 DAG 结构，由同一套状态机执行（check 14 验证 deploy 严格在双就绪之后）。自动化测试/部署（ROADMAP §七 关键词）在 L0 即以这种最小形态在场。
+`build_curated` 的依赖是 `["gate_crm", "unit_tests"]`——数据质量门**和**自动化测试双就绪才构建；`deploy` 又等 `build_curated`。CI/CD 的「门禁」在这里不需要专门的门禁系统：**依赖边就是门**，「什么条件下才允许走下一步」被表达成 DAG 结构，由同一套状态机执行（check 14 验证 deploy 严格在双就绪之后）。自动化测试/部署（课程的数据系统教学约定 关键词）在 L0 即以这种最小形态在场。
 
 **收尾锚点（toy 指标基线，shared/conventions 要求的可量化 L0 指标）**：终态向量 5 SUCCESS / 2 FAILED / 2 UPSTREAM_FAILED；`ticks=5`、`coins=9`；run digest `0e0b34e0c9eb016f`（state/attempts/ticks/coins 的 sha256 前 16 位）。脚本整体输出确定性：两个独立 CWD、`python3 -B` 双跑，EXIT=0、stderr 0 B，stdout 54 行、md5 `802aac9f48d5a7c81a5e61f695c8903d`，逐字节一致（RUN1==RUN2 BYTE-IDENTICAL）。
 
@@ -357,7 +357,7 @@ self-check: 15/15 PASS
 | RUNNING liveness / zombie 检测 | L0 执行瞬时完成（§4(c)）| L1/L2（heartbeat 机制）|
 | 真实并行 / 资源池 / 优先级 | 串行突出「状态决定转移」；并行引入资源竞争与并发安全 | L2（对照 Airflow executor/pool、Dagster concurrency）|
 | SLA / backfill / trigger rules 配置化 | 独立机制面 | L2 |
-| Agentic 自愈（agent 驱动的管线修复）| 需要 L0–L1 机制为前置 | L2（ROADMAP §七 关键词）|
+| Agentic 自愈（agent 驱动的管线修复）| 需要 L0–L1 机制为前置 | L2（课程的数据系统教学约定 关键词）|
 
 ## §10 费曼自检
 
@@ -381,7 +381,7 @@ self-check: 15/15 PASS
 | 官方 retry policy 示例注释「# server error -- worth retrying」/「# client error -- not retryable」（§5） | 文献已有（逐字引文） | 同上 |
 | `retry_exponential_backoff` 参数名（§5） | 文献已有（参数名在页面在案） | 同上 |
 | Airflow / Dagster / Prefect 一句话定位（§1） | 文献已有（官方 repo 页面标题逐字） | github.com/apache/airflow（585,673 B）/ github.com/dagster-io/dagster（378,485 B）/ github.com/PrefectHQ/prefect（373,640 B），2026-08-12 抓取 |
-| Airflow / Dagster / Prefect 为权威参照实现；CI/CD（GitHub Actions / GitLab CI）关键词 | 纲领已有 | ROADMAP §五/§七 参照表 |
+| Airflow / Dagster / Prefect 为权威参照实现；CI/CD（GitHub Actions / GitLab CI）关键词 | 纲领已有 | 课程的实现参照与数据系统约定 参照表 |
 | 「结构错误前置到校验期是 DAG 声明式的红利」（§3）；「终态与扫描顺序无关」（§6 思考题答） | 合理推断 | 机制层面概括 / 本教程自论证，无外部引文 |
 | 全部 tick / attempts / coins / digest / backoff 数字与 1 coin/attempt toy 单价 | 本实现实测（toy 设定） | `L0_dag_scheduler_state_machine.py` 本次运行输出；非真实云价、不可外推 |
 

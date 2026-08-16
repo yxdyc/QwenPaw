@@ -6,9 +6,9 @@ L3_hybridflow_colocate.py — nano-verl L3
 rollout 阶段与 train 阶段之间复用**（colocate），阶段切换时做权重 resharding
 （训练分片 → 全量 gather → 推理引擎副本）与训练态 offload。
 
-可运行性契约（ROADMAP §三）：L3 = 可运行的本质模拟 + 显式注明。
+可运行性契约（课程可运行性契约）：L3 = 可运行的本质模拟 + 显式注明。
 - 真实 verl 需要 Ray + FSDP/Megatron + vLLM + 多 GPU，本机不可跑
-  [TODO: verify on real system]（真机验证走 Machine B 通道，独立攒批）。
+  [TODO: verify on real system]（真机验证需在真实 GPU/多机环境验证，后续验证）。
 - 本文件可运行的是「本质模拟」：**计算是真的**（真实 char-LSTM、真实 PPO 梯度、
   真实权重在 trainer→rollout 间流动），**显存/时钟是声明式成本模型折算**
   （COST 块，显式注明，与实测玩具字节数分开报告）。单控制器 + SPMD worker

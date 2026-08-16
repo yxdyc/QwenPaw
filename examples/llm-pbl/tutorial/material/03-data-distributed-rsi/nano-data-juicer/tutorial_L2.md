@@ -2,7 +2,7 @@
 
 > **级别**：L2（分布式 / 性能）。前置：本模块 [L0](tutorial_L0.md)（OP 可组合 + 配置驱动）、[L1](tutorial_L1.md)（真实数据 + LLM OP）、[nano-ray L0](../nano-ray/tutorial_L0.md)（任务图调度）。
 > **K+1 声明**：L0/L1 的 pipeline 是单进程串行的——`op(list) -> list`，全量数据必须装进一个进程。L2 只加一层：**把同一个 pipeline 搬到多个 worker 上跑，并且保证结果和串行逐位一致**。不碰真实集群、不碰 GPU。
-> **可运行性声明（ROADMAP §三契约）**：本机未安装 Ray（两个 conda 环境均已验证），L2 用标准库 `multiprocessing` 的**真实 worker 进程**实现分布式执行语义（分区 / 并行 / 收敛 / 重算）——模拟核心本身可运行；真实多机 Ray 行为标 `[TODO: verify on real system]`。语料为固定 seed 的合成数据（L2 的主题是执行语义，需要足够样本量才能测出并行加速；L1 的 10 条真实样本测不出加速）。
+> **可运行性声明（课程可运行性契约）**：L2 默认不依赖 Ray，而用标准库 `multiprocessing` 的**真实 worker 进程**实现分布式执行语义（分区 / 并行 / 收敛 / 重算）；真实多机 Ray 行为标 `[TODO: verify on real system]`。语料为固定 seed 的合成数据（L2 的主题是执行语义，需要足够样本量才能测出并行加速；L1 的 10 条真实样本测不出加速）。
 
 ---
 
@@ -226,7 +226,7 @@ new_dataset, dup_pairs = self.process(new_dataset, show_num)
 
 Data-Juicer 的 partitioned executor 选了 convergence：pre-convergence 的 OP 分区并行跑完 → union 合并 → post-convergence 的 OP 在合并后的数据集上跑（`ray_executor_partitioned.py:L872-922`）。这个选择在 exact dedup 场景是合理的：去重判定本身是 O(N) 的哈希集合扫描，串行不贵；而 shuffle 要付一次全量重分区 + 排序。本文件的实测也支持这一点（§5.5 反例 3）。
 
-但 convergence 的代价在**规模**上：合并意味着单个节点要装下全量中间数据。数据装不下时，shuffle（或 dedup 专用的两级方案：先局部去重、再对指纹做全局聚合）才是出路。真实集群上两者的交叉点在哪，标 `[TODO: verify on real system]`（Machine B 通道）。
+但 convergence 的代价在**规模**上：合并意味着单个节点要装下全量中间数据。数据装不下时，shuffle（或 dedup 专用的两级方案：先局部去重、再对指纹做全局聚合）才是出路。真实集群上两者的交叉点在哪，标 `[TODO: verify on real system]`（真实 GPU/多机环境）。
 
 ### 5.4 为什么 4 worker 只测出 2.4x–3.1x
 
@@ -236,7 +236,7 @@ Data-Juicer 的 partitioned executor 选了 convergence：pre-convergence 的 OP
 2. **Amdahl**：分区切分、结果拼接、（convergence 版的）全局去重段都是串行的。
 3. **任务数 = 分区数 = 4**：没有更细的粒度给调度器做负载均衡（Data-Juicer 的 partition 默认 size=5000 条、上限 64 MB——`ray_executor_partitioned.py:L290-293`——就是在控制这个粒度）。
 
-计时随机器负载浮动（机器更空闲时会高于写作时观测的区间）：[3] 局部阶段 speedup 观测区间约 2.4x–3.3x；[5] 端到端 convergence 约 2.9x–3.2x、shuffle 约 2.6x–3.0x。区间覆盖写作时连跑与后续独立审查复跑（最高 3.28x / 3.21x / 3.00x）多批测量。区间下界不是硬保证：2026-08-06 一次复跑在并发只读命令的负载干扰下落到 1.80x（parallel 段 171.9 ms vs 正常约 92 ms）。趋势不变：**并行显著快于串行，但达不到 worker 数**。
+计时随机器负载浮动（机器更空闲时会高于初次记录时观测的区间）：[3] 局部阶段 speedup 观测区间约 2.4x–3.3x；[5] 端到端 convergence 约 2.9x–3.2x、shuffle 约 2.6x–3.0x。区间覆盖初次多次运行与后续独立复测（最高 3.28x / 3.21x / 3.00x）多批测量。区间下界不是硬保证：2026-08-06 一次复跑在并发只读命令的负载干扰下落到 1.80x（parallel 段 171.9 ms vs 正常约 92 ms）。趋势不变：**并行显著快于串行，但达不到 worker 数**。
 
 ### 5.5 反例与边界（三件）
 
@@ -308,5 +308,5 @@ Data-Juicer 的 partitioned executor 选了 convergence：pre-convergence 的 OP
 
 - **源码锚点**：§6 表格全部行号于 2026-08-05 现场核验两次——第一次 `raw.githubusercontent.com/modelscope/data-juicer/main/...` 抓取；同日（raw 服务不可达时段）改经 codeload main tarball 解包复核，29 处锚点零漂移。本地 checkout `report_enhance@4e40654`（2026-05-11）行号与 main 有漂移，仅作交叉阅读，引用口径以 main 为准。
 - **toy 口径**：所有计时数字是本机（Apple Silicon, Python 3.13, multiprocessing spawn）真实运行输出，非 benchmark；合成语料固定 seed=42，除计时外逐字节可复现（连跑 3 遍 diff 验证）。
-- **[TODO: verify on real system]**（Machine B 通道攒批）：① 真实 Ray 集群上 `split` + convergence 的多节点行为与本机模拟的差异；② convergence vs shuffle 在「单节点装不下全量」规模下的交叉点；③ `preserve_order=True` 在真实 Ray Data 上的性能开销。
+- **[TODO: verify on real system]**（真实 GPU/多机环境验证）：① 真实 Ray 集群上 `split` + convergence 的多节点行为与本机模拟的差异；② convergence vs shuffle 在「单节点装不下全量」规模下的交叉点；③ `preserve_order=True` 在真实 Ray Data 上的性能开销。
 - **未核验项如实标注**：Data-Juicer partitioned executor 在 main 分支的启用方式（配置入口）未逐行核验，本教程只引用其源码机制，不声称「生产默认启用」。

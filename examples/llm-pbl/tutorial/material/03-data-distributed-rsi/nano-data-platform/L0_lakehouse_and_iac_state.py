@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """nano-data-platform L0 — 湖仓分层（raw/curated）+ infra-as-code 状态管理的纯 Python 本质模拟。
 
-它在模拟真实系统的哪一面（L0 验收标准，ROADMAP §二）：
+它在模拟真实系统的哪一面（L0 验收标准，L0 验收契约）：
   [1] raw zone 不可变、只追加、带血缘（source/batch/sha256）——湖仓 bronze 层的本质；
   [2] curated zone = 从 raw 派生的版本化快照（snapshot），质量门是晋升硬门槛——Iceberg/Delta snapshot 思想；
   [3] 声明式期望状态 + plan/apply + state 文件，幂等且最小 diff——Terraform 状态管理本质（无 HCL，HCL 到 L2）；

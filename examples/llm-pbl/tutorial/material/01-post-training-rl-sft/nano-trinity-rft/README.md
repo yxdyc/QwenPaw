@@ -20,7 +20,7 @@
 | 级别 | 目标 | 状态 |
 |------|------|------|
 | **L0** | 玩具：Explorer/Trainer/Buffer 三组件 + 统一样本记录，config 切换 sft_only / rl_only / sft_then_rl / mix 四配方 | ✅ [L0_unified_sft_rl_loop.py](L0_unified_sft_rl_loop.py) · [tutorial_L0.md](tutorial_L0.md) |
-| **L1** | 真实 0.8M char-GPT 上配置驱动跑通 SFT→RL 两阶段：RL 逐位填洞至全 1.0、checkpoint 续训与连续跑 20/20 轮逐位一致、四配方消融（含 mix 最快与 rl_only 中途反超两个真实现象）；附 RL 失败模式调试史（探索死亡 / KL 双刃 / IS 比率陷阱 / 回放干扰） | ✅ [L1_real_unified_sft_rl.py](L1_real_unified_sft_rl.py) · [tutorial_L1.md](tutorial_L1.md) |
+| **L1** | 真实 0.8M char-GPT 上配置驱动跑通 SFT→RL 两阶段：RL 逐位填洞至全 1.0、checkpoint 续训与连续跑 20/20 轮逐位一致、四配方消融（含 mix 最快与 rl_only 中途反超两个真实现象）；附 RL 失败模式与实现陷阱（探索死亡 / KL 双刃 / IS 比率陷阱 / 回放干扰） | ✅ [L1_real_unified_sft_rl.py](L1_real_unified_sft_rl.py) · [tutorial_L1.md](tutorial_L1.md) |
 | **L2** | RL 的信号来源：稀疏 rule reward 的 dead group 算术（p^G+(1-p)^G，实测 vs 解析）与学习后果（小 G 净破坏 / dynamic sampling 最省）、Bradley-Terry learned RM（注入偏置可探针）、Goodhart 三臂（proxy 涨 gold 掉 / KL 锚 gold / rule 对照）；对照 Trinity rewards 注册表 / std_threshold / RULER-rubric 示例 | ✅ [L2_reward_signals.py](L2_reward_signals.py) · [tutorial_L2.md](tutorial_L2.md) |
 | **L3** | 配置即实验台：nano 版 schema + ALGORITHM_TYPE 注册表 + 三层优先级合并（用户>算法默认>全局兜底）+ check_config 修复/拦截 + stages 课程，全部对照 Trinity config.py/algorithm.py/config_validator.py 源码；并复现 DAPO 式 ablation ladder（no-KL / Clip-Higher / Dynamic Sampling / Overlong 各一格开关），实测 KL 锚 drift 4.6×、overlong 打破 dead 平局与塑形泄漏 | ✅ [L3_config_ablation.py](L3_config_ablation.py) · [tutorial_L3.md](tutorial_L3.md) |
 
@@ -72,12 +72,12 @@
 - 对标源码：`agentscope-ai/Trinity-RFT`——三组件定义见 README L21–25；
   SFT 作为 `algorithm_type: sft` 配置项见 README L121（`trinity/algorithm/policy_loss_fn/sft_loss.py`）；
   全生命周期数据管线见 README L102–105
-- 仓库核验：2026-08-05 初测（L0）；2026-08-06 L1 动笔前复测——README 30,381 bytes、
+- 仓库核验：2026-08-05 初测（L0）；2026-08-06 复测——README 30,381 bytes、
   sha256 `d513f140…b73982`，上述锚点**逐项零漂移**；arXiv:2505.17826 标题页存活吻合
-  （细节见 tutorial_L1 §13）；2026-08-12 L2 动笔前三测——README sha256 逐位零漂移，
+  （细节见 tutorial_L1 §13）；2026-08-12 三次复测——README sha256 逐位零漂移，
   新增 reward 侧锚点（rewards 注册表 / math_rm_workflow / grpo_advantage std_threshold /
   RULER-rubric 示例）与 10 个 arXiv ID 全部现场重抓核验（细节见 tutorial_L2 §14）；
-  2026-08-13 L3 动笔前四测——现场克隆（HEAD `009850b1`，末 commit 2026-07-31），
+  2026-08-13 四次复测——现场克隆（HEAD `009850b1`，末 commit 2026-07-31），
   README sha256 逐位零漂移，新增配置系统锚点（config.py schema / ALGORITHM_TYPE
   24 项 / config_validator 三层合并 / dapo_math 开关表 / DAPO 管线算子）与
   3 个 arXiv ID 现场重抓核验（细节见 tutorial_L3 §14）

@@ -13,18 +13,18 @@
 > 2026-08-13 codeload tarball 抓取，并经独立复验确认零漂移）。本文行号锚点以
 > **2026-08-13 抓取日**为准；引用录值均保留来源与快照口径。
 >
-> **时效性定位（ROADMAP §八 A 层经典锚点，必读 §8.2）**：DPO 是无可置疑的经典，
+> **时效性定位（课程的经典证据层经典锚点，必读 §8.2）**：DPO 是无可置疑的经典，
 > 但**经典 ≠ 前沿**——前沿模型的生产配方已转向 GRPO/RLVR 族。
 
 ---
 
 ## 1. 先跑起来
 
-**可运行性契约声明（ROADMAP §三）**：本级的训练全部是**真实 torch 梯度下降**，
+**可运行性契约声明（课程可运行性契约）**：本级的训练全部是**真实 torch 梯度下降**，
 不是 mock——DPO 的构造与优化每一步都真跑。toy 的只是规模（74,496 参数字符级
 GPT、6 对单位数加法），目的是让机制在 CPU 秒级、固定 seed 下逐字节确定地显现。
 真实框架的多卡 / 全模型路径本机不覆盖，标 `[TODO: verify on real system]`
-（走 Machine B 真机验证通道）；本节机制与 LLaMA-Factory 源码逐行对照（§5）。
+（需在真实 GPU/多机环境验证）；本节机制与 LLaMA-Factory 源码逐行对照（§5）。
 
 ```bash
 python3 -B L2_dpo_preference_pairs.py   # 仅依赖 torch；CPU 实测 ~4s；任意 CWD 可跑
@@ -460,9 +460,9 @@ model），不是跟绝对满分比：「你比基线更倾向好答案了多少
   （掩码锚 `f8b50175…`/51 行，7 跑 × 4 源收敛，见 §1 与 §10）。
 - **未覆盖**：在线偏好采样、iterative DPO、真实 tokenizer/模板库、多卡与混合
   精度（`[TODO: verify on real system]`）——前者是算法面扩展，后两者是 L3 与
-  Machine B 通道的领域。
+  真实 GPU/多机环境的领域。
 
-### 8.2 DPO 的当今定位（ROADMAP §八 A 层强制声明）
+### 8.2 DPO 的当今定位（课程的经典证据层强制声明）
 
 DPO（2305.18290，2023-05）是**经典锚点**，不是当前前沿：
 
@@ -475,8 +475,7 @@ DPO（2305.18290，2023-05）是**经典锚点**，不是当前前沿：
   在线采样替代离线对。锚点：nano-verl L3（verl 的 policy-loss 注册表与
   PPO→GRPO 演化，`../nano-verl/tutorial_L3.md`）、nano-trinity-rft L2/L3
   （DAPO 配置与 reward 来源，`../nano-trinity-rft/`）、01 轨 sota-deepdive
-  「后训练算法演进 PPO→GRPO/RLVR→OPD」（`../sota-deepdive/`，关联的数据/Agent 轨材料，
-  只读引用）。
+  「后训练算法演进 PPO→GRPO/RLVR→OPD」（`../sota-deepdive/`，课程内交叉引用）。
 - **一句话**：学 DPO 学的是偏好学习的机制地基；但别以为前沿模型现在还是拿
   偏好对这么训的——**经典 ≠ 前沿**。
 
@@ -524,8 +523,7 @@ loss 族的装配；`[TODO: verify source]` 待 L3 动笔时现场核定）。L2
   Optimization: Your Language Model is Secretly a Reward Model"），loss 为
   Eq. 7——ar5iv 2026-08-13 抓取逐字核验录值（L2 代码 docstring 载录）；
   export.arxiv.org API 的一次复验尝试超时，因此保留抓取日期并不把网络失败解释为新证据。
-  ROADMAP §五/§八的经典锚点录值同 ID。
-- **内部引用**：L0/L1 数据侧三件套（`tutorial_L0.md` §6/§11、`tutorial_L1.md`
-  §3-§5）；nano-verl L3（25/25 转正）、nano-trinity-rft L2（25/25 转正）/L3
-  （暂定 24/25 待转正）、01 轨 sota-deepdive「后训练算法演进」（关联的数据/Agent 轨材料，
-  24/25 转正，只读引用）。
+  课程的实现参照与证据分层的经典锚点录值同 ID。
+- **课程内交叉引用**：L0/L1 数据侧三件套（`tutorial_L0.md` §6/§11、`tutorial_L1.md`
+  §3-§5）；nano-verl L3；nano-trinity-rft L2/L3；01 轨 sota-deepdive
+  「后训练算法演进」。这些链接提供机制对照，不替代本节 DPO 自身的运行证据。

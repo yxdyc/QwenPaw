@@ -20,7 +20,7 @@ K+1 目标（相对 L1）：
         先把分区收敛合并再跑全局 OP；确定性由 preserve_order=True 保证。
 
     ⚠️ 显式声明（可运行性契约）：
-      - 本机未安装 Ray（已验证），本文件用标准库 multiprocessing 的**真实
+      - 为保持零额外依赖，本文件用标准库 multiprocessing 的**真实
         worker 进程**实现同一套执行语义（分区/并行/收敛/重算），是分布式
         执行机制的本质模拟；真实多机 Ray 执行见 [TODO: verify on real system]。
       - 语料为 seed 固定的合成数据（非真实语料）。L2 的主题是执行语义

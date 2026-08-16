@@ -106,7 +106,7 @@ nano-data-juicer L3 — OP interface: a filter's full behavior
 
 **[2] 两段式 + stats 复用。** 本节的戏眼之一。`reduce=False` 只算统计不删样本：3360 条全在，每条的 `__dj__stats__` 列里多了 `{'text_len': ...}`（第一条是 805，低于 900，注定被过滤）。`reduce=True` 才执行判定，3360 → 2358。关键断言是第二个 filter **实算 0 次**——`compute_stats_batched` 里的 `if StatsKeys.text_len in stat: continue` 是复用的唯一入口，stats 已经长在样本身上，后来的 OP 直接读。
 
-**[3] 区间边界表。** 三列是三种配置在 899/900/901 上的判定。闭区间与左开的差别只在 900 这一个点；reversed 列藏着一个反直觉事实：**边界点 900 在反转前后都被保留**。机制是「先把两端开闭取反、再整体取非」：闭区间 `[900,+∞)` → 取反成开区间 `(900,+∞)` → 取非得 `(-∞,900]`。两次取反在边界点上互相抵消，所以 reversed **不是集合补集**——这是从代码算术推出来、再被断言钉死的（写作时第一版断言就写错了，被自检当场抓住）。
+**[3] 区间边界表。** 三列是三种配置在 899/900/901 上的判定。闭区间与左开的差别只在 900 这一个点；reversed 列藏着一个反直觉事实：**边界点 900 在反转前后都被保留**。机制是「先把两端开闭取反、再整体取非」：闭区间 `[900,+∞)` → 取反成开区间 `(900,+∞)` → 取非得 `(-∞,900]`。两次取反在边界点上互相抵消，所以 reversed **不是集合补集**——这是从代码算术推出来、再被断言钉死的（初版断言就写错了，被自检当场抓住）。
 
 **[4] 静默吸收反例。** 配置把 `min_len` 拼成 `min_lne`：不报错，`op.min_len` 掉回默认值 10，全量 3360 条一条不删——正确配置本该只剩 2358 条。这就是「没有 schema」的真实代价：错误不是异常，是**静默的分布污染**。与 L2 [4]a 的 naive 去重同款——数据 pipeline 的错误形态往往不是崩溃。
 
@@ -317,5 +317,5 @@ stats 若存在 OP 实例里，数据集一流动就丢了；写进样本的 `__
 
 - **源码锚点**：§6 表格全部行号于 2026-08-07 现场双通道核验——通道一 `raw.githubusercontent.com/modelscope/data-juicer/main/...` 抓取 9 个文件（base_op / text_length_filter / load / suffix_filter / constant / registry / config / filter `__init__` / default_executor）；通道二 codeload main tarball 解包逐文件 `diff`，9/9 字节一致，锚点零漂移。本地 checkout `report_enhance@4e40654`（2026-05-11）与 main 有漂移（`base_op.py` 本地 1059 行 / main 1110 行），仅作交叉阅读。上游迭代可能再漂移。
 - **toy 口径**：所有输出是本机（Apple Silicon, Python 3.13, `python3 -B`）真实运行结果；连跑 3 遍 `diff` 逐字节一致（L3 无计时声明，性能话题归 L2）。
-- **[TODO: verify on real system]**（Machine B 通道攒批）：① 真实 DJ 全链路（yaml → launcher → executor）下 typo 参数是否同样静默——本文件按 `load_ops` + `OP.__init__` 逐字机制复现，但未在真实环境跑通全链路；② stats 键与 text_key 碰撞在官方 OP 集里的实际影响面（官方 text_length_filter 几乎总是用默认 text_key，影响面未核验）；③ stats 落盘持久化跨 run 复用的真实提速。
+- **[TODO: verify on real system]**（真实 GPU/多机环境验证）：① 真实 DJ 全链路（yaml → launcher → executor）下 typo 参数是否同样静默——本文件按 `load_ops` + `OP.__init__` 逐字机制复现，但未在真实环境跑通全链路；② stats 键与 text_key 碰撞在官方 OP 集里的实际影响面（官方 text_length_filter 几乎总是用默认 text_key，影响面未核验）；③ stats 落盘持久化跨 run 复用的真实提速。
 - **未核验项如实标注**：「无 jsonschema」仅覆盖 main 分支 `config/config.py` 当日检索，仓库其余位置未检索；`get_keep_boolean` 的 reversed 边界行为由逐字复现 + 断言实测得出，未见官方文档描述。

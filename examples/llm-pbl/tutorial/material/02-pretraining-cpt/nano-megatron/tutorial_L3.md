@@ -318,7 +318,7 @@ MFU 的价值正在于此：它把 bubble、通信开销、小算子低效、后
 **全部压进一个数字**——24% → 4% → 2% 的落差里，每一段都有明确的物理来源，
 而不是「感觉变慢了」。真机训练里 MFU 30–50% 是常见目标区间，
 低于预期时按这三段拆解排查（GPU 数字标 `[TODO: verify on real system]`，
-走 ROADMAP §三 Machine B 通道）。
+走 课程的真机验证边界）。
 
 ---
 
@@ -350,7 +350,7 @@ MFU 的价值正在于此：它把 bubble、通信开销、小算子低效、后
    nano 块无 attention（L0 §5 讲过 attention 的 TP 同构切法），
    收益区只有 LN/Dropout——机制相同，占比不同，如实声明。
 4. 真机 SP 的显存收益与 MFU 绝对值需 GPU 验证
-   （`[TODO: verify on real system]`，Machine B 通道）；
+   （`[TODO: verify on real system]`，真实 GPU/多机环境）；
    本节的结构性结论（等价性、通信账 2.5m、账本 1/t、接缝减半）
    与后端无关。
 
@@ -411,7 +411,7 @@ PP 接缝跟着减半；MFU 把整套并行的效率压成一个可追责的数�
   list 版 AG/RS 的单次开销远大于 NCCL 的融合实现，SP 实测更慢
   （wall 比 1.5–2×）是后端 artifact。GPU/NCCL 上 SP 通信量仅 1.25×，
   吞吐应近似非 SP；SP 的真机显存收益（1/t 未切区域激活）与 MFU 绝对值
-  均标 `[TODO: verify on real system]`（ROADMAP §三 Machine B 通道）。
+  均标 `[TODO: verify on real system]`（课程的真机验证边界）。
 - **toy 形状**：`H=128, FF=512, T=512, 4 块, PP2×TP2`——
   计算微秒级、通信延迟主导，MFU 绝对值低；结构性结论
   （等价性、wire 2m→2.5m、账本 1/t、接缝减半、γ/β 部分和）与形状无关。
@@ -467,4 +467,4 @@ PP 接缝跟着减半；MFU 把整套并行的效率压成一个可追责的数�
   PP 接缝字节公式 `2·(N-1)·T·H·4` 与 batched p2p 直接沿用 L2
   （本节 SP 下将其推广为 `2·(N-1)·(T/t)·H·4`）；
   「fp32 归约形状差」口径同 L2 [0] / nano-fsdp L2 [4a]/[4b]。
-- 未 ssh 远端；真机验证走 Machine B 攒批通道。
+- 本节未执行 GPU/多机实测。

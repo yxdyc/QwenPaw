@@ -33,7 +33,7 @@ K+1 目标（相对 L2）：
     本机 CPU），无任何 mock——零拷贝、spilling、restore、依赖等待全部是真实
     raylet + worker + plasma 行为，证据含 raylet 自身日志行。多节点行为本机
     不可跑，[5] 用显式注明的本质模拟（决策规则逐条对照 ray 2.56.1 源码），
-    真机验证见 [TODO: verify on real system]（Machine B 通道）。
+    真机验证见 [TODO: verify on real system]（真实 GPU/多机环境）。
     语料为 seed=42 合成语料（与 nano-data-juicer L2 / nano-ray L1/L2 同一构造）。
 
 依赖：ray（pip install ray，其依赖含 numpy）；同目录 L1_ray_pipeline.py

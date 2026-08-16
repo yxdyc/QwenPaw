@@ -58,7 +58,7 @@ policy、teacher、environment 和 termination。
 python3 L1_tensor_batch.py
 ```
 
-本轮 CPU 实跑输出：
+参考 CPU 实跑输出：
 
 ```text
 ==============================================================================

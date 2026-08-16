@@ -253,7 +253,7 @@ L1 真模型实验从同一 base、同一初始数据快照出发，至少训练
 GPU-hours、峰值显存、跨节点字节、time-to-promotion 和失败发现延迟。L2 加 stale teacher、错路由、worker
 preemption 和断点恢复；L3 再加入 hidden sentinel、rollback 演练、evaluator succession 与 stopping。
 
-用户提供的 GPU 主机可用于 L1 真实小模型实验；L0 不应为了“像生产”而浪费 GPU，因为它要隔离的是
+L1 可在隔离的 GPU 环境开展真实小模型实验；L0 不应为了“像生产”而使用 GPU，因为它要隔离的是
 估计器与 gate 的不变量。
 
 ---

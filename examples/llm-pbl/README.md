@@ -42,7 +42,7 @@ agent 的运行轨迹又回流成 03 的数据——这正是 **data-model co-de
 
 本材料与 [QwenPaw Learning Coach](../../coach/README.md) 共用一组核心教学原则：
 
-1. **K+1 黄金法则** —— 永远只比学习者当前水平（K）高一层。不跳级、不灌水。每个 nano-* 内部再分阶梯（见 ROADMAP）。
+1. **K+1 黄金法则** —— 永远只比学习者当前水平（K）高一层。不跳级、不灌水。每个 nano-* 内部采用 L0→L3 阶梯，学习顺序见[总导航](tutorial/material/README.md)。
 2. **费曼技巧** —— 每节末尾必须有「能不能讲给外行听」的自检。讲不清 = 没懂。
 3. **Project-Based** —— 概念挂在真实可跑的项目上，不悬空。
 4. **对抗式自检（Adversarial Self-Verification）** —— 产出与验证分离；独立验证者以“严苛教授”视角寻找反例和证据缺口。
@@ -65,42 +65,31 @@ agent 的运行轨迹又回流成 03 的数据——这正是 **data-model co-de
 ```
 LLM-PBL/
 ├── README.md                  # 本文件：定位 + 目标画像 + 设计理念
-├── ROADMAP.md                 # 总路线图：四轨依赖图 + 阶梯定义 + 评分细则 + 权威/SOTA 参照表
-├── QUALITY-REPORT.md          # 脱敏后的发布范围、QA 结果、证据边界与已知缺口
-├── PUBLICATION-MANIFEST.sha256 # 发布文件摘要清单
-├── shared/                    # 跨轨共用：环境约定 / 术语表 / 评测基线
+├── shared/                    # 跨轨共用：环境、术语与评测约定
 └── tutorial/material/
+    ├── README.md                     # 学习路线、知识地图与交叉阅读
+    ├── cross-track-episode-record/   # 轨迹事实与训练视图合同
+    ├── cross-track-capability-factory/ # 多教师能力集成
+    ├── cross-track-evaluation-gate/  # 配对评测、晋升与回滚边界
     ├── 01-post-training-rl-sft/      # 后训练 / RL / SFT
-    │   ├── nano-trinity-rft/  nano-slime/  nano-verl/  nano-llamafactory/
-    │   └── sota-deepdive/            # Kimi-K3 等
+    │   ├── nano-trinity-rft/  nano-slime/  nano-verl/  nano-llamafactory/  nano-opd/
+    │   └── sota-deepdive/
     ├── 02-pretraining-cpt/           # 预训练 / 继续预训练
-    │   ├── nano-megatron/  nano-fsdp/
-    │   └── sota-deepdive/            # DeepSeek 等
+    │   ├── nano-pretraining-loop/  nano-megatron/  nano-fsdp/
+    │   └── sota-deepdive/
     ├── 03-data-distributed-rsi/      # 数据 / 分布式 / 递归自改进 / 数据平台工程
     │   ├── nano-data-juicer/  nano-ray/  nano-vllm-sglang/
-    │   ├── nano-data-platform/       # 湖仓 / 接入 / 治理 / MLOps infra（规划中）
-    │   ├── nano-data-orchestration/  # DAG / CI/CD / Agentic workflow（规划中）
-    │   ├── nano-rag-retrieval/       # 向量检索 / RAG（规划中）
-    │   └── sota-deepdive/            # 数据方法论 + co-dev + 湖仓/MLOps
+    │   ├── nano-data-platform/  nano-data-orchestration/  nano-rag-retrieval/
+    │   └── sota-deepdive/
     └── 04-llm-to-agent/              # LLM → Agent
-        ├── nano-agentscope/  nano-qwenpaw/
-        └── sota-deepdive/            # harness engineering
+        ├── nano-agentscope/  nano-qwenpaw/  nano-agent-runtime/
+        └── sota-deepdive/
 ```
 
 ---
 
 ## 快速上手
 
-- 想先看全貌 → 读 [ROADMAP.md](ROADMAP.md)
-- 想按问题选课 / 看跨轨依赖 → 读 [tutorial/material 学习总导航](tutorial/material/README.md)
+- 想先看全貌、按问题选课或查看跨轨依赖 → 读 [tutorial/material 学习总导航](tutorial/material/README.md)
 - 想从某一层切入 → 进对应 `tutorial/material/0X-*/README.md`
-- 想看当前覆盖、质量证据和已知缺口 → [QUALITY-REPORT.md](QUALITY-REPORT.md)
-
-## 发布与维护边界
-
-本目录是可公开、可复现的课程镜像。课程正文、代码、导航和结构审计进入版本控制；
-个人路径、主机信息、调度记录、逐轮协作账本和原始审查日志不进入发布树。
-
-公开质量结论以 `QUALITY-REPORT.md` 中列出的检查为准。某个脚本曾被运行、某个 hash
-曾经匹配，只能证明对应快照上的局部事实，不能替代全部脚本、全部外部引文和生产系统的
-持续验证。维护时优先提交小而可复现的改动，并同步更新质量报告中的证据和未决项。
+- 想理解“candidate 怎样被裁决、可靠激活、治理 evaluator，并发布到独立 router” → 跑 [Evaluation Gate L0→L3a](tutorial/material/cross-track-evaluation-gate/)
