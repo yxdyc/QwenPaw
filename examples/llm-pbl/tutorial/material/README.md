@@ -86,7 +86,7 @@ generation CAS 与 reconcile 暴露并修复跨事务域裂缝。它们仍是单
 3. [nano-megatron](02-pretraining-cpt/nano-megatron/) L0→L3：TP→PP→SP 与 MFU；
 4. [nano-vllm-sglang](03-data-distributed-rsi/nano-vllm-sglang/) L0→L3：KV→page→radix；
 5. [nano-verl](01-post-training-rl-sft/nano-verl/) L1→L3：PPO 数据流→角色隔离→colocate；
-6. [nano-slime](01-post-training-rl-sft/nano-slime/) L0→L1：解耦、版本与 staleness。
+6. [nano-slime](01-post-training-rl-sft/nano-slime/) L0→L3：解耦与版本 → engine regime → partial rollout 回收与 delta sync。
 
 这条路线的统一问题不是“用了哪个框架”，而是：**状态放在哪里、何时搬运、谁在关键路径、
 搬运后语义是否仍与原计算一致。**
@@ -131,7 +131,7 @@ generation CAS 与 reconcile 暴露并修复跨事务域裂缝。它们仍是单
 |----------|----------|---------------|----------|
 | 训练/轨迹数据合同 | [SFT mask](01-post-training-rl-sft/nano-llamafactory/tutorial_L0.md) | [EpisodeRecord record→tensor](cross-track-episode-record/tutorial_L1.md) · [Data-Juicer OP schema](03-data-distributed-rsi/nano-data-juicer/tutorial_L3.md) · [Agent typed message](04-llm-to-agent/nano-agentscope/tutorial_L3.md) | 为一条轨迹绑定 storage schema、training fields、termination 与版本身份，并区分 episode-mean 与 token-mean |
 | advantage / reward | [REINFORCE](01-post-training-rl-sft/nano-verl/tutorial_L0.md) | [PPO + GAE](01-post-training-rl-sft/nano-verl/tutorial_L1.md) · [dead group / Goodhart](01-post-training-rl-sft/nano-trinity-rft/tutorial_L2.md) | 区分 reward、value、advantage、gold metric 四个量 |
-| policy version / staleness | [actor-learner split](01-post-training-rl-sft/nano-verl/tutorial_L2.md) | [slime buffer](01-post-training-rl-sft/nano-slime/tutorial_L0.md) · [HybridFlow colocate](01-post-training-rl-sft/nano-verl/tutorial_L3.md) | 给 trajectory 加 `policy_version`，定义最大可接受滞后与丢弃策略 |
+| policy version / staleness | [actor-learner split](01-post-training-rl-sft/nano-verl/tutorial_L2.md) | [slime buffer](01-post-training-rl-sft/nano-slime/tutorial_L0.md) · [partial rollout / delta sync](01-post-training-rl-sft/nano-slime/tutorial_L3.md) · [HybridFlow colocate](01-post-training-rl-sft/nano-verl/tutorial_L3.md) | 给 trajectory 加 `policy_version`，定义最大可接受滞后、回收/mask 策略与同步代价 |
 | 显存与吞吐 | [ZeRO 账本](02-pretraining-cpt/nano-fsdp/tutorial_L0.md) | [TP/PP/SP](02-pretraining-cpt/nano-megatron/) · [paged/radix KV](03-data-distributed-rsi/nano-vllm-sglang/) | 分开算训练状态、activation、KV cache 与通信峰值 |
 | 状态、血缘与恢复 | [lakehouse snapshot](03-data-distributed-rsi/nano-data-platform/tutorial_L0.md) | [pretraining exact resume](02-pretraining-cpt/nano-pretraining-loop/tutorial_L0.md) · [EpisodeRecord batch round-trip](cross-track-episode-record/tutorial_L1.md) · [transaction runtime](04-llm-to-agent/nano-agent-runtime/tutorial_L0.md) | 分别恢复训练状态、轨迹事实、派生 batch 与外部副作用，说明 round-trip 为何不等于 exactly-once admission |
 | 评估与治理 | [RAG metrics](03-data-distributed-rsi/nano-rag-retrieval/tutorial_L0.md) | [reward proxy 失效](01-post-training-rl-sft/nano-trinity-rft/tutorial_L2.md) · [Evaluation Gate L0-L3a](cross-track-evaluation-gate/) · [对抗自检](04-llm-to-agent/nano-qwenpaw/tutorial_L2.md) | 比较不同 cluster lineage/权重下的结论敏感性；待 Agent runtime 接口稳定后，再把本地 router 替身换成 HTTP mock |
@@ -148,7 +148,7 @@ generation CAS 与 reconcile 暴露并修复跨事务域裂缝。它们仍是单
 |------|------|----------|
 | 01 | [nano-llamafactory](01-post-training-rl-sft/nano-llamafactory/) | L0 · L1 · L2 |
 | 01 | [nano-verl](01-post-training-rl-sft/nano-verl/) | L0 · L1 · L2 · L3 |
-| 01 | [nano-slime](01-post-training-rl-sft/nano-slime/) | L0 · L1 |
+| 01 | [nano-slime](01-post-training-rl-sft/nano-slime/) | L0 · L1 · L2 · L3 |
 | 01 | [nano-trinity-rft](01-post-training-rl-sft/nano-trinity-rft/) | L0 · L1 · L2 · L3 |
 | 01 | [nano-opd](01-post-training-rl-sft/nano-opd/) | L0 · L1 |
 | 跨轨 | [Capability Factory](cross-track-capability-factory/) | L0 |

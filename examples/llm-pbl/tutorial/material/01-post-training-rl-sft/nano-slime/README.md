@@ -5,7 +5,7 @@
 > 注意：slime 本身是完整的后训练框架（Megatron 训练 + SGLang rollout + Data Buffer
 > + reward/verifier 数据通路），本模块只取其数据通路的骨架做阶梯。
 > **对应真实系统**：[slime](https://github.com/THUDM/slime)（自述 "an LLM post-training framework for RL scaling"）
-> **轨道**：[01 后训练/RL/SFT](../README.md) · **状态**：L0–L2 ✅，L3 待补
+> **轨道**：[01 后训练/RL/SFT](../README.md) · **状态**：L0–L3 ✅
 
 ---
 
@@ -16,17 +16,21 @@
 | **L0** | single-file 确定性离散事件模拟：lockstep vs 解耦（data buffer + 版本化权重），量化 buffer 容量与 staleness 的权衡（零依赖，CPU 即跑） | ✅ [L0_data_buffer_decouple.py](L0_data_buffer_decouple.py) · [tutorial_L0.md](tutorial_L0.md) |
 | **L1** | 把 G/T 从模拟常数变实测：真实小模型上串行 generate N 条 rollout，验证「G 随 response 长度线性涨」，batching 对 G 的压缩 | ✅ [L1_real_gen_train_timing.py](L1_real_gen_train_timing.py) · [tutorial_L1.md](tutorial_L1.md)——0.8M char-GPT（slime README 真实语料现场训练）实测 G∝L（R²>0.995）/ batching 压缩 2.6x / 同批 G/T=2.3 / S≪T，实测值灌回 L0 模拟器得解耦 speedup 1.39x（生成主导区 buffer 买不到吞吐） |
 | **L2** | 引擎代价模型（借 nano-vllm-sglang L0 iter_time）× 同步/异步双 regime：slime train.py/train_async.py 控制流逐行对照，量化 1-step 异步 2x 上界 + update_weights_interval = staleness 旋钮（可运行本质模拟；真机 `[TODO: verify on real system]`） | ✅ [L2_engine_cost_async_regimes.py](L2_engine_cost_async_regimes.py) · [tutorial_L2.md](tutorial_L2.md) |
-| **L3** | 对照 slime 源码：data buffer 实现、权重同步（delta weight sync）、rollout 调度与 update 时机 `[TODO: verify source]` | 🔲 |
+| **L3** | 对照 slime 源码（@ 2fa9a442，2026-08-16 抓取）：data buffer 回收（partial rollout + 版本戳 staleness）× delta weight sync（diff→编码→压缩→校验→滚动基线，xor 对合 vs overwrite 幂等，delta⊥colocate 决策规则）（可运行本质模拟；真机 `[TODO: verify on real system]`） | ✅ [L3_buffer_delta_sync.py](L3_buffer_delta_sync.py) · [tutorial_L3.md](tutorial_L3.md) |
 
 ## 环境依赖
 
 - L0：零外部依赖（纯标准库），CPU 即跑。
 - L1：torch（CPU 单线程基线，threads=1；约 2.5 分钟，含 ~47s 探针模型预训练）。
   绝对毫秒数为 CPU 小模型口径，结构结论（线性/压缩/G≫T）可外推，绝对值不可。
-- L2：零外部依赖（纯标准库），CPU 瞬时（<0.1s）。本级为可运行的本质模拟（课程可运行性契约）：
+- L2：零外部依赖（纯标准库），CPU 瞬时（<0.1s）。本级为可运行的本质模拟（本课程 L2 可运行性契约）：
   建模 slime 源码背书的双 regime 控制流 + 引擎代价模型；真实 SGLang/Megatron 验证
-  `[TODO: verify on real system]` 需在真实 GPU 环境验证。
-- L3：源码对照级；GPU / 真机验证通道。
+  `[TODO: verify on real system]` 走 GPU 通道。
+- L3：零外部依赖（纯标准库），CPU 瞬时（<0.25s）。本级为可运行的本质模拟（本课程 L3 可运行性契约）：
+  对照 slime 源码（THUDM/slime @ 2fa9a442，2026-08-16 codeload 抓取）逐行核验 buffer 回收与
+  delta sync 机制；掩码输出锚 `1c85efaf…`/58 行、digest `482ddb8b…`（2 遍 × 2 新建空独立 CWD
+  BYTE-IDENTICAL）。真实 SGLang `/pull_weights` + Megatron gather + 共享盘验证
+  `[TODO: verify on real system]` 走 GPU 通道。
 
 ## 核心要讲清的点
 
@@ -49,6 +53,9 @@
 - （L1）能不能用后厨与传菜员讲清：为什么多雇传菜员（解耦）不如换更大的锅（batching）？
 - （L2）能不能用外卖站的两口锅讲清：为什么「多久换一次菜谱」（update_weights_interval）
   决定菜有多旧、却不决定出餐多快？换菜谱前为什么要等在路上的骑手全部回店？
+- （L3）能不能用快递站讲清：为什么「在途件回仓」（partial rollout）买不到吞吐却值得开？
+  为什么合同只寄「红线 diff 页」（delta sync）在改得太多时反而比寄全本贵？
+  两家公司共用一个文件柜（colocate）时为什么红线账本是纯浪费？
 
 ## 权威实现与延伸
 
