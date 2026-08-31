@@ -21,7 +21,7 @@
 看会 ≠ 做会。本仓库的每一节都要求学习者**亲手写代码、跑出结果、解释现象**。
 评判一段材料好坏的标准只有一个：**一个具备前置知识的工程师，跟着做完之后，能不能独立复现、并迁移到自己的问题上。**
 
-四条主线对应 LLM 系统栈的四个层次，自底向上、相互咬合：
+五条主线对应 LLM 系统栈的五个相互咬合层面：
 
 | 轨道 | 主题 | nano-*（对标权威实现） | SOTA 深挖 |
 |------|------|------------------------|-----------|
@@ -29,11 +29,13 @@
 | **02** | 预训练 / CPT infra | megatron · fsdp | DeepSeek（MoE + MLA + 训练稳定性） |
 | **03** | 数据 / 分布式 / RSI / 数据平台工程 | data-juicer · ray · vllm-sglang · data-platform · orchestration · rag-retrieval | LLM 数据方法论 + data-model co-dev + 湖仓/MLOps |
 | **04** | LLM → Agent | agentscope · qwenpaw | Harness engineering |
+| **05** | 多模态理解与生成 | vlm-understanding · image-dit · video-dit · minimax-h3-capstone | VLM/DiT/Video DiT → MiniMax H3 综合系统 |
 
-四条线不是孤立的：03 产出的数据喂给 02/01 训练，01/02 训出的模型在 04 里变成 agent，
-agent 的运行轨迹又回流成 03 的数据——这正是 **data-model co-development（recursive self-improvement）** 的闭环，也是本仓库的核心命题之一。
+五条线不是孤立的：03 产出的数据喂给 02/01 训练，02 的 Transformer/并行底座与 03 的数据/推理服务共同支撑 05；
+01/02/05 产出的语言与多模态能力在 04 里变成 agent，agent 的运行轨迹又回流成 03 的数据——这正是
+**data-model co-development（recursive self-improvement）** 的闭环，也是本仓库的核心命题之一。
 
-> **选题来源说明**：这四条线冷启于当前的研究兴趣，但这只是 topic 的初始画像，**不是全貌、更不是目标边界**。
+> **选题来源说明**：这五条线冷启于当前的研究兴趣，但这只是 topic 的初始画像，**不是全貌、更不是目标边界**。
 > 材料的标准始终对标各领域最权威的实现与 SOTA，内容会随「什么最重要、最本质」而扩展，不被任何具体项目绑定。
 
 ---
@@ -81,9 +83,12 @@ LLM-PBL/
     │   ├── nano-data-juicer/  nano-ray/  nano-vllm-sglang/
     │   ├── nano-data-platform/  nano-data-orchestration/  nano-rag-retrieval/
     │   └── sota-deepdive/
-    └── 04-llm-to-agent/              # LLM → Agent
-        ├── nano-agentscope/  nano-qwenpaw/  nano-agent-runtime/
-        └── sota-deepdive/
+    ├── 04-llm-to-agent/              # LLM → Agent
+    │   ├── nano-agentscope/  nano-qwenpaw/  nano-agent-runtime/
+    │   └── sota-deepdive/
+    └── 05-multimodal-understanding-generation/
+        ├── nano-vlm-understanding/  nano-image-dit/  nano-video-dit/
+        └── minimax-h3-capstone/
 ```
 
 ---

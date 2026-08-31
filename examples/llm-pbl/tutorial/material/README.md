@@ -8,7 +8,7 @@
 
 ## 先建立一张系统图
 
-四条轨道不是四门互不相干的课，而是一条有反馈的系统链：
+五条轨道不是五门互不相干的课，而是一条有反馈的系统链：
 
 ```mermaid
 flowchart LR
@@ -20,7 +20,10 @@ flowchart LR
     F["FSDP / TP / PP / SP 训练底座"] --> P
     F --> B["Base model / CPT"]
     B --> P
+    F --> M["VLM / Image DiT / Video DiT / H3"]
+    D2 --> M
     P --> A["Agent + transactional runtime"]
+    M --> A
     A --> T["运行轨迹、失败与反馈"]
     T --> D0
     P --> C["Candidate snapshot"]
@@ -41,7 +44,7 @@ generation CAS 与 reconcile 暴露并修复跨事务域裂缝。它们仍是单
 
 ---
 
-## 四条轨道：各自解决什么根问题
+## 五条轨道：各自解决什么根问题
 
 | 轨道 | 根问题 | 当前最强覆盖 | 进入 |
 |------|--------|--------------|------|
@@ -49,6 +52,7 @@ generation CAS 与 reconcile 暴露并修复跨事务域裂缝。它们仍是单
 | 02 预训练 / CPT | 从文档到可恢复 checkpoint 的完整训练过程怎样建立，并在模型放不下一张卡时正确切分？ | pretraining lifecycle L0、ZeRO/FSDP、TP/PP/SP、MoE/MLA | [进入轨道 02](02-pretraining-cpt/README.md) |
 | 03 数据 / 分布式 / RSI | 怎样把原始数据变成可复现、可扩展、可评估的训练与检索供给？ | OP pipeline、Ray task/actor/object store、KV/page/radix、湖仓/DAG/RAG L0 | [进入轨道 03](03-data-distributed-rsi/README.md) |
 | 04 LLM → Agent | 怎样把随机、会失败的模型包成可观察、可约束、可恢复的执行体？ | ReAct、typed messages、上下文记忆、harness，以及事务化副作用 L0 | [进入轨道 04](04-llm-to-agent/README.md) |
+| 05 多模态理解与生成 | 媒体怎样进入 Transformer，又怎样从条件/噪声生成一致的图像、视频与音频？ | VLM visual token、rectified-flow Image/Video DiT、MiniMax H3 系统合同 L0 | [进入轨道 05](05-multimodal-understanding-generation/README.md) |
 
 “当前最强覆盖”描述的是已经写出来的材料，不等于整条学科已经覆盖完整。
 
@@ -107,7 +111,7 @@ generation CAS 与 reconcile 暴露并修复跨事务域裂缝。它们仍是单
 
 ### 路线 D：能力工厂与受治理集成
 
-适合已经理解单项训练算法，希望把四轨闭成一个研发系统的读者：
+适合已经理解单项训练算法，希望把五轨闭成一个研发系统的读者：
 
 1. [nano-opd L0](01-post-training-rl-sft/nano-opd/tutorial_L0.md)：为什么 reverse-KL 要在学生轨迹上估计；
 2. [EpisodeRecord L0](cross-track-episode-record/tutorial_L0.md)：先固定 rollout 的 provenance、termination 和版本合同；
@@ -123,6 +127,17 @@ generation CAS 与 reconcile 暴露并修复跨事务域裂缝。它们仍是单
 
 完成后应能区分：能力生产可以并行、能力表示仍会纠缠、集成完成不等于 candidate 应当晋升。
 
+### 路线 E：多模态理解与生成
+
+1. [visual tokens → language](05-multimodal-understanding-generation/nano-vlm-understanding/tutorial_L0.md)：二维位置和图像依赖反事实；
+2. [rectified-flow Image DiT](05-multimodal-understanding-generation/nano-image-dit/tutorial_L0.md)：latent token、AdaLN、Euler 与 CFG；
+3. [spatiotemporal Video DiT](05-multimodal-understanding-generation/nano-video-dit/tutorial_L0.md)：3D position、端点条件、flicker 与序列成本；
+4. [MiniMax H3 capstone](05-multimodal-understanding-generation/minimax-h3-capstone/tutorial_L0.md)：packed rows、视听双 flow 与开放边界；
+5. [证据账本](05-multimodal-understanding-generation/RESEARCH.md)：从经典谱系到 H3 官方/源码/缺口的分层核验。
+
+完成后应能解释“视觉证据如何进入语言模型”和“媒体 latent 如何从噪声生成”是两类不同问题，并能拒绝把 toy、
+开放权重、托管模块或代理分数误写成完整生产能力。
+
 ---
 
 ## 按核心概念交叉阅读
@@ -137,6 +152,8 @@ generation CAS 与 reconcile 暴露并修复跨事务域裂缝。它们仍是单
 | 评估与治理 | [RAG metrics](03-data-distributed-rsi/nano-rag-retrieval/tutorial_L0.md) | [reward proxy 失效](01-post-training-rl-sft/nano-trinity-rft/tutorial_L2.md) · [Evaluation Gate L0-L3a](cross-track-evaluation-gate/) · [对抗自检](04-llm-to-agent/nano-qwenpaw/tutorial_L2.md) | 比较不同 cluster lineage/权重下的结论敏感性；待 Agent runtime 接口稳定后，再把本地 router 替身换成 HTTP mock |
 | 多教师能力集成 | [nano-opd](01-post-training-rl-sft/nano-opd/) | [Capability Factory](cross-track-capability-factory/) · [FSDP/TP 系统代价](02-pretraining-cpt/) | 比较 full-vocabulary 与 sampled-token OPD，注入错路由并检查最坏领域回归 |
 | 配置是可执行契约 | [pipeline config](03-data-distributed-rsi/nano-data-juicer/tutorial_L0.md) | [Trinity schema / registry](01-post-training-rl-sft/nano-trinity-rft/tutorial_L3.md) | 让非法组合在运行前失败，并记录 resolve 后的最终配置 |
+| 多模态证据依赖 | [visual token L0](05-multimodal-understanding-generation/nano-vlm-understanding/tutorial_L0.md) | [H3 packed contract](05-multimodal-understanding-generation/minimax-h3-capstone/tutorial_L0.md) | 对同一问题执行 image-drop/swap，并记录 row/tag/position 是否仍可追溯 |
+| 连续流与时序一致性 | [Image DiT oracle](05-multimodal-understanding-generation/nano-image-dit/tutorial_L0.md) | [Video DiT temporal coupling](05-multimodal-understanding-generation/nano-video-dit/tutorial_L0.md) | 分开检查 flow 方向、条件命中、端点约束、flicker 与 $N^2$ 成本 |
 
 ---
 
@@ -166,6 +183,10 @@ generation CAS 与 reconcile 暴露并修复跨事务域裂缝。它们仍是单
 | 04 | [nano-agentscope](04-llm-to-agent/nano-agentscope/) | L0 · L1 · L2 · L3 |
 | 04 | [nano-qwenpaw](04-llm-to-agent/nano-qwenpaw/) | L0 · L1 · L2 · L3 |
 | 04 | [nano-agent-runtime](04-llm-to-agent/nano-agent-runtime/) | L0 |
+| 05 | [nano-vlm-understanding](05-multimodal-understanding-generation/nano-vlm-understanding/) | L0 |
+| 05 | [nano-image-dit](05-multimodal-understanding-generation/nano-image-dit/) | L0 |
+| 05 | [nano-video-dit](05-multimodal-understanding-generation/nano-video-dit/) | L0 |
+| 05 | [minimax-h3-capstone](05-multimodal-understanding-generation/minimax-h3-capstone/) | L0 |
 
 四篇综合 deep-dive：
 
