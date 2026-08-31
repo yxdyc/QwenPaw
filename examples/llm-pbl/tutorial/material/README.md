@@ -161,7 +161,7 @@ generation CAS 与 reconcile 暴露并修复跨事务域裂缝。它们仍是单
 | 03 | [nano-ray](03-data-distributed-rsi/nano-ray/) | L0 · L1 · L2 · L3 |
 | 03 | [nano-vllm-sglang](03-data-distributed-rsi/nano-vllm-sglang/) | L0 · L1 · L2 · L3 |
 | 03 | [nano-data-platform](03-data-distributed-rsi/nano-data-platform/) | L0 |
-| 03 | [nano-data-orchestration](03-data-distributed-rsi/nano-data-orchestration/) | L0 |
+| 03 | [nano-data-orchestration](03-data-distributed-rsi/nano-data-orchestration/) | L0 · L1 · L2 |
 | 03 | [nano-rag-retrieval](03-data-distributed-rsi/nano-rag-retrieval/) | L0 |
 | 04 | [nano-agentscope](04-llm-to-agent/nano-agentscope/) | L0 · L1 · L2 · L3 |
 | 04 | [nano-qwenpaw](04-llm-to-agent/nano-qwenpaw/) | L0 · L1 · L2 · L3 |
