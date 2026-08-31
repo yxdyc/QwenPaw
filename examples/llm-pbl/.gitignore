@@ -8,10 +8,15 @@ __pycache__/
 /REVIEW-REPORT-B.md
 /REVIEW-REPORT-C.md
 /OPS-WATCHDOG.md
+/ROADMAP.md
 /shared/watchdog-playbook.md
+/shared/state-snapshot.md
+/tutorial/material/CURRICULUM-AUDIT.md
 
 # Local experiments and editor/backup output
 *.bak
 *.bak-*
+*.db
+nano_index.*
 *.tmp
 .DS_Store
