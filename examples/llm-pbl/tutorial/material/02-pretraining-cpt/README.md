@@ -15,8 +15,8 @@
 
 | nano-* | 抓的核心机制 | 对标权威实现 |
 |--------|-------------|--------------|
-| `nano-pretraining-loop` | 文档→causal targets→sample order/mixture→AdamW/schedule→完整 checkpoint/resume | L0 自包含机制；L1+ 对照 PyTorch/Megatron data/checkpoint stack |
-| `nano-megatron` | TP + PP + SP 的最小可跑实现，理解切分如何通信 | Megatron-LM |
+| `nano-pretraining-loop` | 文档→causal targets→sample order/mixture→AdamW/schedule→完整 checkpoint/resume | L0 机制、L1 单进程真实 tensor、L2 两进程 gloo exact resume |
+| `nano-megatron` | TP + PP + SP 的最小可跑实现；含单机 L20/NCCL 的 TP2/4/8 正确性、状态账与 collective 扩展证据 | Megatron-LM |
 | `nano-fsdp` | ZeRO / FSDP 参数-梯度-优化器分片，理解显存账本 | PyTorch FSDP / DeepSpeed ZeRO |
 
 ---
@@ -27,7 +27,7 @@
 前置：会单卡 transformer 训练、懂 all-reduce/all-gather 是什么（K）
   │
   ▼
-Step 1  nano-pretraining-loop L0 ← 先建立文档到完整 checkpoint 的生命周期
+Step 1  nano-pretraining-loop L0–L2 ← 从生命周期到两进程 exact resume
   │
   ▼
 Step 2  nano-fsdp L0–L3        ← 理解「显存去哪了」，ZeRO/FSDP 分片
@@ -36,7 +36,7 @@ Step 2  nano-fsdp L0–L3        ← 理解「显存去哪了」，ZeRO/FSDP 分
 Step 3  nano-megatron L0–L3    ← 张量/流水线/序列并行与 MFU
   │
   ▼
-Step 4  pretraining-loop L1–L2  ← 真实 Transformer + distributed exact-resume 边界
+Step 4  联读 FSDP/Megatron L2   ← 比较复制式 DP 状态合同与真正 tensor/pipeline 分片
   │
   ▼
 Step 5  sota-deepdive: DeepSeek ← MoE + MLA + 训练稳定性的 SOTA 工程

@@ -679,7 +679,7 @@ if t["pid"] and pid_alive(t["pid"]):
 
 ## §16 阶梯预告
 
-C 线「统一推 L2」的第三件：**nano-rag-retrieval L2**——混合检索（向量 + 稀疏）与重排序、检索质量的量化评估（recall@k / nDCG 族）、对照 Milvus / OpenSearch 权威实现的取舍分析。L1 已转正（真实小 embedding 模型 + 索引持久化，锚 `d0e6f324…`），跨级锚前提在位。
+同轨下一篇建议阅读 **nano-rag-retrieval L2**：混合检索（向量 + 稀疏）与重排序、检索质量的量化评估（recall@k / nDCG 族），以及对照 Milvus / OpenSearch 权威实现的取舍分析。L1 已提供真实小 embedding 模型与索引持久化，跨级前提在位。
 
 ---
 

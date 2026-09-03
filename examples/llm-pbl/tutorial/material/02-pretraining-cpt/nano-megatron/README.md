@@ -25,6 +25,49 @@ L3 同样只需 `torch`（CPU，gloo 4 进程 = PP2×TP2，实测 ~3-15s）：
 `python3 L3_sp_tp_pp_mfu.py`
 （torch 2.13.0 实测；计时行 9 行浮动，掩码口径见 tutorial_L3 §13）。
 
+### 可选 GPU/NCCL 证伪探针
+
+- [L1_gpu_verify.py](L1_gpu_verify.py)：用 `--world-size 2/4/8` 在单机可见 CUDA GPU
+  上复验 TP 前反向等价、f/g 通信次数、16P/N 显存账与 NCCL all-reduce scaling。
+- [L2_gpu_verify.py](L2_gpu_verify.py)：在单机两卡上复验 PP 数值等价、P2P
+  字节账、GPipe/1F1B live-microbatch 上界与 bubble 观测。
+- 两者都支持 `--master-port`（或 `NANO_MEGATRON_MASTER_PORT`），不绑定机器、
+  私有环境路径或 GPU 型号；末行输出 `RESULT_JSON=`。时间/带宽只对运行时记录的
+  torch、CUDA、NCCL、driver 与设备成立，不是 L1/L2 CPU 教程完成状态的前提。
+
+#### 2026-08-31 单机 L20 复验
+
+环境快照为 2 张可见 NVIDIA L20（机器共 8 张、每次实验只使用 2 张），driver 550.90.07、
+PyTorch 2.9.1+cu128、CUDA 12.8、NCCL 2.27.5。L1 与 L2 各独立运行两次，四次均
+exit 0、stderr 为空；以下只把跨运行稳定的正确性账作为验收证据：
+
+| 探针 | 稳定结果 | 两次共同 digest |
+|---|---|---|
+| L1 / TP=2 | dense 对照相对误差约 `1.9e-7`；错误的 reduce-before/after-GeLU 顺序产生 `1.667e+02` 误差，修正后为 `7.629e-05`；每 rank 参数+梯度+Adam 账为 256 KiB | `c86a4b72d7086762e3bbb147dc6f257e` |
+| L2 / PP=2 | 42/42；同 microbatch mirror 参数逐位相同；改变 FP32 归约形状的 full-batch 对照 `max|Δ|=2.876e-05 ≤ 5.166e-05`；每 rank P2P 账为 524,288 B/step | `02f8fe71ec5202ea740e078aa2f121b6` |
+
+L1 的 16 MiB all-reduce 两次样本约 0.782–0.785 ms（21.4–21.5 GB/s）；L2 的
+GPipe/1F1B 墙钟与 bubble 会随调度噪声变化，只验证 microbatch 增多时 bubble 整体下降，
+不要求实测幅度等于理想公式。这一子批单独证明单机 TP2/PP2 toy 正确性与通信账；
+它没有使用 4/8 卡，也不是生产训练吞吐基准。后续扩展实验见下一节。
+
+#### 2026-09-03 TP2/4/8 scaling 复验
+
+同一软件栈上，参数化后的 L1 probe 对 TP2、TP4、TP8 各运行两次；六次均 exit 0、
+stderr 为空、7/7。脚本 SHA256 为
+`d093ef1d951d343c4753d246444ca19b571739f97859aa9adc5d775d5032b8ec`，
+远端运行副本与仓库逐字一致。
+
+| TP | 每 rank 参数+梯度+Adam | 前向相对误差 | FP32 16 MiB latency | busbw | 两次共同 digest |
+|---:|---:|---:|---:|---:|---|
+| 2 | 256 KiB | `1.9e-7` | 0.784–0.785 ms | 21.4 GB/s | `be3aa882721b9e67cf7279097286271f` |
+| 4 | 128 KiB | `2.1e-7` | 1.874–1.875 ms | 13.4 GB/s | `e3742f02a539ecca9c1b9d155519929e` |
+| 8 | 64 KiB | `1.5e-7` | 2.067–2.069 ms | 14.2 GB/s | `9b9a41d443b5a89d49036ccfe17ede55` |
+
+本机拓扑没有 NVLink：GPU0–1 为 `PIX`，GPU0–3 扩展到同 NUMA 的 `NODE`，8 卡跨
+NUMA `SYS`。因此表中既有参与 rank 数变化，也有路径层级变化；它们共同出现，但本实验
+不做单因果归因。完整解释与 `busbw` 口径见 [L1 教程 §7.1](tutorial_L1.md)。
+
 ## 核心要讲清的点
 
 - TP 切 MLP：列并行切 W1，行并行切 W2，all-reduce 插在激活上

@@ -25,6 +25,20 @@ L3 依赖同 L2（`torch` + 同目录 L1/L2 模块），CPU 即跑约 10 秒：
 口径 `sed '/^[[:space:]]*elapsed/d'` 可掩码）；真实引擎（vLLM/SGLang on GPU）
 验证需在真实 GPU/多机环境验证 `[TODO: verify on real system]`。
 
+### 可选真实引擎探针
+
+[L2L3_gpu_verify.py](L2L3_gpu_verify.py) 用 SGLang offline Engine 测单模型的
+batch decode 与共享前缀缓存。它要求显式 `--model`，并支持 `--device`、
+`--attention-backend`、`--mem-fraction`、`--quick`；默认只写 stdout，只有显式
+`--log` 才落盘。末行 `RESULT_JSON=` 同时记录模型、SGLang 版本、后端、设备、
+吞吐与 cache 指标。绝对时间只属于该次 model × revision × backend × driver ×
+GPU 组合，不能用来证明 vLLM 与 SGLang 的普遍优劣；没有真实 package 和模型时
+应保留为未运行，而不是用 mock/fallback 补数。
+
+截至 2026-08-31，本轮 L20 环境虽有可离线安装的 SGLang wheel，但本地 Hugging Face
+缓存只有模型仓库元数据，没有完整开放权重，因此没有执行或发布吞吐数字。该状态不是探针失败，
+而是其“真实 package + 完整本地模型”前置合同未满足；后续拿到固定 revision 后再运行。
+
 ## 核心要讲清的点
 
 - decode 为何 memory-bandwidth-bound；KV cache 显存为何随 batch×seq 线性增长，PagedAttention 如何用「分页」减少碎片

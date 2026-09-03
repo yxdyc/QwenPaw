@@ -3,7 +3,7 @@
 > **抓的核心机制**：embedding 索引、向量检索、混合检索、重排序、检索评估（课程的数据系统教学约定）。
 > L0 用纯 Python 裸出检索器的内核：**embedding = 把文本映进几何空间**（lexical 版：词哈希 + 字符 trigram，feature hashing）并让它的失败模式可见（同义词盲 / 词序盲 / 哈希碰撞假相似——神经 embedding 的动机）+ **flat 暴力精确 kNN = 一切 ANN 的基线**（Milvus 文档称 FLAT 为 Brute-Force）+ **检索评估 first-class**（recall@k / precision@k / MRR，8 条标注查询的 toy 基线）+ **治理 first-class**（索引字节 / 扫描 op 成本账本 + 分数阈值「不知道」语义）。
 > **对应真实系统**：[Milvus](https://github.com/milvus-io/milvus) / [OpenSearch](https://github.com/opensearch-project/OpenSearch) / [Weaviate](https://github.com/weaviate/weaviate)；RAG 架构参照 Lewis et al. arXiv:[2005.11401]。
-> **轨道**：[03 数据/分布式/RSI/数据平台工程](../README.md) · **状态**：L0 ✅ · L1–L2 🔲
+> **轨道**：[03 数据/分布式/RSI/数据平台工程](../README.md) · **状态**：L0–L2 ✅
 
 ---
 
@@ -18,10 +18,10 @@ LLM 有两个知识边界（训练截止 + 私有数据），RAG 是最直接的
 | 级别 | 目标 | 状态 |
 |------|------|------|
 | **L0** | single-file 玩具（161 行，纯标准库）：lexical embedding（词 + trigram 哈希，md5 确定性）+ 四点光谱探针（1.0 / 0.2449 / 0.0000 / 0.2052）；flat 暴力精确 kNN（ANN 基线）；recall@k / precision@k / MRR 评估（toy 基线 recall@1 = 0.625 / MRR = 0.6875，含弱信号被噪声淹没与两条纯同义词 MISS 的逐查询分析）；成本账本（28672 B 索引 / 3584 ops/query）；分数阈值「不知道」语义；确定性 digest | ✅ `L0_vector_index_and_recall.py` + `tutorial_L0.md` |
-| **L1** | 接真实小 embedding 模型（CPU 可跑，依赖显式声明 + 轻量 fallback）：同一索引与评估集上量化 lexical → 语义的 recall 突破（L0 两条 MISS = 验收靶点）+ 索引文件级持久化与增量 add + 词序/同义词失败模式的修复验证 | 🔲 |
-| **L2** | 对照权威实现源码做取舍分析：Milvus（FLAT/HNSW/IVF 索引族、segment 与 payload 分离）+ OpenSearch（k-NN + BM25 混合）+ Weaviate（HNSW 实现）；混合检索（BM25+dense 融合，L0 §5 停用词教训的正面回答）+ 重排序 + recall/latency 权衡实测；可运行的本质模拟 + 显式注明 | 🔲 |
+| **L1** | 接真实小 embedding 模型（CPU 可跑，依赖显式声明 + 轻量 fallback）：同一索引与评估集上量化 lexical → 语义的 recall 突破（L0 两条 MISS = 验收靶点）+ 索引文件级持久化与增量 add + 词序/同义词失败模式的修复验证 | ✅ [代码](L1_semantic_embedding_and_persistence.py) · [教程](tutorial_L1.md) |
+| **L2** | 对照权威实现源码做取舍分析：Milvus（FLAT/HNSW/IVF 索引族、segment 与 payload 分离）+ OpenSearch（k-NN + BM25 混合）+ Weaviate（HNSW 实现）；混合检索（BM25+dense 融合）+ 重排序 + recall/latency 权衡实测；可运行的本质模拟 + 显式注明 | ✅ [代码](L2_hybrid_search_hnsw_and_rerank.py) · [教程](tutorial_L2.md) |
 
-**环境依赖分级**：L0 零依赖（纯标准库，CPU 秒级，任意 CWD 可跑，输出确定——双独立 CWD 双跑 stdout md5 `dc5a77c3b697ed25e780253a67d76b0a`/55 行 BYTE-IDENTICAL，EXIT=0、stderr 0 B）；L1 预期单一 embedding 依赖（sentence-transformers 小模型或等价，内置微样本 fallback 保证一键跑通）；L2 按可运行性契约（课程可运行性契约）允许「可运行的本质模拟 + 显式注明」，真实集群路径标 `[TODO: verify on real system]`。
+**环境依赖分级**：L0 零依赖；L1 的 real 路径需要 sentence-transformers、torch 与钉住的模型快照，缺失时明确降级到手写 fallback（fallback 指标不代表模型质量）；L2 的 BM25/HNSW/融合/重排核心为 CPU 可运行实现，真实集群行为不在本模块证据范围内。L1 默认使用临时索引目录，不污染当前 CWD；设置 `NANO_RAG_INDEX_DIR` 才保留产物。
 
 ---
 

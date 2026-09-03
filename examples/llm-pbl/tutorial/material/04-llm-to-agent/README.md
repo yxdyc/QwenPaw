@@ -16,7 +16,7 @@
 |--------|-------------|--------------|
 | `nano-agentscope` | 多 agent 编排：消息、pipeline、工具调用 | AgentScope |
 | `nano-qwenpaw` | agent harness / coach：把 LLM 包成有方法论的执行体 | qwenpaw（本仓库同源） |
-| `nano-agent-runtime` | trusted authorization、幂等副作用、prepare/commit、崩溃恢复与人工接管 | 事务/outbox 模式；L0 自包含机制 |
+| `nano-agent-runtime` | trusted authorization、幂等副作用、prepare/commit、崩溃恢复与人工接管 | L0–L2：进程内协议 → SQLite/WAL → 多 worker outbox/fencing/compensation |
 
 ---
 
@@ -35,10 +35,10 @@ Step 2  nano-agentscope L2      ← 多 agent 编排：消息传递 / 角色分�
 Step 3  nano-qwenpaw L1–L2      ← harness：上下文工程 / 记忆 / 方法论注入
   │
   ▼
-Step 4  nano-agent-runtime L0   ← 先跑一次“provider 已执行、响应丢失”的安全恢复
+Step 4  nano-agent-runtime L0–L2 ← 从进程内 toy 到 SQLite/WAL、多 worker、fencing 与 compensation
   │
   ▼
-Step 5  可靠性专题 L1–L3         ← SQLite/WAL、多 worker、compensation 与权限绑定
+Step 5  可靠性专题 L3            ← 网络分区、真实下游 conditional write 与权限/重放审计
   │
   ▼
 Step 6  sota-deepdive           ← SOTA harness engineering 实践

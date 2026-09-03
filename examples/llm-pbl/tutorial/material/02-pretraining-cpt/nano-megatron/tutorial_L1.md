@@ -254,8 +254,7 @@ gloo loopback（真实 TCP，本机 CPU）上三个消息大小的实测墙钟
 2. **16 MiB 正是 L0 账本里「一次 all-reduce 的消息量」**（h=4096, seq=2048, fp16）。
    在本机这条消息要 ~24 ms。按 L0 的核算（每层 4 次 × 32 层 = 128 次/microbatch）
    纯算术外推：本机口径下每 microbatch 纯通信 ≈ 128 × 23.7 ms ≈ 3.0 s。
-   这是本机 CPU/loopback 的基线数字，用来说明量级关系；
-   真实 GPU + NVLink 的耗时标 `[TODO: verify on real system]`（真实 GPU/多机环境）。
+   这是本机 CPU/loopback 的基线数字，用来说明量级关系；单机 L20/NCCL 的实测见 §7.1。
 3. **fp16 探测**：本机 torch 2.4.1 + gloo **支持** fp16 all_reduce 且数值正确
    （`1.0 + 1.0 = 2.0` 实测）。L1 仍用 fp32，为的是舍入分析干净；
    生产混合精度训练是 NCCL/GPU 的事，行为不互相推定。
@@ -263,6 +262,40 @@ gloo loopback（真实 TCP，本机 CPU）上三个消息大小的实测墙钟
 「TP 只在机器内用」这笔账（L0 §6）现在有了实测注脚：all-reduce 既躲不掉
 （每层 4 次，全在关键路径上），又贵（延迟地板 + 带宽需求），只能靠机器内
 高带宽互连把它压到计算能容忍的水平。
+
+### 7.1 单机 L20：TP2 → TP4 → TP8 时，省下什么、付出什么？
+
+2026-09-03 在同一台 8×NVIDIA L20 上，把 [GPU probe](L1_gpu_verify.py) 分别设为
+`--world-size 2/4/8`，每个配置独立运行两次。软件栈为 driver 550.90.07、
+PyTorch 2.9.1+cu128、CUDA 12.8、NCCL 2.27.5；六次均 exit 0、stderr 0、7/7。
+每次只暴露参与实验的 GPU，避免把“机器有 8 卡”和“本次用了几卡”混为一谈。
+
+| TP | 每 rank 训练状态 | 前向相对误差 | FP32 16 MiB all-reduce | ring-normalized busbw | 两次共同 digest |
+|---:|---:|---:|---:|---:|---|
+| 2 | 256 KiB | `1.9e-7` | 0.784–0.785 ms | 21.4 GB/s | `be3aa882721b9e67cf7279097286271f` |
+| 4 | 128 KiB | `2.1e-7` | 1.874–1.875 ms | 13.4 GB/s | `e3742f02a539ecca9c1b9d155519929e` |
+| 8 | 64 KiB | `1.5e-7` | 2.067–2.069 ms | 14.2 GB/s | `9b9a41d443b5a89d49036ccfe17ede55` |
+
+这里的 `busbw` 沿用 NCCL-tests 的 ring all-reduce 归一化：
+
+$$
+\text{algbw}=\frac{B}{t},\qquad
+\text{busbw}=\text{algbw}\cdot\frac{2(N-1)}{N}.
+$$
+
+这张表支持三个结论：
+
+1. **内存收益是精确的**：每 rank 状态按 $1/N$ 从 256 → 128 → 64 KiB，所有 rank
+   相加始终是 512 KiB；TP 切分没有凭空消灭全局状态。
+2. **数值语义保持**：三种规模均与 dense 达到 `1.5e-7–2.1e-7` 相对误差；错误的
+   GeLU-before-reduce 反例仍显著失败，正确顺序仍恢复。
+3. **通信不是免费扩容**：固定 16 MiB 消息从 TP2 到 TP4/TP8 分别约变为 2.39×/2.64×
+   延迟。拓扑中 GPU0–1 为 `PIX`，GPU0–3 扩到同 NUMA 的 `NODE`，8 卡还跨 NUMA `SYS`；
+   带宽变化与拓扑层级变化同时出现，但本实验不把相关性写成单一因果归因。
+
+这不是端到端训练 speedup：MLP 仍是 `[128,64]×[64,256]` 的微小 toy，表中 16 MiB
+是独立 collective probe，且没有 attention、通信计算重叠或多节点。它回答的是
+“状态按 $1/N$ 下降时，collective 代价如何变化”，不是“8 卡训练一定比 2 卡快多少”。
 
 ---
 
@@ -325,10 +358,9 @@ L0 的类比是阅卷分工：各科老师（rank）独立算自己那科的部�
    （如 LayerNorm 的 γ/β、embedding），它们的梯度需要什么额外操作才能保持一致？
    （提示：复制 ⇒ 各 rank 梯度只是部分视角，需要聚合。Megatron 具体在哪一步做，
    L3 对照源码验证 `[TODO: verify]`。）
-3. 用 §7 的本机实测做一次算术外推：若互连带宽提高到本机的 100 倍
-   （16 MiB ≈ 0.24 ms），32 层 × 4 次 all-reduce 每 microbatch 的纯通信时间是多少？
-   再对照「每 microbatch 的计算时间随 batch 线性增长」这一事实，说明为什么
-   大 batch 能摊薄 TP 的通信占比，而延迟地板摊不掉。
+3. 用 §7.1 的 TP2/4/8 表分别计算“每 rank 状态缩小倍数”和“16 MiB collective
+   延迟放大倍数”。为什么前者不能直接推出端到端 speedup？还缺哪些 GEMM、attention、
+   overlap 与拓扑证据？
 4. TP 与 FSDP（nano-fsdp L1）都把每 rank 状态压到 ≈ 16P/N，且都满足「各 rank 之和 = 16P」
    的守恒。两者的通信分别花在什么上（激活级 vs 权重级）？为什么大规模训练要
    机器内 TP + 跨机 FSDP/ZeRO 组合，而不是二选一？
@@ -337,9 +369,8 @@ L0 的类比是阅卷分工：各科老师（rank）独立算自己那科的部�
 
 ## 11. 边界与局限
 
-- **本机数字 ≠ GPU 数字**：全部计时来自 CPU + gloo + loopback，量级只说明
-  「通信在关键路径上、有延迟地板」，不代表生产互连性能；
-  真机数字标 `[TODO: verify on real system]`（课程的真机验证边界）。
+- **CPU 与 GPU 数字不可混用**：§7 来自 CPU + gloo + loopback，§7.1 来自固定的
+  L20/NCCL 单机栈；两者都只代表各自环境，不代表其它互连或生产 workload。
 - **toy 形状**：`[128, 64] × [64, 256]`，计算微秒级，通信延迟完全主导；
   真实形状下计算/通信比会变化，但「每块 fwd 1 + bwd 1」的结构不变。
 - **未含 attention 块与 bias/LayerNorm**：attention 的 TP 是同构切法（L0 §5），
@@ -364,4 +395,6 @@ L0 的类比是阅卷分工：各科老师（rank）独立算自己那科的部�
 - **巧合声明**：§4 备注的 TP=2/TP=4 dX 误差相等为 seed=7 巧合，
   seed=99 复跑实测分离（`1.373e-04` / `1.984e-04`）。
 - fp16 支持结论为本机实测（torch 2.4.1 + gloo），不推广到其它后端/版本。
-- 本节未执行 GPU/多机实测。
+- **GPU 补充证据**：§7.1 的脚本 SHA256 为
+  `d093ef1d951d343c4753d246444ca19b571739f97859aa9adc5d775d5032b8ec`；TP2/4/8
+  各两遍，稳定指标与 digest 一致，计时只按两次区间报告。未执行多机实测。
