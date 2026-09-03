@@ -30,19 +30,19 @@ PPO、GRPO/RLVR 与 sampled-token OPD 分别消费哪些字段，并在训练前
 前置：会 PyTorch 训练循环、懂 transformer、知道 PPO/DPO 是什么（K）
   │
   ▼
-Step 1  nano-llamafactory L0–L1   ← 先跑通一个 SFT，建立「后训练长这样」的直觉
+Step 1  nano-llamafactory L0–L3   ← 从 SFT 数据合同到 SFT/DPO/KTO stage dispatch
   │
   ▼
 Step 2  nano-verl L0–L3           ← 引入 RL：PPO/IS、lockstep 拆分与同步 colocate
   │
   ▼
-Step 3  nano-slime L0–L1          ← rollout 吞吐、异步解耦与 staleness（后续层级按模块状态推进）
+Step 3  nano-slime L0–L3          ← rollout 吞吐、异步解耦、staleness、partial rollout 与 delta sync
   │
   ▼
-Step 4  nano-trinity-rft L1–L3    ← 统一框架，配置驱动 SFT+RL，对照权威实现源码
+Step 4  nano-trinity-rft L0–L3    ← 统一框架，配置驱动 SFT+RL，对照权威实现源码
   │
   ▼
-Step 5  nano-opd L0–L2            ← 蒸馏与 RL 合流：学生自采样 + 教师分布监督，multi-teacher
+Step 5  nano-opd L0–L3            ← 从 reverse-KL 算术到 multi-teacher 与生产配方四轴
   │
   ▼
 Step 6  sota-deepdive: Kimi-K3    ← 看 SOTA 如何把 agentic RL 规模化
@@ -70,10 +70,10 @@ Step 6  sota-deepdive: Kimi-K3    ← 看 SOTA 如何把 agentic RL 规模化
 - verl：`github.com/verl-project/verl`（HybridFlow 调度、actor-learner 分离）
 - slime：`github.com/THUDM/slime`（rollout infra）
 - LLaMA-Factory：`github.com/hiyouga/LLaMA-Factory`（SFT/DPO pipeline）
-- Trinity-RFT：开源仓库待核 `[TODO: verify repo]`
+- Trinity-RFT：[agentscope-ai/Trinity-RFT](https://github.com/agentscope-ai/Trinity-RFT)
 - OPD 经典锚点：MiniLLM `[arXiv 2306.08543]`（reverse KL + 学生自采样）、GKD `[arXiv 2306.13649]`、DistiLLM `[arXiv 2402.03898]` / DistiLLM-2 `[arXiv 2503.07067]`
-- OPD 前沿：OPD Survey `[arXiv 2604.00626]`（v3 2026-05 / v4 2026-06，含方法 taxonomy 与 multi-teacher 一节）；Qwen3 `[arXiv 2505.09388]` 生产配方；multi-teacher OPD（MAD-OPD / MOPD / Uni-OPD 等，arXiv ID 待核）`[TODO: verify arXiv]`；Thinking Machines on-policy distillation 博客（2025-10-27，2026-08-05 核验存在；生产配方与算力对照，数字为博客自述/转引）
-- RLVR / GRPO 族（DAPO / GSPO / CISPO）`[TODO: verify arXiv]`
-- SOTA：Kimi-K3 技术报告 `[TODO: verify arXiv]`
+- OPD 前沿：[OPD Survey 2604.00626](https://arxiv.org/abs/2604.00626)（v4 2026-06）；[Qwen3 2505.09388](https://arxiv.org/abs/2505.09388)；[MOPD 2606.30406](https://arxiv.org/abs/2606.30406)。单源变体只在核验后进入事实表。
+- RLVR / GRPO 族：[DAPO 2503.14476](https://arxiv.org/abs/2503.14476) / [GSPO 2507.18071](https://arxiv.org/abs/2507.18071) / CISPO（[MiniMax-M1 2506.13585](https://arxiv.org/abs/2506.13585)）
+- SOTA：[Kimi K3 技术报告 2607.24653](https://arxiv.org/abs/2607.24653)；课程解构见 [Kimi-K3 deep-dive](sota-deepdive/kimi-k3-agentic-rl-scale.md)
 
 → 深挖见 [sota-deepdive/](sota-deepdive/)

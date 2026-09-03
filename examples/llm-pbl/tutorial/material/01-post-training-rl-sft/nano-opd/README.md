@@ -11,7 +11,7 @@
 > （真实模型 → L1，multi-teacher → L2，生产配方对照 → L3）。
 > **对应一手来源**：MiniLLM `[arXiv 2306.08543]` · GKD `[arXiv 2306.13649]` ·
 > DistiLLM `[arXiv 2402.03898]` · OPD Survey `[arXiv 2604.00626]`
-> **轨道**：[01 后训练/RL/SFT](../README.md) · **状态**：L0–L1 ✅，L2–L3 待补
+> **轨道**：[01 后训练/RL/SFT](../README.md) · **状态**：L0–L3 ✅
 
 ---
 
@@ -21,14 +21,15 @@
 |------|------|------|
 | **L0** | single-file 确定性 toy：双峰教师 + 单峰受限学生，三配方对比（SFT / forward KL / reverse KL）+ 锁模驻点算术 + off-policy 反例（零依赖，CPU 即跑） | ✅ [L0_opd_divergence_choice.py](L0_opd_divergence_choice.py) · [tutorial_L0.md](tutorial_L0.md) |
 | **L1** | 搬进真实序列模型：真实 tokenizer + 两个真实小模型作师生（22x 容量差），教师 logprob 真实前向算出，真实梯度下降；2×2 因子设计隔离信号源与散度；教师背书度指标 + 相变动力学 + self-check 断言设计史 | ✅ [L1_real_opd_seqdistill.py](L1_real_opd_seqdistill.py) · [tutorial_L1.md](tutorial_L1.md) |
-| **L2** | multi-teacher OPD：多教师分布融合 / 路由的最小机制（只教 survey taxonomy 的机制类别，不追 C 层单源变体） | 🔲 |
-| **L3** | 对照生产配方（Qwen3 / MiMo-V2-Flash / Thinking Machines 报告）与 survey taxonomy：divergence 设计、信号源（白盒/黑盒）、token 加权、效率与稳定化 `[TODO: verify source]` | 🔲 |
+| **L2** | multi-teacher OPD：多教师分布融合 / 路由的最小机制；context routing 与 self-routing 反例 | ✅ [L2_multi_teacher_routing.py](L2_multi_teacher_routing.py) · [tutorial_L2.md](tutorial_L2.md) |
+| **L3** | 对照 Qwen3 / MiMo-V2-Flash / Thinking Machines / DeepSeek-V4 与 survey taxonomy：divergence、信号源、token 加权、效率与稳定化 | ✅ [L3_production_recipe_axes.py](L3_production_recipe_axes.py) · [tutorial_L3.md](tutorial_L3.md) |
 
 ## 环境依赖
 
 - L0：零外部依赖（纯标准库 math/random），CPU 即跑，固定 seed 逐字节确定。
 - L1：依赖 torch（真实小模型前向/梯度）。CPU 即跑，约 4 秒。已在 base（py3.13.13 + torch 2.13.0）和 longds（py3.12.13 + torch 2.4.1）两环境各 3 遍验证，EXIT=0，self-check 全绿。
-- L2+：视实现需 torch；真机项需在真实 GPU/多机环境验证 `[TODO: verify on real system]`。
+- L2/L3：依赖 torch；CPU 可跑，通常分别需要约 1 分钟与数分钟。它们验证 toy
+  机制与失败模式，不覆盖真实多教师 GPU 调度、教师 API 延迟或生产吞吐。
 
 ## 核心要讲清的点
 

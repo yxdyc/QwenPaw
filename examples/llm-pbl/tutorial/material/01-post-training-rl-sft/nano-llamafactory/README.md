@@ -6,8 +6,8 @@
 > 注意：LLaMA-Factory 本身是全功能微调框架（SFT/DPO/PPO/评估/导出一站式 +
 > Web UI），本模块只取其 SFT 数据侧的最小机制做阶梯——它是后续一切训练方法
 > （含 L2 的 DPO 偏好对构造）的数据侧地基。
-> **对应真实系统**：[LLaMA-Factory](https://github.com/hiyouga/LLaMA-Factory)
-> **轨道**：[01 后训练/RL/SFT](../README.md) · **状态**：L0 ✅，L1 ✅，L2 ✅，L3 待补
+> **对应真实系统**：[LlamaFactory](https://github.com/hiyouga/LlamaFactory)
+> **轨道**：[01 后训练/RL/SFT](../README.md) · **状态**：L0–L3 ✅
 
 ---
 
@@ -18,7 +18,7 @@
 | **L0** | single-file 确定性 toy：template 两种渲染 + labels 遮罩（shift 边界）+ collator 双层遮罩；用 coasting 模型量化 mask 的作用（零依赖，CPU 即跑） | ✅ [L0_sft_data_pipeline.py](L0_sft_data_pipeline.py) · [tutorial_L0.md](tutorial_L0.md) |
 | **L1** | 真实小模型 + torch 梯度下降跑最小 SFT 循环：在本节构造的 (input_ids, attention_mask, labels) 上训练，验证遮罩决定模型学到什么（scaffold 原「几步优化」目标在此落地） | ✅ [L1_minimal_sft.py](L1_minimal_sft.py) · [tutorial_L1.md](tutorial_L1.md) |
 | **L2** | DPO：偏好对用同一套 template/mask 机器构造（真实入口 `collator.py:L564` PairwiseDataCollatorWithPadding，2026-08-13 抓取；08-05 快照录 L553，上游漂移），reference-model KL 约束，对比 SFT vs DPO；按课程的经典证据层要求写明 DPO 当今定位 | ✅ [L2_dpo_preference_pairs.py](L2_dpo_preference_pairs.py) · [tutorial_L2.md](tutorial_L2.md) |
-| **L3** | 对照 LLaMA-Factory 配置体系：一个配置切换 SFT/DPO/PPO 的抽象取舍 `[TODO: verify source]` | 🔲 |
+| **L3** | 对照固定 LlamaFactory revision 的配置体系：一个 `stage` 分发 SFT/DPO/KTO，`pref_loss` 切换偏好 loss 族，并用跨级锚证明分发层数值惰性 | ✅ [代码](L3_stage_dispatch.py) · [教程](tutorial_L3.md) |
 
 ## 环境依赖
 
@@ -26,7 +26,7 @@
 - L1：torch（真实小模型 SFT）。
 - L2：torch（CPU 即可，实测 ~4s）；偏好对在脚本内构造（6 对单位数加法），
   固定 seed 确定性输出，掩码锚 `f8b50175…`/51 行、digest `9353e071…`。
-- L3：对照真实框架配置体系（见阶梯表）。
+- L3：torch（CPU 即可）；源码对照钉住 LlamaFactory revision，行号不外推到当前 main。
 
 ## 核心要讲清的点
 

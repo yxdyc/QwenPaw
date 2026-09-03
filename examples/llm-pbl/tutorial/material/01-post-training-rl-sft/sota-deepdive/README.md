@@ -1,8 +1,8 @@
 # SOTA Deep-Dive — 后训练 / Agentic RL 规模化
 
-> **深挖对象**：01 轨两个主题——① 后训练算法演进 PPO→GRPO/RLVR→OPD（首版 ✅ + 深化 ✅）；② Kimi-K3（agentic RL 规模化，候选 🔲）。
+> **深挖对象**：01 轨两个主题——① 后训练算法演进 PPO→GRPO/RLVR→OPD（首版 ✅ + 深化 ✅）；② Kimi-K3 agentic RL 规模化（独立成篇 ✅）。
 > **状态**：首版主题完成（2026-08-11）；深化与来源重对齐完成（2026-08-13，18 个 arXiv ID 复核，四项 `[TODO: verify]` 闭合）。
-> **对照基础**：nano-verl L0–L3、nano-opd L0–L1、nano-llamafactory L0–L2。
+> **对照基础**：nano-verl、nano-opd、nano-llamafactory 均已覆盖 L0–L3。
 > **深化落点**：[`post-training-algorithm-evolution-deepening.md`](post-training-algorithm-evolution-deepening.md)——四机制面可运行 sim（IS+clip / GRPO 组基线 / ratio 粒度 / OPD 合流，self-check 24/24）+ Kimi K3 / MOPD / DeepSeek-V4 正文层闭合 + survey v3→v4 版本漂移录值。
 
 ---
@@ -10,7 +10,7 @@
 ## 深挖什么（scope）
 
 1. **后训练算法演进**（首版已覆盖 + 深化已覆盖）：PPO 奠基（IS + clipping）→ GRPO 族与 RLVR（去 value model、reward 换可验证信号）→ OPD（蒸馏与 RL 合流）；算法与 infra 共演化。落点：[`post-training-algorithm-evolution.md`](post-training-algorithm-evolution.md) §2–§7，2026 格局三层锚点 → §8；深化落点：[`post-training-algorithm-evolution-deepening.md`](post-training-algorithm-evolution-deepening.md)（四机制面 native sim 实测锚 + 2026-08-13 重对齐 + 引用链）。
-2. **Kimi-K3 agentic RL 规模化**（候选，未独立开写）：rollout 吞吐、权重同步、长轨迹 credit assignment、多步工具调用 reward 设计。Kimi K3 **正文层证据已在深化批提取**（`[2607.24653]` ar5iv 全文 2026-08-13 重抓：§4.1.3 九教师 MOPD + clipped per-token OPD reward、partial rollout 陈旧度处理、resumable microVM sandboxes、verbosity control——见深化文档 §6.2/§7），独立成篇与否待后续裁夺。
+2. **[Kimi-K3 agentic RL 规模化](kimi-k3-agentic-rl-scale.md)**（已完成）：rollout 吞吐、co-located 权重可见性与内存竞争、长轨迹 credit assignment、多步工具 reward、AgentENV sandbox；配套纯标准库 [native sim](kimi_k3_agentic_rl_sim.py) 覆盖 27 项 self-check。
 
 ## 信息溯源要求（反幻觉硬约束）
 
@@ -34,5 +34,5 @@
 
 ## 权威实现与延伸
 
-- 轨道 [01](../README.md)；落地参照 nano-verl（L0–L3 满阶可运行锚点）/ nano-opd（L0–L1）/ nano-llamafactory（L0–L1，DPO 对照排 L2）
+- 轨道 [01](../README.md)；落地参照 nano-verl / nano-opd / nano-llamafactory（均 L0–L3）。
 - 一手来源：verl 开源代码（v0.7.1 锚点表见 nano-verl tutorial_L3 §11，行号以 2026-08-07 抓取日为准）；上述 arXiv 一手报告（详见 deepdive §10.1）
