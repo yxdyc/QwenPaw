@@ -11,7 +11,6 @@ __pycache__/
 /ROADMAP.md
 /shared/watchdog-playbook.md
 /shared/state-snapshot.md
-/tutorial/material/CURRICULUM-AUDIT.md
 
 # Local experiments and editor/backup output
 *.bak
