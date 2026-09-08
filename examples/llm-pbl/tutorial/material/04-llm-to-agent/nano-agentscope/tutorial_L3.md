@@ -1,8 +1,14 @@
 # nano-agentscope L3 — typed messages × broadcast wiring × 真模型
 
-> **级别**：L3（K+1：L2 的协议层（rule-based agents）→ L3 的「类型化契约 × 编排模式 × 模型入席」三合一）
-> **文件**：[`L3_typed_msghub.py`](L3_typed_msghub.py)（967 行，依赖 torch——来自 L1 import；全程 seeded、无任何计时行，跨运行输出逐字节一致）
-> **对照权威实现**：AgentScope **双快照**——v2.0.6 main（typed blocks / 构造期校验 / 消息级终止）+ v1.0.0 tag（MsgHub 广播 / SequentialPipeline 组合子）。L2 §6 发现 v2 已把 pipeline/msghub 移出 core，所以 L3 复现的是**跨两个快照的编排模式**，这正是 tutorial_L2 §10 预告的对照方案。
+裸 dict 像一张可以漏填字段的口头报关单；typed message 会在货物进入系统前检查结构。MsgHub 则像广播室，一次发言按接线规则送到所有订阅者。两者合在一起，才能讨论“谁知道什么”和“什么消息根本不该出生”。
+
+> **核心问题**：类型化消息、广播拓扑和真实小模型一起运行时，协议可靠性由哪些边界共同决定？
+> **先修**：L1 的 TinyReActLM 与真实工具，L2 的 planner/executor 协议和可靠性代数。
+> **运行**：`python3 -B L3_typed_msghub.py`，依赖 torch，CPU 约 3–4 分钟。
+> **验收**：畸形消息在构造期失败，三种接线产生预期的认知状态；模型训练锚点与 L1 一致，固定 seed 输出稳定。
+> **边界**：planner 是约 94K 参数字符模型；hosted backend 仅有契约路径，未提供 key，也没有生产 AgentScope 负载证据。
+
+源码对照采用 AgentScope 双快照：v2.0.6 main 提供 typed blocks、构造期校验与消息级终止，v1.0.0 tag 提供 MsgHub 广播和 SequentialPipeline。v2 已将 pipeline/msghub 移出 core，因此本级明确复现跨版本的编排思想，不把它写成单一当前 API。
 
 ---
 
@@ -257,6 +263,8 @@ L2 的 planner 先发一条 plan 消息——那是它对 executor 和 orchestra
 2. 「重试预算按 iid 公式买就够了」——[4] 实测：k=1 时公式承诺 94.1%，实测 76.5%——失败是 sticky 的、修复只在训练过的位置有效，iid 是上界不是等式。
 
 **自检问题**：你能不能向一个只写过 RPC 调用的工程师解释——为什么「审计员在群里」比「审计员被逐个通知」不只是方便，而是**认知状态**的差别？（提示：p2p 世界里审计员的知识 = 别人**记得**转发给它的东西——转发是义务，就会漏；hub 世界里审计员的知识 = 房间的账本——漏不了。前者是 best-effort，后者是 by-construction。）
+
+**参考答案**：点对点拓扑把“通知审计员”变成每个发送者都必须正确履行的副作用，新增角色或新消息类型时容易漏边；broadcast hub 在入群时一次建立订阅关系，之后每条 crossing 自动进入审计员的可见历史。前者的知识完备性依赖调用者纪律，后者由拓扑构造保证。当然 hub 仍需持久化、访问控制和顺序语义，本级只证明单进程广播认知状态。
 
 ---
 

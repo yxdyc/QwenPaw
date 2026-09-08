@@ -376,6 +376,15 @@ tutorial_L0.md §4-6；IS 修正 = nano-verl tutorial_L1.md。
 2. `interval=8` 时，哪一批样本恰好吃满 staleness=8？为什么不是平均值？
 3. 推权重前为什么要等在途生成完成？如果不等，会破坏什么不变量？
 
+<details>
+<summary>参考答案</summary>
+
+1. 同步串行每轮耗时为 $T_r+T_t$，理想异步只能把两段完全重叠为 $\max(T_r,T_t)$，所以加速比至多 $(T_r+T_t)/\max(T_r,T_t)\le 2$。通信、气泡和负载不均只会让实测值更低。
+2. 最大 staleness 落在一次 interval 开头、刚完成生成却要等多次更新后才消费的批次；平均值把不同位置混在一起。判断训练风险要同时报告最大值或分位数，不能只报均值。
+3. 在途请求已经绑定旧 policy version。推权重时若允许它跨版本继续生成，一条 response 内会混合两套策略，`old_log_prob` 和行为策略身份不再唯一，PPO ratio、重放和故障恢复都失去可审计基准。
+
+</details>
+
 ---
 
 ## 12. 思考题

@@ -1,9 +1,14 @@
 # nano-qwenpaw L2 — 方法论注入：把原则变成可执行的流程
 
-> L0 给单个调用套上 harness（system prompt + 自检），L1 让 harness 在有限窗口下活过多轮（write-through + eviction index）。
-> L2 注入**方法论**：K+1 规则、费曼审查、对抗式 Examiner-B 门禁、反幻觉立场，不再是 prompt 里的散文，而是 harness **执行的流程**——
-> 且所有数字（mastery 增量、80% 阈值、token_cap）都是运行时从 coach 真实文件里**解析**出来的，数字跟随源码，不是硬编码。
-> 同时补上 L1 没讲的工具结果维度写穿（`cap_middleware.py`：token_cap + preview + recall pointer + degradation path）。
+写在 prompt 里的原则像贴在墙上的裁判规则：大家可能看见，却未必执行。L2 把 K+1、费曼审查、对抗式 Examiner-B 和反幻觉门禁变成 harness 中可运行、可失败、可留证的裁判流程。
+
+> **核心问题**：怎样把“遵循某种方法论”从一段劝告变成可执行状态机，并证明每个判断来自哪份规则？
+> **先修**：L0 的自检 harness 与 L1 的 write-through memory / eviction index。
+> **运行**：`python3 -B L2_real_methodology_loop.py`，纯标准库，CPU 约 1 秒。
+> **验收**：运行时从真实 coach 文件解析 mastery 增量、80% 阈值与 `token_cap`；对抗缺陷不能越过 Examiner-B，工具结果可写穿并可召回。
+> **边界**：learner、题目生成器和 gap detector 是声明过的 mock/heuristic；provenance gate 验证证据链，不验证自然语言判断本身为真。
+
+本级同时补齐工具结果的 token cap、preview、recall pointer 与降级路径。规则数字直接跟随源文件，避免教程与实现分别维护两套常量。
 
 ---
 
@@ -200,7 +205,7 @@ LearnerModel（声明）的三条性质之后，三条政策跑同一起点（m0
 - **fixed-easy**：难度冻在初始 K+1。θ 涨、难度不涨，分数滑向 >80% 天花板，规则每个 session 照付 +0.1——mastery 0.70（自称 level 7），θ 却只涨了 0.76 且正逼近 prox=0 的顶（学习燃料 = 「够得着的错题」，θ→d+1 时归零）。量化通胀：**0.79 mastery/θ vs adaptive 的 0.19**——同一种货币，购买力差了 4 倍。这就是 Goodhart 定律的回路版：当分数变成目标，它就不再是好度量。
 - **fixed-hard**：难度 K0+3。分数 18%，`<50%` 规则把 mastery 一路扣到地板 0（源码写明 min 0），θ 原地不动——超出 zone 的错题不是学习燃料，是弃学信号。
 
-结论不是「自适应更好」这种空话，而是可测的三条：adaptive 的 θ 终值严格最高；fixed-easy 的 mastery 严格高于 adaptive 但 θ 严格更低（通胀）；fixed-hard 触底。**规则本身不保证学到东西，是「难度追着能力跑」这件事在保学习信号。**
+结论落在三条可测事实上：adaptive 的 θ 终值严格最高；fixed-easy 的 mastery 严格高于 adaptive 但 θ 严格更低（通胀）；fixed-hard 触底。规则本身不能保证学习发生；保持信号的关键是让难度随能力移动。
 
 ## 6. §3：费曼审查——四类 gap，只有一类需要真证据
 
@@ -263,6 +268,8 @@ SOUL.md principle#7（Continuous Improvement，L69）要求每次 session 留痕
 源文件 sha256[:8]（本次输出 [0] 区）：SOUL.md `e143a057`、k-plus-one.md `3cbf925a`、feynman-check.md `bca18409`、cap_middleware.py `5ea09476`、manager.py `6260c313`、history.py `48b71b62`。其中 scroll 四件与 L1 §14 记录一致，SOUL.md 与 L1 一致。
 
 ## 11. 费曼自检
+
+### 逐题参考答案
 
 - 能不能解释：为什么同一个生成者「再读一遍自己的输出」几乎必然通过？（相关盲点：同一套计算复现同一个错误；验证效力来自证据通道异质性——独立 oracle、外部 registry、跨样本比对）
 - 能不能解释：fixed-easy 的分数明明更高（mean 72.3 vs 54.4），为什么反而暴露了问题？通胀的到底是 mastery 的哪个成分？（分数→门槛→增量的机械链路在难度冻结时与真实能力脱钩；mastery/θ 汇率 0.79 vs 0.19）

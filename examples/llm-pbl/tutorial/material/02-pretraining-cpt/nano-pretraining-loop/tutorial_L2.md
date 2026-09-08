@@ -262,3 +262,5 @@ validation/hidden sentinel 是否重新通过。本节只证明“完整 anchor 
 
 费曼自检：如果 model/optimizer 在所有 DP rank 上完全相同，为什么仍不能删除所有非零 rank 的
 checkpoint？若你的答案没有提到 sampler/RNG、rank identity 和未来并行布局，说明还没真正掌握本节。
+
+**参考答案**：参数相同只说明 replicated model state 可去重；每个 rank 消费的数据切片、sampler cursor、CPU/CUDA RNG、worker 状态和 rank-local 失败位置仍不同。恢复到同一 world size 时，这些状态决定下一批是否连续；恢复到新布局时，它们又是重建全局顺序和分片映射的输入。可以在 manifest 中内容寻址去重相同 tensor，但不能在没有全局 cursor、rank identity 与重分片规则时直接删除 rank checkpoint。

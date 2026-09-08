@@ -1,15 +1,14 @@
 # nano-trinity-rft L3 — 配置即实验台：schema、注册表与 ablation ladder
 
-> **K+1 位置**：L2 回答了「RL 的 reward 信号从哪里来」（rule vs learned RM、
-> dead group 算术、Goodhart）。本级换一个完全不同的问题：**为什么 Trinity-RFT
-> 能用一份 YAML 就切换十余种算法、跑一组消融？** 答案不在算法里，在配置系统
-> 里——schema、注册表、三层优先级合并、stages 覆盖，这四样东西让「改一个字段
-> = 换一个实验」成为可能。L3 就在 toy 上复现这套机制，并用它跑一个 DAPO 式的
-> ablation ladder：阶梯每一格 = `dapo.yaml` 里的一行开关。
-> **对标权威实现**：`agentscope-ai/Trinity-RFT`（main 分支，2026-08-13 现场克隆
-> 核验，HEAD `009850b1`，末 commit 2026-07-31；README 30,381 B，sha256
-> `d513f140…b73982`——与 L1 08-06 / L2 08-12 录值逐位零漂移）。行号锚点以
-> 2026-08-13 抓取日为准。
+一份训练配置很像实验室配电盘：开关本身不产生算法，却决定哪条线路通电、哪些组合非法、一次消融究竟改了什么。配置系统若没有 schema、优先级和来源记录，两个看似相同的实验可能已经悄悄走上不同路径。
+
+> **核心问题**：Trinity-RFT 如何用一份 YAML 安全地切换算法，并把一组开关变成可归因的 ablation ladder？
+> **先修**：L2 的 rule reward、learned RM、dead group 与 Goodhart 反例。
+> **运行**：`python3 -B L3_config_ablation.py`，仅依赖 torch，CPU 约 2 分钟。
+> **验收**：schema 拒绝非法组合，三层优先级能追溯每个值的来源，逐级消融只改变预登记的开关。
+> **边界**：这里验证的是配置、注册和消融语义；toy 训练结果不证明 DAPO 在真实大模型上的收益。
+
+源码对照固定为 `agentscope-ai/Trinity-RFT` main 分支的 2026-08-13 快照：HEAD `009850b1`，README sha256 `d513f140…b73982`。文中行号只对这个快照负责。
 
 ---
 
@@ -452,6 +451,8 @@ stages 机制的价值恰在于：加一层过渡 = 列表里多一条 StageConf
 ---
 
 ## 10. 费曼自检
+
+### 参考讲法与逐题答案
 
 **讲给外行听**：想象一个巨大的调音台，每首曲子（算法）其实是一组推杆位置
 （clip 多少、要不要 KL、组多大…）。Trinity 的做法是给每首曲子存一张**预设卡**

@@ -251,6 +251,8 @@ LLaMA-Factory（`github.com/hiyouga/LLaMA-Factory`）的 SFT 数据侧与本节�
 
 ## 7. 费曼：讲给外行听
 
+### 参考讲法
+
 **类比：批改答题卡。**
 
 - **chat template = 答题卡的印刷版式**：题目印在哪、作答区从哪条线开始，版式

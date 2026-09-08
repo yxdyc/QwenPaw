@@ -282,5 +282,16 @@ L1 可在隔离的 GPU 环境开展真实小模型实验；L0 不应为了“像
 4. 公开平均分上涨时，hidden sentinel 和最坏领域回归分别防什么？
 5. 为什么“模型优化了 kernel”是研发自动化证据，却不是可靠 RSI 的充分证据？
 
+<details>
+<summary>参考答案</summary>
+
+1. on-policy 描述的是状态/轨迹来自当前 student；full-vocabulary 描述教师在这些已访问状态上提供整个词表分布。它覆盖词表，不把 teacher trajectory 换进来。
+2. sampled-token 只传被采样 token 的 logprob，通信从 $O(V)$ 降到近似 $O(1)$；它的单样本方差、importance weight、support 与 clipping 行为和 full KL 不同。无偏估计某个梯度不等于有限预算下拥有相同训练轨迹。
+3. 错 router 仍可能把样本交给一位内部自洽、置信度很高的教师，student 会很好地拟合这份错误目标，loss 漂亮下降。路由质量必须用 domain-aware gold、teacher disagreement 和最坏域回归另测。
+4. hidden sentinel 防止能力生产者针对可见题持续过拟合或污染；最坏领域门防平均值掩盖少数关键域坍塌。前者管选择偏差，后者管聚合偏差。
+5. kernel 优化证明 agent 能提出并验证局部工程改动。可靠 RSI 还需要候选与 parent 的固定预算配对评估、fresh holdout、失败率与成本、独立晋升、lineage 和 rollback；否则只是一项成功案例。
+
+</details>
+
 一句话验收：**专家可以并行生产，但集成不是无损拼装；只有经过版本绑定、能力向量评估、独立晋升与可回滚
 谱系，统一 candidate 才有资格替换 parent。**

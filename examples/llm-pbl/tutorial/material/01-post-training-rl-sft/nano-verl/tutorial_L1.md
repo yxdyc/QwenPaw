@@ -1,8 +1,14 @@
 # nano-verl L1 — 最小 PPO 循环（真实可训练模型）
 
-> 对应真实系统：[verl](https://github.com/verl-project/verl)（HybridFlow）
-> 本文件：`tutorial/material/01-post-training-rl-sft/nano-verl/tutorial_L1.md`
-> 可跑文件：`L1_minimal_ppo.py`
+L0 把 actor 与 learner 的职责画成最小控制流。L1 给这条控制流装上真实小模型：先用 SFT 建立可学习起点，再让 rollout、advantage 和 PPO update 反复闭环。
+
+> **核心问题**：一批采样怎样变成 advantage，再经过 clip、value loss 和 entropy 更新同一个策略？
+> **先修**：L0 的 actor/learner 分离、log-probability 与 REINFORCE 直觉。
+> **运行**：`python3 -B L1_minimal_ppo.py`，仅依赖 torch，CPU/MPS 可跑。
+> **验收**：SFT warmup 后 reward 提升，padding token 不进入策略更新，ratio/clip/GAE 的张量位置可逐项解释。
+> **边界**：约 28K 参数字符 LSTM 验证 PPO 数据流；单进程玩具没有分布式采样、真实 reward model 或大模型稳定性证据。
+
+对应真实系统为 [verl](https://github.com/verl-project/verl)（HybridFlow）。本级先固定算法闭环，L2/L3 再加入进程和资源编排。
 
 ---
 
@@ -106,7 +112,7 @@ def supervised_warmup(model, optimizer, prompt_ids, device, steps):
         optimizer.step()
 ```
 
-> **关键认识**：SFT 不是「作弊」，而是 RL 的合理起点。没有它，PPO 要么学不动，要么学到奇怪局部最优。
+> **关键认识**：SFT 为 RL 提供合理起点。缺少这个起点时，PPO 可能学不动，也可能落入奇怪的局部最优。
 
 ### 2. Rollout：用旧策略采样
 
@@ -322,13 +328,22 @@ L1 已经触及真实 RL 训练循环的四要素，但仍然是单进程、单�
 - **GAE / Advantage**：如果鹦鹉已经会说 "he"，那下一个字符说对 "l" 的「边际进步」比从完全乱叫开始更大；
 - **PPO clip**：如果某次鹦鹉突然改掉太多发音，你只让它改一小步，防止它彻底不会说了。
 
-PPO 不是让鹦鹉一次性背下整句话，而是让它在已有基础上，稳定地朝高分方向微调。
+PPO 让这只鹦鹉在已有语言基础上，稳定地朝高分方向微调，无需一次性重学整句话。
 
 ### 思考题
 
 1. 如果把 `CLIP_EPS` 从 0.2 改成 2.0（基本不 clip），训练可能会出现什么现象？
 2. `entropy_coef` 如果设为 0，模型输出会怎样变化？这在长序列生成里为什么危险？
 3. 为什么 GAE 要从后往前算，而不是从前往后？
+
+<details>
+<summary>参考答案</summary>
+
+1. `CLIP_EPS=2.0` 几乎移除 trust-region 近似，少数高 advantage token 可产生很大的 ratio 与更新步，带来 KL 尖峰、策略坍缩或对旧 rollout 的过拟合。
+2. entropy 系数为 0 后，策略会更快集中到当前高分序列；探索不足会使未尝试前缀永远没有学习信号。序列越长，早期 token 的过早确定越容易锁死整条后续轨迹。
+3. $A_t$ 依赖下一时刻的 advantage：$A_t=\delta_t+\gamma\lambda A_{t+1}$。从后往前才能在一次扫描中使用已经算出的未来累计量，并在 terminal/truncation 边界正确决定是否 bootstrap。
+
+</details>
 
 ### 反例
 

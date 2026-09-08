@@ -362,6 +362,15 @@ engine），每次改条款不再邮寄整本 500 页合同，只寄红线 diff 
 3. delta 在 wire = 0 的理想情况下为什么仍然有成本？这个成本在 colocate
    时意味着什么？
 
+<details>
+<summary>参考答案</summary>
+
+1. partial rollout 主要回收已经支付的 decode token，并改善完成率/样本利用率；稳态吞吐仍由 rollout 或 train 中更慢的一段决定。它值得开，是因为少浪费计算，不是因为自动提高每秒产出。
+2. XOR delta 定义为相对某个 base 的差，施加一次得到 target，施加两次会按 XOR 性质回到 base；因此必须校验 base version 并做到恰一次。overwrite 携带目标位置的新值，重复写入收敛到同一结果，重试天然幂等，但 payload 往往更大。
+3. 找 delta 仍需扫描或比较全量权重，成本落在内存带宽、编码和 checksum。colocate 时训练与推理可共享同一物理存储或 IPC handle，wire 已接近零，继续维护 delta 反而多付一次全量扫描，所以要切换同步机制。
+
+</details>
+
 ---
 
 ## 10. 思考题

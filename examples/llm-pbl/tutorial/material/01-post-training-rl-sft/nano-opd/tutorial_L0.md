@@ -1,14 +1,14 @@
 # nano-opd L0 — reverse KL vs forward KL vs SFT 蒸馏：为什么 OPD 必须「学生写、教师批」
 
-> **模块定位**：OPD（on-policy distillation，学生自采样 + 教师分布监督）是 2025–2026
-> 后训练的主流方向之一（时效性 B 层前沿选题，§八 SOTA 对齐记录见 §15）；
-> MiniLLM / GKD 是它的经典锚点（A 层）而非前沿本身。
-> 本模块只隔离 OPD 的**最小机制**——「散度怎么选、on-policy 从哪来」，
-> 不覆盖完整蒸馏栈（数据、调度、multi-teacher 工程见 L1–L3 阶梯）。
->
-> **K+1 起点（K）**：知道 KL 散度的定义、知道 MLE/SFT 是什么、见过 policy gradient
-> 的基本形式。本节推进到 K+1：说得出「为什么 reverse KL 蒸馏必须学生自采样」，
-> 并且能用算术（而不是断言）证明它。
+想象一位学生在岔路很多的城市里练车。教师提前录好的路线只能覆盖教师去过的街道；若要纠正学生自己拐错后遇到的状态，就得让学生先开，再由教师沿实际轨迹点评。这正是 on-policy distillation 的采样问题。
+
+> **核心问题**：为什么 reverse KL 要从学生分布采样，而 forward KL 与离线 SFT 不需要同样的接口？
+> **先修**：KL 散度、MLE/SFT，以及 policy gradient 的基本期望形式。
+> **运行**：`python3 -B L0_opd_divergence_choice.py`，纯标准库，CPU 秒级。
+> **验收**：能从期望分布推导三种目标的采样需求，并用数值反例观察 mode-seeking、mode-covering 与 exposure bias。
+> **边界**：这是离散网格上的最小机制实验；完整数据、调度、multi-teacher 和真实序列模型从 L1 开始。
+
+OPD 是 2025–2026 后训练的重要方向；MiniLLM / GKD 在这里充当经典机制锚点。§15 单独记录时效性与 SOTA 对齐，避免把“经典可解释”误写成“当前最强”。
 
 ---
 
@@ -280,6 +280,8 @@ step2: mu -4.351 → +32.486  （冲出网格，学生分布数值退化）
 
 ## 10. 费曼：能不能讲给外行听
 
+### 参考讲法
+
 **类比：师傅带学徒做两道招牌菜**（一道辣 x=+3、一道甜 x=−3，客人
 99% 点这两道，点中间口味的不到 5%）。学徒只有一个灶、只练得精一种口味
 （容量受限）。
@@ -419,7 +421,7 @@ SFT 蒸馏的数据侧（模板 / loss mask）→ [nano-llamafactory](../nano-ll
 | OPD survey [2604.00626] | OPD = 学生自采样轨迹上的 f-divergence 最小化；方法 taxonomy；production adoption | v3（2026-05-18）HTML 全文抓取；v4 于 2026-06-18 修订（abs 页核验）。正文转述均出自 v3 抓取文本 |
 | Qwen3 [2505.09388] | 生产配方采用 OPD（survey 点名） | arxiv.org 标题页核验：*Qwen3 Technical Report* |
 | Thinking Machines blog | 生产级 OPD 配方（Qwen3-8B 学生 / 教师逐 token 打分 / 负 reverse KL 作 advantage；AIME'24 60%→70%；算力对照 17,920 vs 1,800 GPU 小时为博客转引 Qwen3 报告） | 2025-10-27 发布；数字标注为博客自述/转引，非本教程实测 `[blog claims]` |
-| DeepSeek-V4 采用 pure multi-teacher OPD | survey 正文的转述 | 本报告未直接核验 DeepSeek-V4 技术报告 `[TODO: verify]` |
+| DeepSeek-V4 采用 multi-teacher OPD | DeepSeek-V4 报告 §5.1/§5.1.2 | 2026-09-08 已回到一手报告：specialist 先训练，再以 full-vocabulary reverse KL 合入 student；系统边界见 [Frontier Lifecycle](../../cross-track-frontier-model-lifecycle/RESEARCH.md) |
 | multi-teacher 具体方法（MAD-OPD / MOPD / Uni-OPD） | 2026 年单篇变体，只作机制类别佐证 | survey v3 方法表转述；个别方法不单独立论（§八 C 层纪律） |
 
 **本节全部 toy 数字**：`L0_opd_divergence_choice.py` 当日运行输出（三遍

@@ -190,7 +190,7 @@ ProcessGroupGloo::SendWork::wait()
 
 ### 4.3 根因：通信模式，不是通信原语
 
-死锁的根因不在「阻塞 vs 非阻塞」——而在**通信模式**：
+阻塞 API 本身不必然导致死锁。根因是**通信模式**：
 
 1F1B 稳态下，每个 step 内 rank 0 要做「fwd send（给 rank 1）」和
 「bwd recv（从 rank 1）」，rank 1 要做「fwd recv（从 rank 0）」和
@@ -399,6 +399,8 @@ CPU/gloo loopback 上 P2P 延迟波动导致 bubble 有 ±1–2% 噪声；
 ---
 
 ## 9. 费曼：讲给外行听
+
+### 参考讲法
 
 **类比：工厂流水线。**
 

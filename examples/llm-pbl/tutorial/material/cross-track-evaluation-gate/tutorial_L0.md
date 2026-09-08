@@ -179,5 +179,18 @@ evaluator 当然要读取 sentinel；隔离对象是 candidate 生成方和日�
 反例问题：如果团队连续训练 100 个 candidate，只汇报其中 bootstrap 下界最高的一个，单个 95% 区间为什么
 不再足够？你需要把 candidate 选择过程纳入 sequential/multiple-testing 设计，而不是只修改最终阈值。
 
+<details>
+<summary>参考答案</summary>
+
+班级平均分提高仍不足以换老师。对同一批学生做 parent/candidate 配对，才能把学生难度从差值里抵消；没参与备考的 hidden 题检验提升是否超出可见训练面；安全题属于关键约束，即使均值上涨也可一票否决。三者分别控制 mix variance、适应性过拟合和尾部风险。
+
+1. 成本改为 1.20 后，能力 checks 可以继续通过，但 cost gate 应独立拒绝，证明“更强”与“值得部署”是两项判断。
+2. parent/candidate seed 不同破坏逐题配对身份；系统应先判 evidence invalid，不能用两个均值冒充 paired delta。
+3. 20 行只有 5 个独立文档簇时，应以簇为重采样单位。有效样本量接近 5，区间通常比逐行 bootstrap 更宽；方向是否变化取决于簇内相关与簇大小。
+
+连续选择 100 个 candidate 后，最终赢家的区间已经条件于“它在 100 次中最幸运”。单次 95% 覆盖不再控制整条选择流程的误报率；需要预登记 sequential budget、alpha spending/多重校正，或用独立 promotion holdout 对选中者重测。
+
+</details>
+
 一句话验收：**先固定谁和谁、在哪套证据上比较，再用不确定性与硬约束裁决；晋升记录必须指回 parent，
 因为“允许尝试”永远不等于“可以丢掉退路”。**

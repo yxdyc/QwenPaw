@@ -199,4 +199,15 @@ immutable EpisodeRecord
 4. 若 full-vocabulary OPD 只存 teacher hidden state，还要绑定哪些 prediction-head/tokenizer 信息？
 5. rollout worker 在提交后超时重试，怎样阻止同一 episode 被 train admission 两次？
 
+<details>
+<summary>参考答案</summary>
+
+1. `step_100` 只是一段昵称；还需 checkpoint/content digest、代码/config、tokenizer、采样参数和 parent lineage。不同分支都可能有自己的 step 100。
+2. 保留旧 reward 原值与 evaluator identity，新增 `reward-v5` 派生记录。覆盖会伪造历史，使旧训练决策无法重放；重新打分属于新视图。
+3. assistant 生成且由当前算法负责的 token 通常进入 loss；prompt、模板、tool observation 只作上下文。tool-call arguments 是否训练取决于算法合同，必须用 segment/span 显式记录，不能靠角色名猜。
+4. hidden state 只有绑定 prediction head revision、tokenizer/vocab mapping、dtype/shape 和教师 checkpoint 才能重建 logits；否则同一向量在另一 head 下没有相同概率语义。
+5. 用稳定 `episode_id`/content digest 和持久 admission 表做 conditional insert。worker 重试可返回同一 receipt；训练侧只有第一次原子 claim 能进入 batch，不能靠内存 set 去重。
+
+</details>
+
 一句话验收：**算法决定消费哪些字段；provenance、终止语义和版本身份决定这些字段有没有资格被相信。**

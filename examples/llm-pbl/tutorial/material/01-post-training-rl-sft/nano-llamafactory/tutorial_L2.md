@@ -1,20 +1,14 @@
 # nano-llamafactory L2 — DPO：偏好对住在同一套遮罩上
 
-> **K+1 位置**：L0/L1 建立了 SFT 的数据侧三件套——chat template 定 response
-> 边界、labels 的 `-100` 遮罩定 loss、collator 的 pad 双层遮罩——并验证了
-> 「SFT 与预训练共用同一个 next-token loss，差别只在 labels 遮罩」。本级只加
-> 一个新问题：**如果数据不再是「标准答案」，而是「哪个回答更好」的成对比较，
-> 同一套数据侧机制要改什么？** 答案是：几乎什么都不改——一个偏好对就是两条
-> 普通 SFT 行；真正新的只是 loss 怎么消费它们。这就是 DPO（Direct Preference
-> Optimization，arXiv 2305.18290）。
->
-> **对标权威实现**：[LLaMA-Factory](https://github.com/hiyouga/LLaMA-Factory)
-> main 分支 @`0bbe481e`（全 HEAD `0bbe481e6e621527284d37f1e13a6b9556c303ec`，
-> 2026-08-13 codeload tarball 抓取，并经独立复验确认零漂移）。本文行号锚点以
-> **2026-08-13 抓取日**为准；引用录值均保留来源与快照口径。
->
-> **时效性定位（课程的经典证据层经典锚点，必读 §8.2）**：DPO 是无可置疑的经典，
-> 但**经典 ≠ 前沿**——前沿模型的生产配方已转向 GRPO/RLVR 族。
+DPO 数据像一场两两对决：同一个 prompt 下，chosen 与 rejected 各自仍是普通序列，新增信息只是“谁胜过谁”。因此 template、response mask 和 padding 规则可以复用，变化集中在 loss 如何比较两条序列。
+
+> **核心问题**：偏好对怎样复用 SFT 数据管线，reference model、$\beta$ 与长度归一化又分别改变什么？
+> **先修**：L0 的 template/mask/collator 与 L1 的真实 SFT next-token loss。
+> **运行**：`python3 -B L2_dpo_preference_pairs.py`，仅依赖 torch，CPU 约 4 秒。
+> **验收**：chosen/rejected 遮罩对齐；DPO loss 与手算一致；交换偏好、移除 reference 和错误 padding 的反例产生预期差异。
+> **边界**：74K 参数字符 GPT 和 6 对加法数据只用于隔离机制；DPO 是经典锚点，当前前沿生产路线还包括 GRPO/RLVR。
+
+工程对照固定为 [LLaMA-Factory `0bbe481e`](https://github.com/hiyouga/LLaMA-Factory/tree/0bbe481e6e621527284d37f1e13a6b9556c303ec) 的 2026-08-13 快照。文中行号与引用录值只对这个 revision 负责。
 
 ---
 
@@ -241,7 +235,7 @@ margin(2.0)」盯住的算术。
 
 drift 的排序也由此解释：β=0.1 走「干净路径」（压 rejected、chosen 留在原处，
 drift 0.92 nats）；β=0.5/2.0 走「偷懒路径」（质量整体搬家到无关 token，
-drift 7.64/5.42 nats）。drift 大小不是 β 的直接单调函数，而是「优化路径把质量
+drift 7.64/5.42 nats）。drift 大小并不随 β 直接单调变化，它取决于优化路径把质量
 搬去了哪」的结果—— toy 尺度、固定 seed 下的路径现象，机制可迁移、系数不可
 外推（§8.1）。
 
@@ -337,7 +331,7 @@ margin = logp(chosen) - logp(rejected)
 LLaMA-Factory 经 `compute_preference_loss`（trainer.py:L187）分派：
 `use_ref_model=False` 走 orpo/simpo（不需要 ref）；否则委托 trl 的
 `DPOTrainer.dpo_loss`（trainer.py:L27 import），默认 sigmoid 族
-（finetuning_args.py:L183-186）。`use_ref_model` 不是用户字段而是推导量
+（finetuning_args.py:L183-186）。`use_ref_model` 是由其他配置推导出的量，并非用户字段
 （finetuning_args.py:L593）：
 
 ```python
@@ -421,6 +415,15 @@ model），不是跟绝对满分比：「你比基线更倾向好答案了多少
    一句话说清 ref 在 loss 里的位置。
 2. 为什么 step 0 的 loss 恰好是 ln 2？它不是 ln 2 说明什么？
 3. win 6/6 为什么不能保证模型「会答题」？质量可以漏去哪？
+
+<details>
+<summary>参考答案</summary>
+
+1. DPO 不需要单独拟合一个标量 reward model，但需要 reference policy 提供锚点。loss 比较的是 candidate 相对 reference 对 chosen/rejected 的 log-ratio 改变量；去掉 reference，目标就失去“偏离原策略多少”的坐标。
+2. 初始化时 candidate 与 reference 相同，chosen 和 rejected 的相对改变量都为 0，二分类 logit 为 0，因此负对数 sigmoid 是 $-\log \sigma(0)=\log 2$。若起点不是 $\log 2$，先检查 candidate/reference 是否同权重、mask/长度归约是否一致。
+3. 6/6 只证明给定六个 pair 的相对顺序正确。概率质量仍可能流向 pair 外的无关回答，chosen 本身也可能只比 rejected 稍好而不正确。需要绝对任务指标、held-out pairs、生成完成率与分布漂移共同验收。
+
+</details>
 
 ---
 

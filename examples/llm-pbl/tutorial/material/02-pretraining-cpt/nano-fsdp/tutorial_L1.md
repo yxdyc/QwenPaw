@@ -168,6 +168,16 @@ L0 把 ZeRO 比作「书、笔记、文具」分片。L1 用真实 PyTorch 做�
 3. 为什么 DDP 的 `sum across ranks` 是 FSDP 的两倍？集群总显存预算紧张时，这是选 FSDP 的核心理由吗？
 4. 脚本里 Adam 用 fp32，所以参数 + 梯度 + m + v 刚好 16 bytes/param。如果改用 mixed precision（fp16 参数 + fp32 master + m + v），每 rank 的哪一栏会变化？
 
+<details>
+<summary>参考答案</summary>
+
+1. FSDP 把一份完整模型状态分到两个 rank，所以全 rank 求和等于 DDP 单 rank 的完整副本。真实 7B/8 卡在理想无 padding 口径下同样成立；临时 buffer、分片不均、flatten padding 和 allocator 开销会让进程实测值偏离。
+2. 只包整个模型时稳态 shard 总量近似不变，但一次 all-gather 的粒度变大、整模型临时驻留峰值更高，通信次数更少却更难与逐层计算 overlap。按 block 包装用更多小 gather 换较低峰值和更好的预取机会。
+3. 两 rank DDP 存两份完整状态，FSDP 合计只存一份，因此前者正好约两倍。FSDP 的核心价值是降低单 rank 与集群复制状态；若集群总预算紧张，这确实重要，但还要把通信和临时峰值计入决策。
+4. 参数和梯度栏从 4 B 降到 2 B；optimizer 栏除 m/v 外新增 4 B fp32 master。合计仍约 16 B/param。mixed precision 主要缩计算、activation 与通信张量，不能自动把 Adam 模型状态减半。
+
+</details>
+
 ### 反例
 
 > 「FSDP 让训练大模型的总显存需求减半。」

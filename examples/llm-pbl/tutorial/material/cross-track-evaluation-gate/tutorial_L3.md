@@ -276,6 +276,8 @@ takeaway: an outbox does not create cross-service ACID; stable keys, generation 
 
 ## 11. 费曼自检：仓库与高速公路指示牌
 
+### 参考讲法
+
 把 controller 想成仓库里的“换指示牌批准单”，router 是高速公路上的真实电子牌：
 
 - 批准单入库，不等于公路牌已切；

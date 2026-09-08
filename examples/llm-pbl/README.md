@@ -1,7 +1,7 @@
 # LLM-PBL — Project-Based Learning for LLM Systems
 
-> **定位**：一套以「动手做出来」为唯一验收标准的 LLM 系统学习材料。
-> 不是综述，不是讲义摘抄，而是**从零重写核心组件（nano-*）→ 跑通最小闭环 → 对标权威实现与 SOTA 工程实践**的阶梯式训练场。
+> **定位**：一套以「动手做出来」为主要验收方式的 LLM 系统学习材料。
+> 学习者从零重写核心组件（nano-*），跑通最小闭环，再对照权威实现与 SOTA 工程实践解释差异和边界。
 
 ---
 
@@ -25,13 +25,13 @@
 
 | 轨道 | 主题 | nano-*（对标权威实现） | SOTA 深挖 |
 |------|------|------------------------|-----------|
-| **01** | 后训练 / RL / SFT infra | trinity-rft · slime · verl · llamafactory | Kimi-K3（agentic RL 规模化） |
-| **02** | 预训练 / CPT infra | megatron · fsdp | DeepSeek（MoE + MLA + 训练稳定性） |
+| **01** | 后训练 / RL / SFT infra | trinity-rft · slime · verl · llamafactory | Kimi K3 / DeepSeek-V4 / GLM-5.3（agentic RL、OPD 与 stage attribution） |
+| **02** | 预训练 / CPT infra | megatron · fsdp | DeepSeek-V4 / Qwen3.8-Flash-Next / Kimi K3 / GLM-5.3-Flash（架构—预训练—部署共同设计） |
 | **03** | 数据 / 分布式 / RSI / 数据平台工程 | data-juicer · ray · vllm-sglang · data-platform · orchestration · rag-retrieval | LLM 数据方法论 + data-model co-dev + 湖仓/MLOps |
-| **04** | LLM → Agent | agentscope · qwenpaw | Harness engineering |
+| **04** | LLM → Agent | agentscope · qwenpaw | Harness engineering + GPT-6 Astra / Claude Fable 5.1 可观测 API 合同 |
 | **05** | 多模态理解与生成 | vlm-understanding · image-dit · video-dit · minimax-h3-capstone | VLM/DiT/Video DiT → MiniMax H3 综合系统 |
 
-五条线不是孤立的：03 产出的数据喂给 02/01 训练，02 的 Transformer/并行底座与 03 的数据/推理服务共同支撑 05；
+五条线组成一个闭环：03 产出的数据喂给 02/01 训练，02 的 Transformer/并行底座与 03 的数据/推理服务共同支撑 05；
 01/02/05 产出的语言与多模态能力在 04 里变成 agent，agent 的运行轨迹又回流成 03 的数据——这正是
 **data-model co-development（recursive self-improvement）** 的闭环，也是本仓库的核心命题之一。
 
@@ -45,7 +45,7 @@
 本材料与 [QwenPaw Learning Coach](../../coach/README.md) 共用一组核心教学原则：
 
 1. **K+1 黄金法则** —— 永远只比学习者当前水平（K）高一层。不跳级、不灌水。每个 nano-* 内部采用 L0→L3 阶梯，学习顺序见[总导航](tutorial/material/README.md)。
-2. **费曼技巧** —— 每节末尾必须有「能不能讲给外行听」的自检。讲不清 = 没懂。
+2. **费曼技巧** —— 每节末尾必须有「能不能讲给外行听」的自检。先独立作答，再展开参考答案，对照自己遗漏的因果链和证据边界；参考答案提供推理路径，不规定唯一措辞。
 3. **Project-Based** —— 概念挂在真实可跑的项目上，不悬空。
 4. **对抗式自检（Adversarial Self-Verification）** —— 产出与验证分离；独立验证者以“严苛教授”视角寻找反例和证据缺口。
 5. **零容忍反幻觉（Anti-Hallucination）** —— 所有数字、API、行数、benchmark 分数必须可溯源；不确定处显式标 `[TODO: verify]`，绝不编造。
@@ -73,6 +73,7 @@ LLM-PBL/
     ├── cross-track-episode-record/   # 轨迹事实与训练视图合同
     ├── cross-track-capability-factory/ # 多教师能力集成
     ├── cross-track-evaluation-gate/  # 配对评测、晋升与回滚边界
+    ├── cross-track-frontier-model-lifecycle/ # 前沿模型的 stage 血缘、归因与证据合同
     ├── 01-post-training-rl-sft/      # 后训练 / RL / SFT
     │   ├── nano-trinity-rft/  nano-slime/  nano-verl/  nano-llamafactory/  nano-opd/
     │   └── sota-deepdive/
@@ -98,3 +99,4 @@ LLM-PBL/
 - 想先看全貌、按问题选课或查看跨轨依赖 → 读 [tutorial/material 学习总导航](tutorial/material/README.md)
 - 想从某一层切入 → 进对应 `tutorial/material/0X-*/README.md`
 - 想理解“candidate 怎样被裁决、可靠激活、治理 evaluator，并发布到独立 router” → 跑 [Evaluation Gate L0→L3a](tutorial/material/cross-track-evaluation-gate/)
+- 想把 DeepSeek-V4、Qwen3.8-Flash-Next、Kimi K3、GLM-5.3，以及闭源 GPT-6 Astra / Claude Fable 5.1 串成“身份→stage→服务→评测”的证据链 → 跑 [Frontier Model Lifecycle L0](tutorial/material/cross-track-frontier-model-lifecycle/)

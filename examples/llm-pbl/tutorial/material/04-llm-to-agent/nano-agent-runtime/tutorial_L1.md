@@ -354,6 +354,17 @@ durable agent runtime 不是新发明——工作流引擎十年前就在解同�
 4. `synchronous=NORMAL` 在什么场景下可以接受？在副作用 runtime 里为什么不行？
 5. LangGraph 的 checkpoint 能替你保证工具副作用恰一次吗？谁来做这件事？
 
+<details>
+<summary>参考答案</summary>
+
+1. try/except 只覆盖进程仍活着、Python 仍有控制权的异常。SIGKILL、宿主崩溃和掉电会抹掉内存；由新进程恢复才能证明决策所需事实已进入 durable store。
+2. before-commit 路径能证明 provider 尚未改变外部状态，同 key replay 安全；after-commit 只丢了本地 receipt，外部动作可能已完成，必须 query 取回 durable receipt，不能先重做。
+3. “先查后插”不是原子操作，两个 worker 可同时看见空表并各自提交。UNIQUE/conditional insert 把竞态收敛到存储层，让一个成功、另一个观察既有事实。
+4. `synchronous=NORMAL` 适合可从源数据重建的缓存或允许最近少量事务丢失的分析状态。副作用账本若丢掉已 commit 记录会诱发重复外部动作，因此需要与承诺故障模型匹配的 durable commit；本教程选择 FULL，但仍不把 SIGKILL 测试冒充掉电证明。
+5. LangGraph checkpoint 固定图状态和控制流，无法替 provider 承诺支付/邮件/部署只执行一次。外部 provider 必须实现 payload-bound idempotency 与 query，runtime 再用 durable intent、receipt 和 recovery decision tree 连接两侧。
+
+</details>
+
 ---
 
 ## 10. 思考题

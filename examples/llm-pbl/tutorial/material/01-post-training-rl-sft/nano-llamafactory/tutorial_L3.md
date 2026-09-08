@@ -1,21 +1,14 @@
 # nano-llamafactory L3 — 一个配置，三种方法：stage 分发层的抽象取舍与它不许触碰的数字
 
-> **K+1 位置**：L0–L2 建立了数据侧三件套（template / labels mask / collator）、
-> 真实 SFT 循环、DPO 偏好对——但三级都是「手写」的：每个方法一条独立代码路径。
-> 本级回答一个框架级问题：**为什么 LLaMA-Factory 用一个 `stage` 配置字段就能切换
-> SFT/DPO/KTO，而不是一套方法一个代码库？** 拆到底，dispatch 只有三层——
-> 配置层（推导标志 + fail-loud）、分发层（表，不是分支；数据层按**数据形状**分发）、
-> 执行层（一个 `pref_loss` 字符串同时决定三件事）。而本级最核心的命题要机器证明：
-> **好的分发层在数值上是惰性的——它改变代码组织，不改变一个数字**（跨级
-> bit-for-bit 锚：L3 经配置分发跑出的 sft 与 dpo-sigmoid 与 L2 手写路径逐位相同）。
->
-> **对标权威实现**：[LlamaFactory](https://github.com/hiyouga/LlamaFactory) 固定 revision
-> [`f28afaf6355af515454dfb16c97d728307c93897`](https://github.com/hiyouga/LlamaFactory/tree/f28afaf6355af515454dfb16c97d728307c93897)，
-> 以及 TRL v0.24.0。本文源码行号只对该 dated snapshot 有效，不能当作当前 main 的永久行号。
->
-> **时效性定位（必读 §8）**：LlamaFactory 是工程参照；
-> 但 **DPO 族 = A 层经典机制 ≠ 前沿**——前沿生产配方（GRPO 族 / RLVR / OPD）不走
-> 这里的 `pref_loss` 路径。
+stage dispatch 像铁路道岔：配置决定一批数据进入 SFT、DPO 还是 KTO 线路，分发层负责接线，却不应偷偷改动列车里的任何数字。一个好的框架抽象必须能证明这种“数值惰性”。
+
+> **核心问题**：一个 `stage` 字段如何安全地切换训练方法，同时保证分发前后的已知路径 bit-for-bit 一致？
+> **先修**：L0 的 template/mask/collator、L1 的真实 SFT、L2 的 DPO 偏好对。
+> **运行**：`python3 -B L3_stage_dispatch.py`，仅依赖 torch，CPU 约 6 秒。
+> **验收**：非法配置 fail-loud；SFT 与 DPO-sigmoid 经 dispatch 后和 L2 手写路径逐位相同；KTO 的数据形状与 loss 路由可追溯。
+> **边界**：toy trainer 使用真实梯度，但不含 LoRA、量化、DeepSpeed 或多卡；DPO/KTO 是机制教学，不代表当前前沿生产配方。
+
+工程对照固定为 [LlamaFactory revision `f28afaf`](https://github.com/hiyouga/LlamaFactory/tree/f28afaf6355af515454dfb16c97d728307c93897) 与 TRL v0.24.0。文中源码行号只对这个快照有效。§8 再说明它与 GRPO、RLVR、OPD 等当前路线的关系。
 
 ---
 
@@ -483,6 +476,8 @@ LlamaFactory:main」坐实当今名），包名仍为 `llamafactory`。L2 教程
 ---
 
 ## 9. 费曼自检
+
+### 参考讲法与逐题答案
 
 **类比：一家餐厅的点单系统**。客人只说一句话——「麻辣香锅，微辣」（= 一个
 `stage` + 一个 `pref_loss` 字段）。前台（配置层）从这句话**推导出**一串后果：

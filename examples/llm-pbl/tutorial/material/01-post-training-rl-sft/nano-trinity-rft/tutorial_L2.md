@@ -1,12 +1,14 @@
 # nano-trinity-rft L2 — RL 的信号来源：rule reward vs learned reward model
 
-> **K+1 位置**：L1 用真实 0.8M char-GPT 跑通了配置驱动的 SFT→RL 两阶段，当时
-> reward 是「逐位匹配率」，docstring 里声明它是 **dense、rule-based**，把
-> 「稀疏 0/1 与 reward model」留给本级。L2 就回答这个问题：**RL 阶段的 reward
-> 信号从哪里来？选哪一种？各自付出什么代价？**
-> **对标权威实现**：`agentscope-ai/Trinity-RFT`（main 分支，2026-08-12 现场核验，
-> README 30,381 B，sha256 `d513f140…b73982`——与 L1 08-06 录值逐位零漂移）。
-> 行号锚点以 2026-08-12 抓取日为准。
+reward 像训练中的计分牌：它能告诉学生往哪边走，却不会自动保证“高分”就是我们真正想要的行为。规则分数便宜且可审计，学习得到的 reward model 能覆盖模糊目标，也会把自己的偏差带进训练。
+
+> **核心问题**：稀疏规则、稠密规则和 learned reward model 会怎样改变有效梯度、训练稳定性与 Goodhart 风险？
+> **先修**：L1 的配置驱动 SFT→RL，以及 group-relative advantage 的基本含义。
+> **运行**：`python3 -B L2_reward_signals.py`，仅依赖 torch，CPU 约 1.5 分钟。
+> **验收**：复现 dead-group 解析式与实测值，比较三种 reward 的学习曲线，并让被投毒 reward model 的反例显式失败。
+> **边界**：任务是合成字符预测；learned RM 是本地小模型，结果不能外推到生产 reward model 的可靠性。
+
+对照源码固定为 `agentscope-ai/Trinity-RFT` main 分支的 2026-08-12 快照：README 30,381 B，sha256 `d513f140…b73982`，与 L1 的 08-06 记录一致。文中的行号只对该抓取日负责。
 
 ---
 
@@ -351,7 +353,7 @@ RM 的最爱（每 ctx 暴力扫 256 条）: ['aabd', 'ddcc', 'aabd', 'aaaa', 'a
   现实形态**：偏置不是 RM 的主成分，是贴在主成分上的系统性误差。
 - **argmax 扫描是最刺眼的一条**：每个 ctx 暴力枚举全部 256 条响应，RM 的最爱
   6/6 不是正确答案，且多为 'a' 重的串（'aaaa'、'aaba'…）。**proxy 与 gold 的
-  分离不是训练崩了——RM 准确率 0.84——而是从它训完那天起，它的错误面就客观
+  这里的分离并非训练崩溃：RM 准确率仍为 0.84。真正的问题是从它训完那天起，它的错误面就客观
   存在，等着被优化器找到。**
 
 ---
@@ -420,6 +422,15 @@ RM 是请了一位作文阅卷老师——什么题都能阅，但他有自己�
 - 能不能说清「RM 准确率 0.84」和「被钻到 gold 0.167」为什么不矛盾？
 - 能不能说清 KL 臂里 proxy 为什么照样涨、这算不算防住了 hacking？
 
+<details>
+<summary>参考答案</summary>
+
+1. sparse reward 只区分整条响应对错，组内全对或全错时 advantage 全为零；dense reward 给局部正确 token 连续 credit，组更不容易死亡，但也改变了优化目标和 credit assignment。
+2. 0.84 是固定偏好分布上的分类准确率，gold 0.167 是策略主动搜索 RM 错误面后的真实质量。训练策略改变了输入分布；一个离线准确率尚可的 RM 仍可能存在可被优化器集中利用的小片错误区域。
+3. KL 只限制策略离 reference 多远，没有把 proxy 变成 gold。proxy 继续上涨说明 hacking 驱动力仍在；若 gold 下降幅度被限制，只能说 KL 缓和了偏移。是否“防住”应由 gold、最坏子域与停止门判断。
+
+</details>
+
 ---
 
 ## 11. 思考题
@@ -456,7 +467,7 @@ RM 是请了一位作文阅卷老师——什么题都能阅，但他有自己�
    dead 率是 p×G 的函数；RLVR 在数学/代码上的成功（DeepSeek-R1 路线，
    arXiv:2501.12948）正是把稀疏 rule reward 用在了 p 窗口合适的域。
 4. **RM 也不是坏选项。** 非可验证域它是唯一路径（Trinity README:L73 的三个
-   示例全是 judge 型）。问题从来不是「能不能用」，而是「必须配监测与约束」。
+   示例全是 judge 型）。学习型 reward 可以使用，前提是把监测与约束同时放进系统。
 5. 本级的 KL 是 β 正则（GRPO 目标里的正则项），不是 PPO 的 clip；生产系统
    通常两者叠加。L1 §6.2 的教训（KL 的锚在空洞处是错的）在这里没复现，因为
    ref 是 warm 末态（已经填了大半洞）而非 SFT 末态——**ref 选在哪，KL 就把

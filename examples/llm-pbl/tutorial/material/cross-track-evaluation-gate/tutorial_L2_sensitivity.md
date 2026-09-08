@@ -295,6 +295,15 @@ takeaway: preregistered provenance derives clusters; disagreement freezes the ga
 2. row-weighted effect 与 equal-cluster effect 哪个更接近你的产品目标？依据是什么？
 3. 两种合理 policy 结论相反时，`FREEZE` 比选择较小 p-value 多保护了什么？
 
+<details>
+<summary>参考答案</summary>
+
+1. 同桌反馈共享菜品、服务员、时间和群体情绪，误差相关；把它们当 10 个独立样本会重复计算同一随机因素，标准误偏小。
+2. 若产品 estimand 是随机一位用餐者，row-weighted 更接近目标；若每桌订单或企业客户具有同等决策权，equal-cluster 更合适。选择依据来自部署抽样单位和损失函数，应在看结果前预登记。
+3. 选择较小 p-value 会在多个合理分析中挑最有利者，放大 researcher degrees of freedom。`FREEZE` 保留 estimand 不确定性，阻止团队在结论出现后悄悄改变权重，并要求用业务合同或新数据消解分歧。
+
+</details>
+
 ---
 
 ## 11. 动手改造与反例

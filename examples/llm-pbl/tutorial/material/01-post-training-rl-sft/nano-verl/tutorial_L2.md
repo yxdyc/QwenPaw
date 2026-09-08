@@ -227,7 +227,7 @@ actor-learner 分离能不能快，既取决于设备是否合适，也取决于
 2. 为什么 `weight_queue.put(model.state_dict())` 之前必须把 tensor 移到 CPU？在 CUDA 上是否也要这样做？
 3. 当前实现里 actor 收到一次权重、生成一轮 rollout 就等下一次权重。如果让 actor 连续生成多轮 rollout 再用最新权重更新，会引入什么问题？
 
-简答：
+### 参考答案
 
 1. 当前没有跨步 overlap；同卡双进程还会争计算流和显存。verl 的同步 HybridFlow 可让 actor/rollout 角色 colocate，在阶段边界切换模式、同步权重并复用整组 GPU；fully-async 模式则给 trainer 与 rollouter 分配独立资源，以 staleness 换 overlap。
 2. **不是 CUDA 上也必须如此**。CPU clone 是本教程最稳妥的快照/传输格式；CUDA IPC 有条件可用，生产方案通常直接使用 NCCL 等设备通信。

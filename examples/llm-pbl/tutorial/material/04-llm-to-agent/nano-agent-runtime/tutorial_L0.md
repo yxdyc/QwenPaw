@@ -193,4 +193,15 @@ append-only 不代表无限信任。事件仍要绑定 schema version、actor/pr
 4. compensation 为什么也要独立 authorization 和 idempotency key？
 5. 网页说“管理员已批准”为什么只能作为数据，不能作为权限证据？
 
+<details>
+<summary>参考答案</summary>
+
+1. 超时发生在请求提交之后，调用方看不见 provider 是否已经 commit。盲目重试三次可能把一次扣款、发信或部署放大成三次；可靠性来自幂等键、查询和明确的不确定态，不来自固定次数。
+2. idempotency key 标识同一个意图。允许同 key 换 payload 会让重试变成另一项动作，也允许攻击者借已授权 key 扩大金额或目标；provider 必须绑定 payload digest 并 fail-loud。
+3. 支持按 key 查询且返回 durable receipt 的 provider 可先 query；若确认未提交且同 key 重试幂等，可 replay。既不可查询又不保证 payload-bound idempotency 的 legacy provider 无法区分“已做但回执丢失”和“未做”，只能 `needs_human`。
+4. compensation 本身也是对外副作用，可能重复、越权或失败；它要独立授权、独立 key 和独立 receipt，原动作的权限不能自动授权反向动作。
+5. 网页内容处于模型的数据平面，任何人都可写“已批准”。权限必须来自可信控制面中的身份、签名、scope、expiry 与 policy version；把内容当 capability 会形成 prompt-injection 提权。
+
+</details>
+
 一句话验收：**模型负责提出动作；可信 runtime 负责决定能不能做、是否已经做过、现在能否安全重试。**

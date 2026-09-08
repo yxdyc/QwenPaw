@@ -207,4 +207,15 @@ model/optimizer/scheduler/RNG/sampler state, code/config digest
 4. validation 集换版后，为什么不能继续覆盖原来的 `best_score`？
 5. packing 允许跨文档 attention 时，需要怎样记录 mask/position/boundary policy？
 
+<details>
+<summary>参考答案</summary>
+
+1. seed 只固定随机数源，DP sampler 还按 world size/rank 对全局序列切片。world size 改变会重排每个 rank 消费的样本与 batch 边界；若要语义连续，必须保存全局样本 identity/cursor 并定义重分片规则。
+2. global batch、每 optimizer step 消费的 token 数、LR/weight-decay/clip 的 step 语义、scheduler 总步数、日志与 checkpoint cadence 都会变化。不能只把累积计数翻倍后沿用旧曲线。
+3. 相邻两步 loss 接近可能只是数据容易或统计波动。判决性证据应包括下一批 sample IDs/mask、梯度或更新后参数 hash、optimizer step/moments、RNG 和多步 probe logits；这些共同证明续跑的是同一条轨迹。
+4. `best_score` 只在固定数据快照、预处理、指标、解码和 evaluator 下可比。验证集换版等于换尺子，应开启新 namespace 并重建 baseline，旧记录保留用于 lineage。
+5. manifest 至少记录文档 offset/segment、跨文档 attention mask、position reset、boundary token 是否计入 loss、packing 算法版本，以及 tokenizer/data snapshot。否则同一 token 序列可能代表不同监督问题。
+
+</details>
+
 一句话验收：**FSDP/TP 决定状态放哪里；pretraining lifecycle 决定这些状态共同沿着哪一条可重放的训练轨迹前进。**

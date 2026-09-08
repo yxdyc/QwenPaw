@@ -274,6 +274,8 @@ L0 record admission
 
 ## 9. 费曼自检与反例
 
+### 逐题参考答案
+
 **类比**：EpisodeRecord 是仓库里的原始发票；TensorBatch 是会计临时做的工作表；PPO/GRPO/OPD view 是三个
 不同报表。工作表可以补空格、换列宽，报表可以用不同公式，但发票日期、交易方和金额来源不能跟着报表改变。
 

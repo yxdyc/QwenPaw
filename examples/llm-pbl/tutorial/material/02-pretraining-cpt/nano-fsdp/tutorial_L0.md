@@ -159,6 +159,15 @@ L0 不展开源码行级对应，那是 L2/L3 的任务。这里先建立「显�
 2. 7B 模型 ZeRO-3/8 卡只要 14 GB 模型状态，为什么真实训练往往还要留大量显存余量？余量可能被什么吃掉？
 3. ZeRO-3 下，如果 GPU 数从 8 变 16，模型状态显存会怎么变？通信量会怎么变？
 
+<details>
+<summary>参考答案</summary>
+
+1. 口径取决于 SGD 是否带 momentum、是否保留 fp32 master。按本节 mixed-precision 口径，无 momentum 的 SGD 为 fp16 参数 2 B + fp16 梯度 2 B + fp32 master 4 B，约 8 B/param；加 fp32 momentum 后约 12 B。Adam 再多一个 fp32 variance，成为 16 B，因此优化器状态分片的收益在 Adam 上更显著。
+2. 14 GB 只算稳态模型状态。activation、临时 all-gather 参数、通信 bucket、attention workspace、CUDA context、allocator 碎片、保存 checkpoint 的峰值和输入 batch 都要占显存；容量规划应看峰值而非公式中的稳态下界。
+3. 理想稳态模型状态从 $16P/8$ 降到 $16P/16$，即每卡减半。每层仍需聚合完整参数，集群总传输量不会按卡数同倍下降；更多 rank 还增加延迟、拓扑和小消息开销，所以速度未必提高。
+
+</details>
+
 ### 反例
 
 > 「把 ZeRO-3 开到无限多卡，每卡显存就能无限趋近于 0。」

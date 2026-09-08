@@ -1,9 +1,14 @@
 # nano-qwenpaw L1 — 记忆与上下文管理：窗口是 cache，store 才是 memory
 
-> L0 给**单个任务**套上了 harness：system prompt + 输出自检 + critique 重试，跨任务无状态。
-> L1 让 harness **在有限上下文窗口下活过多轮**：状态无限增长，窗口不会——总得有什么让路。
-> 本节在**同一段真实对话、同一预算**下实测三种记忆政策（append-only / summarize / write-through+evict-index）的损失谱：
-> 40–40% / 10–20% / 100–100%，并逐项对照 qwenpaw scroll 源码（`manager.py` / `eviction_index.py` / `history.py` / `cap_middleware.py`）。
+上下文窗口像桌面：正在处理的材料放得越多，越早放上去的东西就越容易被挤掉。长期记忆更像档案室；真正困难的地方，是决定何时归档、如何编索引，以及需要时怎样找回来。
+
+> **核心问题**：同一段长对话、同一 token 预算下，append-only、summarize 和 write-through + eviction index 分别会丢掉什么？
+> **先修**：完成 L0，理解 system prompt、自检、critique 重试和有限上下文窗口。
+> **运行**：`python3 -B L1_real_memory_loop.py`，纯标准库，CPU 约 1 秒。
+> **验收**：三种策略必须得到 40–40%、10–20%、100–100% 的 detail/gist recall，并通过图像化的逐轮遗忘曲线与数据库指针检查。
+> **边界**：回答器和 recall 决策器仍是声明过的 mock；真实的是语料、SQLite/FTS5 store、token 估算和 qwenpaw 文件对照。
+
+L0 的 harness 只处理单个任务。L1 让它跨多轮存活，并逐项对照 qwenpaw scroll 的 `manager.py`、`eviction_index.py`、`history.py` 与 `cap_middleware.py`。
 
 ---
 
@@ -129,7 +134,7 @@ L0 教程 §8 曾预告「L1 把 mock 换成真实 API」。实际落地的 K+1 
 
 ### 3.1 facts 从哪来：live 源码 + sha256 + 正则提取
 
-10 条 fact 不是手写的，而是**运行时从五个 live 源文件正则提取**的：
+10 条 fact 均在**运行时从五个 live 源文件正则提取**：
 
 ```python
 n_principles = len(re.findall(r"(?m)^## \d+\.", t["SOUL.md"])) or 7
@@ -300,6 +305,8 @@ CREATE VIRTUAL TABLE conversation_history_fts USING fts5(
 ---
 
 ## 10. 费曼：讲给外行听
+
+### 参考讲法
 
 **类比：阅览桌、书库与目录卡。**
 

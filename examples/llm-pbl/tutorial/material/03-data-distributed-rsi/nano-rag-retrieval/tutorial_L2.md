@@ -1,8 +1,14 @@
 # nano-rag-retrieval L2 — 混合检索 + HNSW + 两阶段重排 + 检索评估升级（自 L1 的 K+1）
 
-> **定位**：L1 用真实神经 embedding 把 recall 推过了同义词鸿沟，但索引仍是 flat 暴力扫描（O(N·D)/query），且只有单路信号、没有重排、评估只问「找没找到」。L2 一次还清 L1 §12 债表的前三笔债 + 评估升级：**ANN 索引（HNSW 从零实现）/ 混合检索（BM25+dense 融合）/ 重排序（两阶段）/ 评估升级（nDCG 分级）**，全部对照权威实现源码（Lucene BM25Similarity / hnswlib / OpenSearch / Elastic / Milvus）做取舍分析。
-> **可运行性契约**：本级 = **可运行的本质模拟 + 显式注明**——BM25/HNSW/融合/分片/重排/nDCG 全部是从零写的实现，数字来自脚本运行；reranker 是显式 mock cross-encoder（只验证管线机制，不冒充语义质量），真实集群行为不在本级证据范围内。
-> **双路径契约**（承 L1 §10(b)）：real 路径 = sentence-transformers + all-MiniLM-L6-v2 本地快照（离线钉住）；无依赖/无快照自动走 fallback（零依赖显式 mock）。**两路径期望值分开声明，数字不混比**。
+生产检索更像分层筛选：BM25 与 dense 各提供候选，HNSW 用更少距离计算完成粗召回，reranker 再把少量候选精排。每一层都可能抬高速度，也可能提前丢掉真正相关的文档。
+
+> **核心问题**：混合信号、ANN 粗召回和两阶段重排怎样共同形成 recall–latency–ranking quality 的权衡曲线？
+> **先修**：L1 的真实 embedding、flat scan、recall/MRR 与阈值工作点。
+> **运行**：`python3 -B L2_hybrid_search_hnsw_and_rerank.py`；有本地 MiniLM 快照走 real 路径，否则显式 fallback。
+> **验收**：BM25/HNSW/融合/重排/nDCG 逐层可消融，L1 digest 不漂移；real 与 fallback 期望值分开报告。
+> **边界**：BM25、HNSW 和指标为可运行实现；reranker 是标注过的 mock cross-encoder，单机结果不证明真实集群或语义质量。
+
+实现取舍对照 Lucene BM25Similarity、hnswlib、OpenSearch、Elastic 与 Milvus。L2 清偿 L1 §12 的 ANN、混合检索、重排和 nDCG 四项债务，量化、更新语义和多租户 ACL 继续留在后续边界。
 
 **运行锚点**（2026-08-31 重新复验）：
 
@@ -349,6 +355,8 @@ N=800（D_SYN=128，float32）：向量段 800×128×4 = **409,600 B**；图 = *
 ---
 
 ## §15 费曼自检
+
+### 参考讲法与逐题答案
 
 **讲给外行听的版本**：你去图书馆找资料。HNSW 是「问楼层引导员」——引导员（上层节点）先把你指到大致楼层（贪心下降），再到书架间逐排细找（ef 束搜索），不用走遍每个书架；混合检索是「同时问两个馆员」——一个按关键词卡片查（BM25），一个按内容相似度查（dense），然后把两份书单合并（融合）；两阶段重排是「先抱回一摞候选（top-8），再在桌上逐本精读挑三本（top-3）」——抱书便宜、精读贵；nDCG 是「不只问找没找到，还问推荐顺序好不好」。
 

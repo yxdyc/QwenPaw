@@ -287,3 +287,5 @@ conditional write，而不是只存在于 runtime 自己的数据库。
 
 费曼自检：如果 lease 已保证同一时刻只有一个 dispatcher，为什么 provider 仍必须做 idempotency？
 若答案没有覆盖 TTL 过期、stale owner、网络响应丢失和重试，就还没有抓住本节的安全边界。
+
+**参考答案**：lease 只在 runtime 的本地协调域内约束“当前认为谁有权发送”。TTL 可能在旧 dispatcher 的网络调用仍在飞行时过期，新 owner 随后接管；旧响应也可能丢失，使新 owner 无法判断外部动作是否已提交。fencing token 能让支持 conditional write 的 provider 拒绝 stale owner，payload-bound idempotency 则让同一 key 的重试收敛到同一 receipt。两者分别处理所有权世代与网络不确定性，缺一项都无法把“最多一个活跃 dispatcher”提升为“外部世界最多一个效果”。

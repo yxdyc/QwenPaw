@@ -1,6 +1,14 @@
 # nano-qwenpaw L3 — 有原则的 agent：原则是可加载的工件
 
-L0 把一次调用包进 harness；L1 让 harness 有跨轮记忆；L2 把方法论变成可执行流程——但那些流程仍然是**写死在 harness 脚本里的**。L3 走最后一步：**方法论变成数据**。skill 是一个携带 SKILL.md 目录；builder 按请求（per request）发现、过滤、注入 skills；SOUL 七原则不仅治理执行，还治理**组装本身**——哪个能力到达哪个请求，本身就是在原则下做出的决定。
+到 L2 为止，方法论仍焊在 harness 代码里。L3 把 skill 看成可以装卸的工具箱：目录携带 `SKILL.md`，builder 根据请求发现、过滤并注入；SOUL 同时约束 agent 的执行和组装。
+
+> **核心问题**：原则和技能变成外部工件后，谁决定某项能力能否进入当前请求，证据又如何随组装过程留下？
+> **先修**：L1 的长期记忆，以及 L2 的 K+1、费曼审查和 Examiner-B 流程。
+> **运行**：`python3 -B L3_principled_agent.py`，纯标准库，使用临时 workspace。
+> **验收**：manifest、目录、frontmatter 与 channel 四道筛选均可追溯；两个请求渠道得到预期的不同 skill 集；失败样本保留原因。
+> **边界**：fixture 中两份 skill 来自真实 profile，其余边界样本有明确 planting 标签；模型判断席位仍是确定性 stand-in。
+
+哪个能力到达哪个请求，本身就是一项受原则约束的决定。这个视角让“加载了哪些 skill”进入实验记录，而不只是一段启动日志。
 
 ## 1. 三个声明（什么是真的，什么是声明的）
 
@@ -230,7 +238,7 @@ Per-request assembly：builder 按**请求**组装，不是按 workspace 组装�
 - console：daily-review + feynman-check + k-plus-one
 - voice：daily-review + k-plus-one + voice-brief
 
-一个 workspace，两个 agent。差别不在模型、不在工具、不在记忆——只在**哪些文档被注入了**。这就是「reach」的含义：manifest 的 channels 字段不是过滤「谁能看见这个 skill」，而是过滤「这个 skill 能到达哪些请求」。
+一个 workspace，两个 agent。模型、工具和记忆完全相同，唯一变化是**哪些文档被注入了**。这就是「reach」的含义：manifest 的 channels 字段控制 skill 能到达哪些请求。
 
 ## 7. 机制四：skills ride the prompt，不在 tools=
 
@@ -287,7 +295,9 @@ sha256[:8]（2026-08-14 现场复算）：arch 三源 builder `abb6c3fc` / regis
 
 ## 10. 费曼自检
 
-讲给外行听：公司的规章制度不是入职时发一本就完事，而是**贴在具体办事部门的公告栏里**。同一家公司、同一个员工，财务部公告栏和销售部公告栏贴的规章不同——同一个人去两个部门办同一件事，行为可以完全不同。SKILL.md 就是贴出来的规章（原件存档，贴出去的必须与原件逐字一致——所以有 verbatim 拷贝 + sha 校验）；manifest 是文档管理台账（哪些规章生效、贴在哪些部门）；channel 是部门；builder 是「把规章从公告栏撕下来钉到这张工单上」的动作。员工（模型）不需要背下规章——**规章在文档里，文档在工单上**。
+### 参考讲法与答案
+
+讲给外行听：公司的规章制度会贴在具体办事部门的公告栏里。同一家公司、同一个员工，财务部和销售部采用的规章不同；他去两个部门办理同一件事，行为也可能不同。`SKILL.md` 是公告栏上的规章，原件存档，发布件用 verbatim 拷贝和 sha 校验保证一致；manifest 是文档管理台账；channel 表示部门；builder 负责把适用规章附到当前工单。员工（模型）无需背下全部规章，因为规则随工单到达。
 
 自检：能不能解释「同一份解释为什么在 console 席被验证、在 voice 席被放行」？放行的学分最终去了哪里？——进了 mastery：ledger 忠实记下 console 席的 0.30，voice 席的 0.35 里那 0.05 没有经过任何 band 的审视。通胀本身也是渠道问题：哪个渠道缺了验证文档，哪个渠道的 mastery 就开始注水。
 

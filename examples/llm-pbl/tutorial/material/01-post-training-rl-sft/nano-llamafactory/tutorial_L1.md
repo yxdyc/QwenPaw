@@ -277,6 +277,16 @@ greedy 解码不是生产用法（真实场景用 sampling/top-p/beam），但�
 3. off-by-one 的模型 loss 和正确模型几乎一样低，为什么生成却完全失败？这说明“低 loss”和“做对任务”之间有什么关系？
 4. 在真实 LLaMA-Factory 配置里，哪个字段（或模板）决定 prompt 和 response 的边界？如果边界写错，训练日志会出现什么现象？
 
+<details>
+<summary>参考答案</summary>
+
+1. prompt 必须留在 `input_ids` 中充当条件，只把它从 `labels` 的监督范围排除。直接删掉 prompt 会把任务变成无条件生成，模型看不到问题。
+2. unmasked loss 往往更低，因为重复模板和 prompt 比回答更容易预测；模型会更擅长复述高频格式，却未必更会回答。低 loss 由大量容易 token 稀释，不能代表 response 能力。
+3. teacher forcing 下，除第一个 response token 外，后续位置仍可看到正确历史，因此一次边界偏移只伤少量 token，平均 loss 变化很小；自回归生成从第一个错误开始改变全部后续条件，错误会级联。
+4. chat template 决定序列与角色边界，data collator/训练配置把该边界投影为 `labels=-100`。边界错误常表现为训练 loss 很好看、生成却复述 prompt、首 token 错位，或有效监督 token 数异常；应直接检查一条 tokenized sample 和 mask，而非只看 loss 曲线。
+
+</details>
+
 ---
 
 ## 7. 边界与局限

@@ -1,16 +1,14 @@
 # nano-ray · Tutorial L1 — 真实 Ray 执行 OP pipeline：语义不变，代价变成实数
 
-> **K+1 定位**：L0 用 270 行标准库把 Ray 编程模型的**语义**搭对了（future / 传引用 /
-> 完成即触发），但有三样东西是假的：worker 是线程（躲不开 GIL）、object store 是同进程
-> 字典（没有共享内存）、调度与序列化没有真实成本。L1 只加一层：把同一套执行计划搬到
-> **真实 Ray**（ray 2.56.1，真 worker 进程 + 真 object store）上，回答两个问题——
-> 语义会变吗（不会）？代价是多少（全部变成实数）？
->
-> **跨模块契约**：本文件与 `nano-data-juicer/L2_distributed_pipeline.py` 使用同一个
-> 工作负载（seed=42 合成语料，3360 条）与同一个执行计划（分区 → 局部 OP 并行 → 全局
-> OP 收敛）。三个执行器（串行 / L2 multiprocessing / L1 Ray）必须给出同一个漏斗：
-> **3360 → 2358 → 2110**。执行语义住在「计划」里，不在 runtime 里——这就是 L1 的核心
-> 教学点，也是真实系统里换执行引擎不改数据语义的底气来源。
+L0 像在纸上写好一道菜的配方；L1 把同一份配方搬进真实厨房。步骤不应改变，但进程启动、序列化、object store 和调度现在都会留下可测量的账单。
+
+> **核心问题**：把标准库模拟器换成真实 Ray 后，数据语义能否保持不变，新增成本又来自哪里？
+> **先修**：L0 的 future、传引用、依赖就绪触发，以及 Data-Juicer L2 的 OP pipeline。
+> **运行**：安装 Ray 后执行 `python3 -B L1_ray_pipeline.py`；基准环境为 ray 2.56.1、单机 4 CPU。
+> **验收**：串行、multiprocessing 和 Ray 三种执行器都得到 `3360 → 2358 → 2110`，同时分开记录启动、提交、序列化和执行时间。
+> **边界**：这是单机合成负载；它验证真实 Ray 语义与成本构成，不代表集群吞吐或容错能力。
+
+三种执行器共享 seed=42 的 3360 条合成语料和同一执行计划。漏斗一致说明计划定义了数据语义；性能差异则属于 runtime。
 
 ---
 
@@ -242,7 +240,7 @@ ObjectRef 参数在哪一层被解开？Python 侧没有这个逻辑——`flatt
 2. **返回值也走 store**。每个 `ray_local_ops` 的返回约 1.5 MB（pickle 实测），
    超过 100 KB 的内联阈值，按 ray-2.56.1 的 `ray_config_def.h` 注释原文，
    超过 `max_direct_call_object_size` 的返回值「are stored in plasma instead」——
-   即并行段的输出不是顺着任务回复带回驱动，而是写进 object store 再由驱动取回。
+   即并行段先把输出写进 object store，驱动随后按 ObjectRef 取回。
    输入输出两头都要过 store，这是「数据密集任务」区别于「计算密集任务」的成本结构。
 
 ### 5.4 粒度扫描读出的两段曲线
@@ -277,6 +275,17 @@ L2（复现运行，其 29 处 Data-Juicer 锚点已两轮验证）逐位一致�
 - 能否解释 [1b] 现场 b 为什么比现场 a 危险？什么样的真实数据会踩中？
 - 能否用 [5] 的摊销算术，解释 Data-Juicer 默认分区参数（5000 条 / 64 MB）为什么对
   3.74 MB 语料「无效」？
+
+<details>
+<summary>参考答案</summary>
+
+1. 普通参数按每次 task submission 序列化，驱动端没有按 Python 对象 identity 复用编码结果；`ray.put` 先把值物化到 object store，后续 RPC 只携带 ObjectRef，因此 N 个消费者共享一次序列化与一份存储。
+2. 过滤后共有 248 个重复对，其中 236 对跨分区。局部去重只能删除 12 个同分区重复，跨分区两份互不可见，故 naive 输出比全局正确结果多 236 条。
+3. `ray_global_dedup(*mapped_refs)` 的就绪条件同时依赖全部 ObjectRef。Ray 的依赖解析会在输入可用后才调度该 task；依赖边本身提供同步，无需让所有 worker 进入一个 barrier。
+4. int 被二次 `get` 会响亮报类型错；list 会被解释为“一组 refs”并逐元素处理，数据结构恰好像合法容器时更可能发生静默语义错。批量 ID、token 列表或嵌套 record 都可能踩中，应明确区分 value 与 ref container。
+5. 默认阈值会把 3.74 MB、3360 条语料视为一个分区，P=1 没有并行，却仍支付约 2.7 s 的 runtime 启动费。只有复用约 9–10 轮或增加工作量，固定成本才可能摊薄。
+
+</details>
 
 ## 8. 思考题
 

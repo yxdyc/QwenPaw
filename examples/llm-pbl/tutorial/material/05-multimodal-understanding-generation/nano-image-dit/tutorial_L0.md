@@ -1,11 +1,16 @@
 # L0：用 oracle 先校准 rectified flow DiT
 
-> 目标：在训练模型之前，先把 latent/token 账、条件注入、流方向、Euler 积分和 CFG 的符号全部校准。
+图像生成像沿着一张速度地图从噪声走向数据。模型训练负责学习地图；scheduler 负责按地图迈步。如果方向符号写反，再好的模型也会越走越远，所以 L0 先用 oracle 把“地图已知时应该怎样走”校准清楚。
+
+> **核心问题**：latent patch、条件 AdaLN、rectified-flow 速度、Euler 积分和 CFG 的符号能否组成自洽的采样合同？
+> **先修**：向量线性插值、Transformer token 与 classifier-free guidance 的直观概念。
+> **运行**：`python3 -B L0_rectified_flow_dit_oracle.py`，纯标准库，CPU 秒级。
+> **验收**：正确方向重建误差为零，错误符号和过强 CFG 显式失败，pixel/latent token 成本账可复算。
+> **边界**：velocity 来自显式 oracle；本级验证接口和积分，不声称训练出图像生成能力。
 
 ## 0. 为什么先用 oracle
 
-如果一个微型 DiT 生成失败，可能是数据、优化器、网络容量，也可能只是 scheduler 正负号写反。L0 直接给出正确速度，
-把“训练是否学到”从“采样合同是否正确”中剥离。因而它适合单元测试，不适合展示生成能力。
+微型 DiT 失败可能来自数据、优化器、网络容量，也可能只是 scheduler 正负号写反。L0 直接给出正确速度，把学习问题暂时固定住，只检查采样合同，因此它适合单元测试。
 
 ## 1. latent patch 与 token 账
 
@@ -79,3 +84,18 @@ $$
 
 **证据边界**：这是带答案的流场单元测试，不是训练出的 DiT；oracle 重建、合成属性命中和 token 比都不能证明照片真实感、
 文字渲染、构图遵循或人类偏好。
+
+## 6. 费曼自检：oracle 为什么有用，却不能算生成能力
+
+1. 常速度 oracle 用一个 Euler step 就能到达目标，这验证了什么、遗漏了什么？
+2. 为什么 CFG scale 增大既可能强化条件，也可能破坏样本？
+3. pixel/latent token 比为 16×，为什么不能直接宣称训练或推理快 16×？
+
+<details>
+<summary>参考答案</summary>
+
+1. 它验证路径定义、速度符号、条件/无条件组合和更新方向能闭环；因为速度不随 $z_t,t$ 变化，它避开了网络逼近误差、弯曲流场的离散误差和 VAE 重建误差。L1 必须用学习到的 $v_\theta$ 才会暴露这些问题。
+2. CFG 对条件差分做外推：$s>1$ 把速度推过条件预测。适度外推可能提高条件可见度，过强时会越出训练支持区域，引入饱和、构图损伤或本例中的 overshoot；因此 scale 是质量—遵循权衡，不是单调旋钮。
+3. token 数只决定 attention 等算子的一个输入维度。真实成本还含 VAE、channel/hidden size、层数、采样步数、kernel 利用率和显存搬运；压缩也会丢失信息。16× 是账本比例，不是端到端 speedup。
+
+</details>

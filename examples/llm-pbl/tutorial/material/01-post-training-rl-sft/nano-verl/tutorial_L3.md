@@ -1,9 +1,14 @@
 # nano-verl L3 — HybridFlow：同一组 worker 在 rollout/train 间复用
 
-> 对应真实系统：[verl](https://github.com/verl-project/verl)（HybridFlow，arXiv:2409.19256）
-> 本文件：`tutorial/material/01-post-training-rl-sft/nano-verl/tutorial_L3.md`
-> 可跑文件：`L3_hybridflow_colocate.py`
-> 锚点基准：verl-project/verl @ **v0.7.1**（2026-08-07 抓取核验，sha256 见 §11）
+同步 RL 系统像一间需要轮流切换布置的车间：rollout 时摆推理设备，train 时换成训练分片。同一组 GPU 能被两阶段复用，但每次切换都要付 reshard、offload 与状态转换成本。
+
+> **核心问题**：严格新鲜 rollout 的两相串行里，colocate 解决的是哪笔显存账，又引入哪些阶段切换成本？
+> **先修**：L1 的最小 PPO 数据流与 L2 的 actor/learner 进程隔离。
+> **运行**：`python3 -B L3_hybridflow_colocate.py`，仅依赖 torch，强制 CPU，约 8 秒。
+> **验收**：同一 worker 的 rollout/train 状态切换、权重 reshard 与 DataProto 分发均通过 10 项检查，成本账与真实计算分栏。
+> **边界**：PPO 梯度和权重流动真实执行；显存/时钟来自声明式 COST 模型，未运行 Ray、FSDP/Megatron、vLLM 或多 GPU。
+
+权威锚点为 [verl](https://github.com/verl-project/verl) v0.7.1（2026-08-07 抓取，sha256 见 §11）与 HybridFlow 论文 arXiv:2409.19256。
 
 ---
 
@@ -419,6 +424,17 @@ overlap），而类比里的搬运是免费的；另外真实餐馆还可以开�
    这解释了为什么长上下文 RL 对 rollout 侧显存特别敏感。
 5. 进阶：verl 的 `rollout_mode()` 为什么先 `resume(weights)` 再 `resume(kv_cache)`，
    而不是一次性全唤醒？（提示：update_weights 要往哪里写？）
+
+<details>
+<summary>参考答案</summary>
+
+1. `N_WORKERS=8` 时 colocate train 仍由 8 rank 分片，约为 $4P/8$；disagg 只有一半 worker 训练，为 $4P/4$，仍是前者两倍。扩卡不会消除“资源只给一相”的结构差异。
+2. bit 级一致还依赖相同 seed、样本顺序、dtype、kernel 和归约顺序。逆序求和通常保持数值正确，却因浮点加法不结合而改变末位；应把容差正确性和 bit-for-bit replay 分成两项验收。
+3. 阶段边界流量不变，train 相内按 epoch 重复的通信从 4 份降到 1 份；总量应写成“固定边界流量 + 原 train 内流量的四分之一”，再用脚本中的分项 KB 代入，不能把全部流量直接除四。
+4. KV 从 20 GiB 增至 60 GiB，rollout 相先承压；disagg-rollout 只有部分卡且同时驻留推理权重，更早 OOM。具体阈值由表中每相预算决定，不能从单一 `kv_gb` 脱离权重驻留判断。
+5. 更新权重需要先恢复目标权重 buffer；KV cache 依赖新权重完成同步后再恢复，避免在旧状态上分配大块缓存并制造额外峰值。分阶段 resume 也是显存峰值控制，而不只是调用顺序偏好。
+
+</details>
 
 ---
 

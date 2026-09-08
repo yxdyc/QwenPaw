@@ -1,8 +1,14 @@
 # nano-agentscope L1 — 把真模型换进 ReAct 循环：不可靠性从哪来，harness 买到什么
 
-> **级别**：L1（K+1：L0 的规则 mock → L1 的真实（微小）语言模型 + 真实工具）
-> **文件**：[`L1_real_agent_loop.py`](L1_real_agent_loop.py)（779 行，依赖仅 `torch`，CPU 即跑）
-> **数据**：[`corpus.txt`](corpus.txt)（ReAct 论文 arXiv:2210.03629 的标题与原创释义；论文元数据于 2026-08-06 在 arxiv.org 核验，fixture 不复制论文摘要）
+L0 的规则模型像一位永远按剧本演出的测试员，很适合检查控制流，却藏住了真实模型的随机失败。L1 换入可采样的小语言模型和真实文件工具，让格式错误、工具误用与过早作答成为可测事件。
+
+> **核心问题**：模型输出成为概率分布后，单次调用失败率如何累积，harness 的校验、重试和终止规则究竟买到了多少可靠性？
+> **先修**：L0 的 ReAct 状态机、工具调用格式和 termination contract。
+> **运行**：`python3 -B L1_real_agent_loop.py`，仅依赖 torch，CPU 约 3 分钟。
+> **验收**：真实小模型与真实沙箱工具跑通；受控故障率与可靠性代数吻合；越权路径被拒绝。
+> **边界**：TinyReActLM 会记忆训练轨迹但不推理；Playback/FaultModel 是故障向量，本地契约服务器也不是托管 LLM。
+
+训练语料见 [`corpus.txt`](corpus.txt)，只含 ReAct 论文标题与原创释义，不复制论文摘要。论文元数据于 2026-08-06 核验。
 
 ---
 
@@ -307,6 +313,8 @@ AgentScope 甚至有独立的 `permission` 模块（`src/agentscope/permission/`
 **自检问题**：你能不能向一个没写过 agent 的工程师解释——为什么「模型输出不合规」
 不是加个 try/except 就能解决的小问题？（提示：try/except 处理的是**异常**，
 而违规是模型输出的**正常组成部分**——它需要的是预算内的策略，不是异常分支。）
+
+**参考答案**：JSON 可解析但字段语义错误、合法工具名配错参数、过早作答或重复调用，通常都不会抛 Python 异常。它们是模型分布中的正常样本，需要 parse 后的 schema/permission/trajectory 校验，再按失败类型选择 critique、重试、换策略或终止。无限重试也不成立，因为错误可能相关且 sticky；可靠性必须同时记成功率、额外调用成本和最终失败状态。
 
 ---
 

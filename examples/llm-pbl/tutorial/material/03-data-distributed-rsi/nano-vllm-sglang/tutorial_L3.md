@@ -1,10 +1,14 @@
 # nano-vllm-sglang L3 — RadixAttention：radix tree 前缀缓存与多请求共享
 
-> L2 把「前缀缓存」做成了链式内容哈希 + FIFO free queue：同前缀的请求 touch 同一物理块，
-> 释放的块带着哈希留在队里等复用。这套机制能省，但**省多少全凭运气**——FIFO 不懂「前缀」，
-> 它只按释放顺序发货。L3 把缓存的组织换成一棵 **radix tree**（SGLang RadixAttention 的最小
-> 同构实现）：共享是节点、驱逐是剪叶、调度看树选请求——「省算力」从运气变成策略。
-> 顺带，L3 的压力场景还从 L2 里挖出一个真竞态（§6）——这是本节的重要教学材料。
+链式哈希缓存像把归还的书随手堆回书车：下一位读者能否复用，取决于碰巧先拿到哪一本。radix tree 更像图书馆目录，共享前缀沿同一条书脊展开，匹配、保护和逐出都有结构可循。
+
+> **核心问题**：radix tree 如何把跨请求前缀复用从偶然命中变成可调度策略？
+> **先修**：L2 的物理块池、block table、refcount、内容哈希缓存与抢占。
+> **运行**：`python3 -B L3_radix_prefix_sharing.py`，依赖 torch 和同目录 L1/L2，CPU 约 10 秒。
+> **验收**：match/split/insert、叶子 LRU、`lock_ref` 和块级共享均通过断言；修复后的 L2 与 L3 生成语义一致。
+> **边界**：radix tree 是可执行的最小同构实现；请求按顺序运行，未测真实 SGLang/vLLM 的 GPU 并发与吞吐。
+
+压力场景还暴露了 L2 的 allocate-before-touch 竞态。§6 保留完整故障与修复证据，因为系统教程不仅要展示正常路径，也要说明抽象在哪种顺序下会裂开。
 
 ---
 
@@ -283,7 +287,7 @@ free-list 双向指针）+ `FreeKVCacheBlockQueue`:L185 + `hash_block_tokens`:L5
 （parent_hash + 本块 token 进同一哈希，与 L2 的 `block_hash` 同构）+
 `cache_full_blocks`:L225 / `get_new_blocks`:L647 / `touch`:L702 / `free_blocks`:L719
 （L728-743：无哈希块 prepend 先复用、有哈希块 append 保 LRU 缓存）。**树与链的本质
-差异不在「能不能缓存」，而在三件事**：驱逐的单位（节点/枝叶 vs 块）、驱逐的顺序
+真正决定缓存收益的是三件事：驱逐的单位（节点/枝叶 vs 块）、驱逐的顺序
 （叶优先 LRU vs 释放序 FIFO）、以及调度能否「看见」前缀结构（LPM 需要树，哈希链
 给不出「已命中长度」的排序键——vLLM 的 LPM 等价物长在 scheduler 的哈希前缀匹配里，
 不在 block_pool）。
@@ -430,6 +434,8 @@ main 即其直接演化）。
 ---
 
 ## 8. 费曼自检：家谱、借出的书、与仓底先发的货
+
+### 参考讲法与逐题答案
 
 **讲给外行听**：想象一个图书馆把「内容相同的书」只买一本。
 

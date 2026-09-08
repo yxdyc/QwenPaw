@@ -367,6 +367,15 @@ L1 把同一套存档逻辑搬进真实游戏引擎（torch）。只存角色等
 (b) 为什么 bool 掩码极性必须用探针验、不能靠记忆？(c) 为什么 bf16 训练不承诺逐位复现
 却仍然可信？三问答不出任何一问，回到 §4 / §6。
 
+<details>
+<summary>参考答案</summary>
+
+1. PyTorch MHA 将每个 batch、每个 head 的注意力图视为独立矩阵，因此 3D mask 的首维是 $B\times H$。`H=1` 时错误的 `[B,S,S]` 会侥幸通过，扫描多个 head 才能暴露契约。
+2. 不同 attention API 对 bool 的 True 可能分别解释为“屏蔽”或“保留”。名字相同不能证明语义相同；用一个只允许单一位置的极小探针，观察输出是否只来自该位置，才是版本可执行的证据。
+3. bf16 的归约顺序和 kernel 可能带来末位差异，所以不承诺 bitwise replay；可信度来自相同 sample/mask、有限数值、容差内 loss/gradient/probe、状态与 lineage 完整。数值等价与逐位等同是两级不同承诺。
+
+</details>
+
 ---
 
 ## 12. 思考题

@@ -98,3 +98,18 @@ revision、GPU、耗时、峰值显存、SHA256、时长/FPS 与 32 kHz stereo �
 
 **证据边界**：本脚本没有下载权重、VAE、tokenizer、Transformer 或 decoder；row/rope 数值是教学载荷。它证明课程合同能
 拒绝四类错误，不证明 H3 生成质量、速度、显存、2K 服务或完整系统开放性。
+
+## 8. 费曼自检：统一 Transformer 等于统一一切吗
+
+1. 视频和音频进入一次 full self-attention，为什么仍要保留 modality tag 和两个 scheduler？
+2. `TeachingContextIR.surrogate=true` 保护了哪条知识边界？
+3. 本地能生成 768p，为什么不能把托管 2K Regenerate 写成本地系统能力？
+
+<details>
+<summary>参考答案</summary>
+
+1. 共享 attention 只说明模态可在同一序列中交换信息；它们的 latent 统计、输入输出投影、AdaLN、head 和 flow 时间尺度仍不同。tag 决定走哪条模态分支，独立 scheduler 则保持 video `shift=12`、audio `shift=3` 的采样合同。
+2. 它明确声明结构化中间表示由课程自建，只用于演示规划到 packing 的接口。没有这个标记，读者容易把字段名、schema 和转换规则误认成官方未开放的 Context-IR 实现，进而把教学推断写成源码事实。
+3. 两者的模块、权重和执行位置不同。开放 checkpoint 的本地 decode 证据只能覆盖固定 revision、分辨率与硬件下的运行；2K Regenerate 属于托管边界，除非官方开放对应实现并完成本地复验，否则只能作为外部服务能力单列。
+
+</details>
