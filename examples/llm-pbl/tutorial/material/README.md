@@ -7,12 +7,16 @@
 想先判断课程哪里完整、哪里仍缺真实证据，请读 [课程完备性与质量审计](CURRICULUM-AUDIT.md)。
 维护材料时，可在仓库根目录运行 `python3 -B scripts/validate_material.py`；
 [校验器源码](../../scripts/validate_material.py) 只检查发布卫生与静态结构，不替代课程实验和外部主张核验。
+如果要排查教程首屏和惯用文风，可再运行 `python3 -B scripts/audit_tutorial_style.py`。
+[风格审计器](../../scripts/audit_tutorial_style.py) 只生成编辑队列，不给教程打质量分，也不阻断发布。
+`python3 -B scripts/audit_feynman_answers.py` 则检查每篇教程是否有费曼自检、每个自检是否带显式参考答案；
+[费曼覆盖审计器](../../scripts/audit_feynman_answers.py) 会在缺项时失败，但不判断答案是否正确或足够深入。
 
 ---
 
 ## 先建立一张系统图
 
-五条轨道不是五门互不相干的课，而是一条有反馈的系统链：
+五条轨道共同构成一条有反馈的系统链：
 
 ```mermaid
 flowchart LR
@@ -24,6 +28,9 @@ flowchart LR
     F["FSDP / TP / PP / SP 训练底座"] --> P
     F --> B["Base model / CPT"]
     B --> P
+    B --> L["Frontier stage lineage / claim contract"]
+    L --> P
+    L --> C
     F --> M["VLM / Image DiT / Video DiT / H3"]
     D2 --> M
     P --> A["Agent + transactional runtime"]
@@ -45,6 +52,11 @@ rollback；[L2](cross-track-evaluation-gate/tutorial_L2.md) 继续治理 evaluat
 总误报预算；[L3a](cross-track-evaluation-gate/tutorial_L3.md) 再把批准发布到独立 router，以 outbox、receipt、
 generation CAS 与 reconcile 暴露并修复跨事务域裂缝。它们仍是单机 toy：不要把协议 self-check 误读成真实
 网络、GPU serving 或持续自我改进已经得到证明。
+[Frontier Model Lifecycle L0](cross-track-frontier-model-lifecycle/tutorial_L0.md) 位于 base 与 candidate 之间，
+用 DeepSeek-V4、Qwen3.8-Flash-Next、Kimi K3、GLM-5.3/Flash，以及 GPT-6 Astra、Claude Fable 5.1，
+把 architecture、pretraining、post-training、serving 与 evaluation 绑定到可审计 stage lineage。
+开放权重模型可以进入 config/checkpoint 账；闭源模型只进入 API、路由、工具轨迹、token/cost receipt 等可观测合同。
+L0 验证的是证据纪律，没有本地复现这些前沿模型。
 
 ---
 
@@ -56,7 +68,7 @@ generation CAS 与 reconcile 暴露并修复跨事务域裂缝。它们仍是单
 | 02 预训练 / CPT | 从文档到可恢复 checkpoint 的完整训练过程怎样建立，并在模型放不下一张卡时正确切分？ | pretraining lifecycle L0–L2、ZeRO/FSDP L0–L3、TP/PP/SP/MoE/MLA L0–L3 | [进入轨道 02](02-pretraining-cpt/README.md) |
 | 03 数据 / 分布式 / RSI | 怎样把原始数据变成可复现、可扩展、可评估的训练与检索供给？ | OP/Ray/KV 系统 L0–L3，湖仓/DAG/RAG L0–L2 | [进入轨道 03](03-data-distributed-rsi/README.md) |
 | 04 LLM → Agent | 怎样把随机、会失败的模型包成可观察、可约束、可恢复的执行体？ | AgentScope/QwenPaw L0–L3，以及事务化副作用 L0–L2 | [进入轨道 04](04-llm-to-agent/README.md) |
-| 05 多模态理解与生成 | 媒体怎样进入 Transformer，又怎样从条件/噪声生成一致的图像、视频与音频？ | VLM visual token、rectified-flow Image/Video DiT、MiniMax H3 系统合同 L0 | [进入轨道 05](05-multimodal-understanding-generation/README.md) |
+| 05 多模态理解与生成 | 媒体怎样进入 Transformer，又怎样从条件/噪声生成一致的图像、视频与音频？ | VLM L0–L1、rectified-flow Image/Video DiT 与 MiniMax H3 系统合同 L0 | [进入轨道 05](05-multimodal-understanding-generation/README.md) |
 
 “当前最强覆盖”描述的是已经写出来的材料，不等于整条学科已经覆盖完整。
 
@@ -137,13 +149,28 @@ generation CAS 与 reconcile 暴露并修复跨事务域裂缝。它们仍是单
 ### 路线 E：多模态理解与生成
 
 1. [visual tokens → language](05-multimodal-understanding-generation/nano-vlm-understanding/tutorial_L0.md)：二维位置和图像依赖反事实；
-2. [rectified-flow Image DiT](05-multimodal-understanding-generation/nano-image-dit/tutorial_L0.md)：latent token、AdaLN、Euler 与 CFG；
-3. [spatiotemporal Video DiT](05-multimodal-understanding-generation/nano-video-dit/tutorial_L0.md)：3D position、端点条件、flicker 与序列成本；
-4. [MiniMax H3 capstone](05-multimodal-understanding-generation/minimax-h3-capstone/tutorial_L0.md)：packed rows、视听双 flow 与开放边界；
-5. [证据账本](05-multimodal-understanding-generation/RESEARCH.md)：从经典谱系到 H3 官方/源码/缺口的分层核验。
+2. [Qwen3-VL L1 真机诊断](05-multimodal-understanding-generation/nano-vlm-understanding/tutorial_L1.md)：真实 checkpoint 的五类估计量、token 账、L20 复验与 OCR 失败；
+3. [rectified-flow Image DiT](05-multimodal-understanding-generation/nano-image-dit/tutorial_L0.md)：latent token、AdaLN、Euler 与 CFG；
+4. [spatiotemporal Video DiT](05-multimodal-understanding-generation/nano-video-dit/tutorial_L0.md)：3D position、端点条件、flicker 与序列成本；
+5. [MiniMax H3 capstone](05-multimodal-understanding-generation/minimax-h3-capstone/tutorial_L0.md)：packed rows、视听双 flow 与开放边界；
+6. [证据账本](05-multimodal-understanding-generation/RESEARCH.md)：从经典谱系到 H3 官方/源码/缺口的分层核验。
 
 完成后应能解释“视觉证据如何进入语言模型”和“媒体 latent 如何从噪声生成”是两类不同问题，并能拒绝把 toy、
 开放权重、托管模块或代理分数误写成完整生产能力。
+
+### 路线 F：前沿模型全生命周期
+
+这条路线不按厂商或 benchmark 横向背型号，而是沿 stage 追问“提升来自哪里”：
+
+1. [pretraining lifecycle L0–L2](02-pretraining-cpt/nano-pretraining-loop/)：先建立数据顺序、optimizer、RNG、cursor 与 checkpoint 血缘；
+2. [DeepSeek-V3 deep-dive](02-pretraining-cpt/sota-deepdive/deepseek-moe-mla-stability.md)：用 MoE / MLA / FP8 / 稳定性建立可迁移机制地基；
+3. [Kimi K3 deep-dive](01-post-training-rl-sft/sota-deepdive/kimi-k3-agentic-rl-scale.md)：看长轨 agentic RL 为什么同时是算法和环境系统问题；
+4. [nano-opd L0–L3](01-post-training-rl-sft/nano-opd/)：从 reverse KL 到多教师路由与生产配方坐标；
+5. [Frontier Model Lifecycle L0](cross-track-frontier-model-lifecycle/tutorial_L0.md)：以 DeepSeek-V4、Qwen3.8、Kimi K3、GLM-5.3/Flash、GPT-6 Astra 与 Claude Fable 5.1 统一名称、参数账、stage、服务合同与归因；
+6. [Evaluation Gate L0–L3a](cross-track-evaluation-gate/)：把 same-base paired evidence、失败率、成本、晋升、发布与回滚接到 candidate。
+
+完成后应能区分“新 base 更强”“后训练更有效”“部署更便宜”和“评测合同更宽松”，并能为每个判断设计最低成本反证。
+面对闭源模型，还应记录请求模型、实际执行模型、路由原因、工具轨迹与成本回执，并拒绝从价格、上下文长度或榜单倒推出未公开架构。
 
 ---
 
@@ -159,8 +186,9 @@ generation CAS 与 reconcile 暴露并修复跨事务域裂缝。它们仍是单
 | 评估与治理 | [RAG metrics](03-data-distributed-rsi/nano-rag-retrieval/tutorial_L0.md) | [reward proxy 失效](01-post-training-rl-sft/nano-trinity-rft/tutorial_L2.md) · [Evaluation Gate L0-L3a](cross-track-evaluation-gate/) · [对抗自检](04-llm-to-agent/nano-qwenpaw/tutorial_L2.md) | 比较不同 cluster lineage/权重下的结论敏感性；待 Agent runtime 接口稳定后，再把本地 router 替身换成 HTTP mock |
 | 多教师能力集成 | [nano-opd](01-post-training-rl-sft/nano-opd/) | [Capability Factory](cross-track-capability-factory/) · [FSDP/TP 系统代价](02-pretraining-cpt/) | 比较 full-vocabulary 与 sampled-token OPD，注入错路由并检查最坏领域回归 |
 | 配置是可执行契约 | [pipeline config](03-data-distributed-rsi/nano-data-juicer/tutorial_L0.md) | [Trinity schema / registry](01-post-training-rl-sft/nano-trinity-rft/tutorial_L3.md) | 让非法组合在运行前失败，并记录 resolve 后的最终配置 |
-| 多模态证据依赖 | [visual token L0](05-multimodal-understanding-generation/nano-vlm-understanding/tutorial_L0.md) | [H3 packed contract](05-multimodal-understanding-generation/minimax-h3-capstone/tutorial_L0.md) | 对同一问题执行 image-drop/swap，并记录 row/tag/position 是否仍可追溯 |
+| 多模态证据依赖 | [visual token L0](05-multimodal-understanding-generation/nano-vlm-understanding/tutorial_L0.md) | [Qwen3-VL L1](05-multimodal-understanding-generation/nano-vlm-understanding/tutorial_L1.md) · [H3 packed contract](05-multimodal-understanding-generation/minimax-h3-capstone/tutorial_L0.md) | 对同一问题执行 image-drop/swap，并记录 row/tag/position 是否仍可追溯 |
 | 连续流与时序一致性 | [Image DiT oracle](05-multimodal-understanding-generation/nano-image-dit/tutorial_L0.md) | [Video DiT temporal coupling](05-multimodal-understanding-generation/nano-video-dit/tutorial_L0.md) | 分开检查 flow 方向、条件命中、端点约束、flicker 与 $N^2$ 成本 |
+| 模型 stage 与增益归因 | [pretraining lifecycle](02-pretraining-cpt/nano-pretraining-loop/) | [Frontier Model Lifecycle](cross-track-frontier-model-lifecycle/) · [Evaluation Gate](cross-track-evaluation-gate/) | 固定 base/parent/harness，比较 same-base post-training delta；拒绝把新 base 对比写成 stage 消融 |
 
 ---
 
@@ -178,6 +206,7 @@ generation CAS 与 reconcile 暴露并修复跨事务域裂缝。它们仍是单
 | 跨轨 | [Capability Factory](cross-track-capability-factory/) | L0 |
 | 跨轨 | [EpisodeRecord](cross-track-episode-record/) | L0 · L1 |
 | 跨轨 | [Evaluation Gate](cross-track-evaluation-gate/) | L0 · L1 · L2 · L3a |
+| 跨轨 | [Frontier Model Lifecycle](cross-track-frontier-model-lifecycle/) | L0 |
 | 02 | [nano-pretraining-loop](02-pretraining-cpt/nano-pretraining-loop/) | L0 · L1 · L2 |
 | 02 | [nano-fsdp](02-pretraining-cpt/nano-fsdp/) | L0 · L1 · L2 · L3 |
 | 02 | [nano-megatron](02-pretraining-cpt/nano-megatron/) | L0 · L1 · L2 · L3 |
@@ -190,17 +219,18 @@ generation CAS 与 reconcile 暴露并修复跨事务域裂缝。它们仍是单
 | 04 | [nano-agentscope](04-llm-to-agent/nano-agentscope/) | L0 · L1 · L2 · L3 |
 | 04 | [nano-qwenpaw](04-llm-to-agent/nano-qwenpaw/) | L0 · L1 · L2 · L3 |
 | 04 | [nano-agent-runtime](04-llm-to-agent/nano-agent-runtime/) | L0 · L1 · L2 |
-| 05 | [nano-vlm-understanding](05-multimodal-understanding-generation/nano-vlm-understanding/) | L0 |
+| 05 | [nano-vlm-understanding](05-multimodal-understanding-generation/nano-vlm-understanding/) | L0 · L1 |
 | 05 | [nano-image-dit](05-multimodal-understanding-generation/nano-image-dit/) | L0 |
 | 05 | [nano-video-dit](05-multimodal-understanding-generation/nano-video-dit/) | L0 |
 | 05 | [minimax-h3-capstone](05-multimodal-understanding-generation/minimax-h3-capstone/) | L0 |
 
-四篇综合 deep-dive：
+综合 deep-dive 与跨轨 capstone：
 
 - [后训练算法演进](01-post-training-rl-sft/sota-deepdive/post-training-algorithm-evolution.md)
 - [DeepSeek-V3：MoE / MLA / FP8 / 稳定性](02-pretraining-cpt/sota-deepdive/deepseek-moe-mla-stability.md)
 - [LLM 数据方法论](03-data-distributed-rsi/sota-deepdive/data-methodology.md)
 - [Harness Engineering](04-llm-to-agent/sota-deepdive/harness-engineering.md)
+- [Frontier Model Lifecycle：开放权重 stage 血缘 + GPT-6 Astra / Claude Fable 5.1 API 合同](cross-track-frontier-model-lifecycle/)
 
 ---
 
@@ -213,7 +243,8 @@ generation CAS 与 reconcile 暴露并修复跨事务域裂缝。它们仍是单
 3. **重建账本**：不用抄输出，自己算一次概率、显存、通信、成本或状态转移。
 4. **改一个变量**：只改一个配置，解释结果为何变化；不要一次改五个旋钮。
 5. **跑反例**：证明机制在什么条件下失效，而不只证明 happy path 成立。
-6. **跨轨迁移**：从上面的交叉阅读表选一个迁移任务，写出输入、状态、评价与失败恢复。
+6. **费曼复述**：先遮住参考答案，用自己的话讲清机制、反例和证据边界；展开答案后，逐条解释分歧来自哪里。
+7. **跨轨迁移**：从上面的交叉阅读表选一个迁移任务，写出输入、状态、评价与失败恢复。
 
 阅读任何数字时再问一句：它是公式、当前机器实测、论文声明、源码事实，还是作者推断？
 这五类证据不能互相替代。
