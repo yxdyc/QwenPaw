@@ -209,7 +209,7 @@ nano-verl L2（当前 CPU-only 输出，seed=42）演示 lockstep 两进程分�
 
 ### 7.4 2026 的 infra 前沿：agentic RL 把轨迹拉长到百万 token
 
-Kimi K3 技术报告 [2607.24653]（2026-07-27，v2 2026-08-07，Kimi Team）摘要声称：2.8T MoE / 104B 激活 / 1M 上下文；post-training = 「reinforcement learning across general, agentic, and coding domains and multiple reasoning-effort levels」；infra 侧的关键新词是「**million-token agentic RL with persistent rollout and sandbox states**」——agentic RL 把 rollout 从「一问一答」拉长到跨环境状态的长时程轨迹，rollout 引擎要能持久化沙箱与中间状态。（当前证据只覆盖摘要，正文细节标 [TODO: verify]。）这与 04 轨 harness engineering 的长时程主题（状态外化、检查点、可审查停止点）是同一枚硬币的两面：训练侧要持久化 rollout 状态，推理侧要外化 agent 状态——长轨迹既是训练数据也是工程对象（总导航的四轨闭环 RSI 闭环：agent 轨迹回流数据侧）。DAPO 摘要的生态证据补一句：该开源 RL 系统「built on the verl framework」——verl 系 infra 是 RLVR 开源复现的事实底座（nano-verl 对标的正是它）。
+Kimi K3 技术报告 [2607.24653]（2026-07-27，v2 2026-08-07，Kimi Team）披露：2.8T MoE / 104B 激活 / 1M 上下文；post-training 覆盖 general、agentic、coding 与多 reasoning-effort；infra 侧的关键是 **million-token agentic RL with persistent rollout and sandbox states**——agentic RL 把 rollout 从「一问一答」拉长到跨环境状态的长时程轨迹，rollout 引擎要能持久化沙箱与中间状态。正文级证据已在 2026-08-13 的深化文档与 [Kimi K3 独立 deep-dive](kimi-k3-agentic-rl-scale.md) 闭合。这与 04 轨 harness engineering 的状态外化、检查点和可审查停止点是同一枚硬币的两面。DAPO 的官方报告同时说明其系统 built on verl——verl 系 infra 是 RLVR 开源复现的事实底座（nano-verl 对标的正是它）。
 
 ---
 
@@ -223,7 +223,7 @@ Kimi K3 技术报告 [2607.24653]（2026-07-27，v2 2026-08-07，Kimi Team）摘
 | **B 前沿主流** | GRPO [2402.03300 内提出] → DAPO [2503.14476] / Dr. GRPO [2503.20783] / CISPO [2506.13585] / GSPO [2507.18071]；RLVR [2501.12948]；OPD 生产化 [2505.09388 / TM blog 2025-10-27 / 2604.00626 / 2606.30406]；Kimi K3 agentic RL [2607.24653] | 多独立来源支撑：GRPO 族变体各有前沿模型采用证据（Qwen3/M1/MiMo-V2-Flash）；OPD 有 survey + 三家生产配方；本文主体内容 |
 | **C 中间状态** | XPO 类离线偏好变体、MAD-OPD / Uni-OPD 等单源 OPD 变体（无已核验 arXiv ID） | 只讲机制类别（token 级重加权 / 多教师融合），不追单论文微创新；晋升 B 层需 ≥2 个独立验证 |
 
-存在性数据点：Qwen3.5 系列已发布（qwen.ai blog「Qwen3.5: Towards Native Multimodal Agents」；Qwen3.5-Omni Technical Report [2604.15804]，2026-04-17，摘要主题为全模态）——尚未提取其 post-training 配方的一手文本（博客 JS 渲染），标 [TODO: verify]。DeepSeek-V4 采用 pure multi-teacher OPD 的说法系 survey 正文转述（nano-opd §15 已录 [TODO: verify]），本文维持转述口径。
+**2026-09-08 刷新**：Qwen 的当前可核验对象已推进到 Qwen3.8-Flash-Next，但其官方报告仍聚焦 architecture/pretraining，详细 post-training recipe 继续记为 unknown；DeepSeek-V4 的 multi-teacher OPD 已由报告 §5.1/§5.1.2 一手核验，不再维持 survey-only 口径。四家模型的 stage 与未知量见 [Frontier Model Lifecycle](../../cross-track-frontier-model-lifecycle/RESEARCH.md)。
 
 ---
 
@@ -251,9 +251,9 @@ Kimi K3 技术报告 [2607.24653]（2026-07-27，v2 2026-08-07，Kimi Team）摘
 
 ### 9.4 局限
 
-- Kimi K3 [2607.24653] 与 MOPD [2606.30406] 只核验到摘要层（标题/日期/作者/摘要为 2026-08-11 arXiv API 现场抓取），正文实验细节标 [TODO: verify]。
+- Kimi K3 [2607.24653] 与 MOPD [2606.30406] 的正文机制已在 2026-08-13 深化文档核验；benchmark 表仍未逐项复算，不把官方表写成独立结果。
 - Thinking Machines 博客数字（55.0/67.6/74.4、17,920/1,800 GPU hours、9x）为博客自述与转引 Qwen3 报告 Table 21，非独立复算，标 `[blog claims]`。
-- Qwen3.5 系列 post-training 配方细节未提取到一手文本（博客 JS 渲染），标 [TODO: verify]；DeepSeek-V4 的 OPD 采用系 survey 转述，未直接核验（nano-opd §15 已录 [TODO: verify]，维持）。
+- Qwen3.8-Flash-Next 的详细 post-training 配方未由当前官方报告披露，保持 unknown；DeepSeek-V4 OPD 已直接核验一手报告，但本课程未复现其教师服务与 frontier-scale 训练。
 - nano 实证全部为 toy 尺度（28K–237K 参数模型、CPU/MPS）：机制可迁移，量级不可外推；nano-verl L3 的 7B/13B 显存/时钟数字是 declared COST 模型算术，非 GPU 实测（其教程已显式区分 declared vs real toy，本文遵守该口径）。
 - MOPD 与 survey v3 方法表同名方法的同一性为合理推断（时间线吻合），标 [TODO: verify]。
 

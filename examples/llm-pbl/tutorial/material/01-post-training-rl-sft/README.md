@@ -1,7 +1,7 @@
 # 轨道 01 — 后训练 / RL / SFT Infra
 
 > **一句话**：把一个 base model 变成「听话 + 会做事」的模型，所需的全部训练基础设施。
-> **对标权威实现**：verl (HybridFlow) · slime · Trinity-RFT · LLaMA-Factory ｜ **SOTA 参照**：Kimi-K3（agentic RL 规模化）· GRPO 族 / RLVR · OPD（on-policy distillation）
+> **对标权威实现**：verl (HybridFlow) · slime · Trinity-RFT · LLaMA-Factory ｜ **SOTA 参照**：Kimi K3（agentic RL）· DeepSeek-V4（多教师 OPD）· GLM-5.3（同底座后训练归因）· GRPO / RLVR
 
 ---
 
@@ -21,6 +21,8 @@
 横切合同：[EpisodeRecord L0](../cross-track-episode-record/tutorial_L0.md) 用同一条 trajectory 解释
 PPO、GRPO/RLVR 与 sampled-token OPD 分别消费哪些字段，并在训练前拒绝 termination / policy / teacher / router
 版本错配；[Capability Factory L0](../cross-track-capability-factory/tutorial_L0.md) 把 multi-teacher 集成接到 promotion gate。
+[Frontier Model Lifecycle L0](../cross-track-frontier-model-lifecycle/tutorial_L0.md) 再把这些机制绑定到 base/stage lineage，
+避免把新底座、后训练、部署与评测变化混成一个“模型升级”。
 
 ---
 
@@ -46,6 +48,9 @@ Step 5  nano-opd L0–L3            ← 从 reverse-KL 算术到 multi-teacher �
   │
   ▼
 Step 6  sota-deepdive: Kimi-K3    ← 看 SOTA 如何把 agentic RL 规模化
+  │
+  ▼
+Step 7  Frontier Lifecycle L0      ← 用 DeepSeek/Qwen/Kimi/GLM 判断提升来自哪个 stage
 ```
 
 ---
@@ -61,6 +66,7 @@ Step 6  sota-deepdive: Kimi-K3    ← 看 SOTA 如何把 agentic RL 规模化
 - [ ] 能说出 multi-teacher OPD 的至少一种工程形态（多教师分布融合 / 路由），及其相对单教师的动机
 - [ ] 能为同一条 EpisodeRecord 写出 PPO/GRPO/OPD adapter 的必填字段，并解释 `done` 与 `truncated`
 - [ ] 能按课程的三层证据时效性分层，说出 PPO/DPO（经典层）与 GRPO 族/OPD（前沿层）在当今后训练格局中的定位差异
+- [ ] 能解释为何 GLM-5.3↔5.2 适合进入同底座后训练 replay，而 GLM-5.3↔5.3-Flash 不能当作后训练消融
 
 ---
 
@@ -75,5 +81,6 @@ Step 6  sota-deepdive: Kimi-K3    ← 看 SOTA 如何把 agentic RL 规模化
 - OPD 前沿：[OPD Survey 2604.00626](https://arxiv.org/abs/2604.00626)（v4 2026-06）；[Qwen3 2505.09388](https://arxiv.org/abs/2505.09388)；[MOPD 2606.30406](https://arxiv.org/abs/2606.30406)。单源变体只在核验后进入事实表。
 - RLVR / GRPO 族：[DAPO 2503.14476](https://arxiv.org/abs/2503.14476) / [GSPO 2507.18071](https://arxiv.org/abs/2507.18071) / CISPO（[MiniMax-M1 2506.13585](https://arxiv.org/abs/2506.13585)）
 - SOTA：[Kimi K3 技术报告 2607.24653](https://arxiv.org/abs/2607.24653)；课程解构见 [Kimi-K3 deep-dive](sota-deepdive/kimi-k3-agentic-rl-scale.md)
+- 跨代串联：[Frontier Model Lifecycle](../cross-track-frontier-model-lifecycle/)；用 DeepSeek-V4、Qwen3.8-Flash-Next、Kimi K3、GLM-5.3/Flash 统一 stage、参数与开放边界
 
 → 深挖见 [sota-deepdive/](sota-deepdive/)

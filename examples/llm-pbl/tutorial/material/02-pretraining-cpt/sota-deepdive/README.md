@@ -1,7 +1,7 @@
 # SOTA Deep-Dive — 预训练 / MoE + MLA + 训练稳定性
 
-> **深挖对象**：DeepSeek-V3（MoE 路由 + MLA 压缩 + FP8 训练 + 训练稳定性，首版 ✅）；DeepSeek-V4 为更新一代替代（摘要级，不作教学主体）。
-> **状态**：首版完成（SOTA 对齐日期 2026-08-11/12）
+> **深挖对象**：DeepSeek-V3（MoE 路由 + MLA 压缩 + FP8 训练 + 训练稳定性，机制地基 ✅）；DeepSeek-V4（CSA/HCA + mHC + Muon + OPD，生命周期桥接 ✅）。
+> **状态**：首版完成（2026-08-11/12）；V4 完整报告与四家前沿模型重对齐完成（2026-09-08）。
 > **可运行对照**：[nano-megatron L0–L3](../nano-megatron/)；混合精度补充见 [nano-fsdp L3](../nano-fsdp/tutorial_L3.md)，paged KV 补充见 [nano-vllm-sglang L2](../../03-data-distributed-rsi/nano-vllm-sglang/tutorial_L2.md)。
 
 ---
@@ -10,7 +10,7 @@
 
 | 文件 | 状态 | 说明 |
 |------|------|------|
-| [`deepseek-moe-mla-stability.md`](deepseek-moe-mla-stability.md) | ✅ 首版（2026-08-12） | 机制面 ×4（MoE 路由 + aux-loss-free 偏置负载均衡 / MLA 低秩压缩 + absorbed + 解耦 RoPE / FP8 细粒度 + 高精度累加 / 梯度裁剪与训练稳定性），每面一手来源逐字引文 + sim 实测双证 + nano-megatron 实测锚交叉引用；费曼四件齐备；V4 定位 + T-Rex 单源标注 |
+| [`deepseek-moe-mla-stability.md`](deepseek-moe-mla-stability.md) | ✅ 首版 + V4 刷新 | 机制面 ×4（MoE / MLA / FP8 / 稳定性）仍以 V3 为规范锚；§6 用 V4 完整报告补上 CSA/HCA、mHC、Muon 与 specialist→OPD 生命周期，链接跨轨 capstone |
 | [`deepseek_v3_mechanisms_sim.py`](deepseek_v3_mechanisms_sim.py) | ✅ 冻结基线（2026-08-12 00:57） | 四个机制面的可运行本质模拟（toy 尺度 + 真实格式语义，真实 `float8_e4m3fn` 量化-反量化）；仅依赖 torch、CPU 即跑、seed=3 跨运行逐字节一致、self-check 20/20 |
 
 ## 环境依赖
@@ -26,6 +26,7 @@
 3. **FP8 训练**（首版已覆盖）：细粒度（1×128 tile / 128×128 block）在线量化 + 高精度累加（promotion to CUDA Cores）（V3 §3.3）。
 4. **训练稳定性**（首版已覆盖）：梯度裁剪（clip norm = 1.0，V3 唯一披露的稳定性旋钮，V3 §4.2）；零 irrecoverable loss spike 的一揽子归因。
 5. **可迁移的工程选择**（首版 §5 已覆盖）：与 nano-megatron L0–L3 实测锚（TP×PP×SP 组合 / SP 通信账 / MFU 三段分解 / PP bubble）的对应关系。
+6. **跨代生命周期**（2026-09-08 新增）：[Frontier Model Lifecycle](../../cross-track-frontier-model-lifecycle/) 用 V4、Qwen3.8-Flash-Next、Kimi K3、GLM-5.3/Flash 比较 architecture/pretrain/post-train/serve/eval，而不是扩写榜单。
 
 ## 信息溯源要求（反幻觉硬约束）
 
@@ -39,7 +40,7 @@
 - [x] **DeepSeek-V2** `[2405.04434]`（v5）——MLA 原始提出文；93.3% 口径（vs DeepSeek 67B）+ §2.1/§2.1.2/§2.1.3 节号实在。
 - [x] **DeepSeekMoE** `[2401.06066]` / **Aux-Loss-Free Load Balancing** `[2408.15664]`——A 层经典锚点。
 - [x] **官方推理源码**（github.com/deepseek-ai/DeepSeek-V3，main 2026-08-12 抓取）：`inference/model.py`（32,831 B，md5 `18498c730ab8e3460b93de313c2bc6cc`，行锚点 L483/L484/L486/L494-495/L535/L564/L566-598/L585/L594 逐一在位）+ `inference/configs/config_671B.json`（503 B，md5 `bb3ea9736753cadf24f8cd6f4275bd6c`，17 字段与 sim 逐项吻合）。行号以 2026-08-11/12 抓取日为准。
-- [x] **DeepSeek-V4** `[2606.19348]`（2026-04-26）——更新一代替代，存在性坐实；机制细节（CSA/HCA/mHC/Muon）仅摘要级、标 `[TODO: verify]`、不作教学主体（课程的前沿证据层处理）。
+- [x] **DeepSeek-V4** `[2606.19348]`（2026-04-26）——完整报告正文已核验：Pro 1.6T/49B、Flash 284B/13B、1M context，CSA/HCA、mHC、Muon、specialist RL 与 multi-teacher full-vocabulary reverse-KL OPD；官方数字仍标为报告声明，不当作独立复现。
 - [x] **SLAI T-Rex** `[2607.20145]`（2026-07-22 / v2 2026-07-30）——`[transient/单源]`，仅录不展开。
 
 ## 权威实现与延伸

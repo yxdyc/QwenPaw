@@ -1,7 +1,7 @@
 # 轨道 02 — 预训练 / CPT Infra
 
 > **一句话**：从随机初始化训出一个 base model（pre-training），或在已有模型上灌入领域知识（continual pre-training, CPT），所需的并行与稳定性工程。
-> **对标权威实现**：Megatron-LM · PyTorch FSDP / DeepSpeed ZeRO ｜ **SOTA 参照**：DeepSeek（MoE + MLA + 训练稳定性）
+> **对标权威实现**：Megatron-LM · PyTorch FSDP / DeepSpeed ZeRO ｜ **SOTA 参照**：DeepSeek-V4 · Qwen3.8-Flash-Next · Kimi K3 · GLM-5.3-Flash
 
 ---
 
@@ -40,6 +40,9 @@ Step 4  联读 FSDP/Megatron L2   ← 比较复制式 DP 状态合同与真正 t
   │
   ▼
 Step 5  sota-deepdive: DeepSeek ← MoE + MLA + 训练稳定性的 SOTA 工程
+  │
+  ▼
+Step 6  Frontier Lifecycle L0   ← 把架构/pretrain 与后训练、部署和评测血缘连起来
 ```
 
 ---
@@ -53,6 +56,7 @@ Step 5  sota-deepdive: DeepSeek ← MoE + MLA + 训练稳定性的 SOTA 工程
 - [ ] 能解释序列并行（SP）为什么能省 activation 显存
 - [ ] 能列出一套 loss spike 的诊断与恢复流程
 - [ ] 能讲清 DeepSeek 的 MLA（多头潜在注意力）和 MoE 在训练上的至少 2 个工程要点
+- [ ] 能分开总参数、激活参数、外置容量与训练状态，并判断一个跨版本比较是否能归因于 pretraining
 
 ---
 
@@ -62,6 +66,8 @@ Step 5  sota-deepdive: DeepSeek ← MoE + MLA + 训练稳定性的 SOTA 工程
 - Megatron-LM：`github.com/NVIDIA/Megatron-LM`（TP/PP/SP 切分与通信）
 - PyTorch FSDP：`docs.pytorch.org/docs/stable/fsdp.html`；DeepSpeed ZeRO：`github.com/deepspeedai/DeepSpeed`
 - 跨轨概念依赖：CPT 的领域语料清洗见轨道 03 `nano-data-juicer`
-- SOTA：DeepSeek-V3 技术报告（MoE / MLA / 训练稳定性）`[TODO: verify arXiv]`
+- SOTA：[DeepSeek-V3 技术报告 2412.19437](https://arxiv.org/abs/2412.19437)（MoE / MLA / FP8 / 稳定性机制锚）；
+  [DeepSeek-V4 报告 2606.19348](https://arxiv.org/abs/2606.19348)（CSA/HCA、mHC、Muon 与 OPD 生命周期）。
+- 跨代串联：[Frontier Model Lifecycle](../cross-track-frontier-model-lifecycle/)；Qwen3.8、Kimi K3、GLM-5.3-Flash 用来补 hybrid attention、长轨训练、原生多模态与归因反例，不按厂商榜单排序。
 
 → 深挖见 [sota-deepdive/](sota-deepdive/)

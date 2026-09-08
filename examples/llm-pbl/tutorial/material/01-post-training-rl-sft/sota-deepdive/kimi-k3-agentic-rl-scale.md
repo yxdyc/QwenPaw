@@ -26,6 +26,12 @@ Kimi K3（2.8T 参数 MoE、104B 激活、1M context，K3 §1）是目前把这�
 
 一条主线贯穿全文：**K3 的算法选择与 infra 选择不是两件独立的事**。partial rollout（算法侧接受陈旧度）要求 sandbox 可暂停续跑（infra 侧）；per-token 正则（算法侧容忍 off-policy）让 partial rollout 敢把 λ 调小（infra 侧吞吐）；预算控制（reward 侧）直接改变 rollout 的长度分布（infra 侧 KV 压力）。主文档 §7「算法-infra 共演化」的论断在 K3 这里拿到了最完整的正文级证据链。
 
+### 0.1 2026-09-08 模型卡刷新：把 K3 放回完整生命周期
+
+官方 K3 报告/模型卡还给出本文 agentic RL 主线之外的三项边界：KDA + Attention Residuals + Stable LatentMoE（16/896 routed experts）构成 base architecture；模型原生接收视觉并支持 1M context；公开权重采用从 SFT 阶段引入的 MXFP4 weights / MXFP8 activations QAT 口径。后者说明量化并非部署末尾的无损文件转换，而会反向进入后训练目标与评测。
+
+这些事实不改变本文的 agentic RL 专题范围。它们与 DeepSeek-V4、Qwen3.8-Flash-Next、GLM-5.3/Flash 的 architecture→pretrain→post-train→serve 对照统一放在 [Frontier Model Lifecycle](../../cross-track-frontier-model-lifecycle/RESEARCH.md)；开放权重仍不等于完整训练数据、recipe 或生产系统开源。
+
 ---
 
 ## §1 运行与输出

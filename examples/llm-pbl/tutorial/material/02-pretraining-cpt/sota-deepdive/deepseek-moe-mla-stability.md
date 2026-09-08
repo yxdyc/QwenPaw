@@ -3,6 +3,7 @@
 > **深挖对象**：DeepSeek-V3 技术报告（arXiv:2412.19437）+ 官方推理源码（github.com/deepseek-ai/DeepSeek-V3）。
 > **轨道**：[02 预训练 / CPT](../README.md)。
 > **可运行锚点**：同目录 [`deepseek_v3_mechanisms_sim.py`](deepseek_v3_mechanisms_sim.py)——四个机制面的可运行本质模拟（toy 尺度 + 真实格式语义），单文件、仅依赖 torch、CPU 即跑、seed=3 跨运行逐字节一致。
+> **前沿刷新**：2026-09-08 已核验 DeepSeek-V4 完整报告；V3 仍承担机制地基，V4 进入 [Frontier Model Lifecycle](../../cross-track-frontier-model-lifecycle/) 连接长上下文、预训练与 OPD。
 
 ---
 
@@ -318,9 +319,9 @@ V3 §4.2（Hyper-Parameters）披露的稳定性相关旋钮里，**梯度裁剪
 
 ---
 
-## §6 SOTA 对齐：2026 格局与三层锚点定位（对齐日 2026-08-11/12）
+## §6 SOTA 对齐：2026 格局与三层锚点定位（刷新日 2026-09-08）
 
-按课程的三层证据时效性分层策略，本节检索近 6 个月一手报告，检查是否存在更新一代替代。对齐结果（**核验日期 2026-08-11/12**）：
+按课程的三层证据时效性分层策略，本节以一手报告和官方模型卡检查更新一代。V3 继续作为 MoE/MLA/FP8 的规范机制锚；V4 的完整报告已从“摘要级存在性”晋升为“可教学的一手生命周期证据”，但其性能数字仍是官方声明而非独立复现。
 
 ### 6.1 三层锚点定位
 
@@ -331,13 +332,18 @@ V3 §4.2（Hyper-Parameters）披露的稳定性相关旋钮里，**梯度裁剪
 | **DeepSeek-V4**（arXiv:2606.19348，2026-04-26） | **B 前沿主流（更新一代替代）** | 见 §6.2 |
 | **SLAI T-Rex**（arXiv:2607.20145，2026-07-22 / v2 2026-07-30） | **C 中间状态 [transient/单源]** | 见 §6.3 |
 
-### 6.2 DeepSeek-V4：更新一代替代，但不作教学主体
+### 6.2 DeepSeek-V4：从新架构到多教师 OPD 的生命周期桥
 
-现场核验确认 **DeepSeek-V4 存在**（arXiv:2606.19348，标题「DeepSeek-V4: Towards Highly Efficient Million-Token Context Intelligence」，2026-04-26）——它是比 V3 更新的一代。**处理口径（课程的前沿证据层规则）**：
+DeepSeek-V4 报告（arXiv:2606.19348）披露两档模型：Pro 为 1.6T total / 49B active，Flash 为 284B / 13B active，原生面向 1M context。课程只提炼四个能改变工程判断的增量：
 
-- V4 的机制细节（如面向百万 token 上下文的 CSA / HCA / mHC 注意力分层、Muon 优化器等）**仅作摘要级提及**，逐一标 `[TODO: verify]`——本报告不展开、不作为教学主体。
-- 理由：V4 机制尚未经「≥2 个独立来源验证 / 权威框架集成 / 多机构复现」的晋升检验，且其一手技术细节本文未逐条现场核验到可教学的程度；把单代新论文的机制当 SOTA 教，正是 §八 警告的「追新」失败模式。
-- **V3 的定位不受影响**：本文教的是 MoE/MLA/FP8/稳定性四个**机制面**，V3 报告是这些机制最完整、最规范的一手披露；V4 是在 V3 地基上的演进。经典 ≠ 过时——正如 PPO 之于 GRPO。
+1. **长上下文不再只有一种 attention**：CSA 与 HCA 构成混合层级，用不同成本处理局部/压缩/全局信息。报告给出的 V4-Pro 相对 V3.2 的 FLOPs/KV 降幅属于官方模型口径，未在本课程复测，故不抄成通用比例。
+2. **mHC 与 Muon 是训练系统选择**：前者处理深层信息流/残差稳定，后者改变参数分组、更新与 batch scaling；不能只在架构图上提名，后续应以同模型/数据预算的小型 factorial 教学。
+3. **pretraining 与 post-training 共用 lineage**：报告披露超过 32T token 的预训练；后训练先让 specialist 经初始微调和 GRPO 获得各领域能力，再把 10+ teachers 合入单一 student。
+4. **OPD 是服务系统**：V4 采用 full-vocabulary reverse KL；教师侧还涉及集中存储、按需分片、缓存最后层 hidden state 后重建 logits、按 teacher index 组织请求。只有 KL 公式而没有 teacher/version/routing 账，不构成该系统的复现。
+
+**证据边界**：这些是报告正文事实；开放权重不等于训练数据、teacher checkpoints、完整训练栈与性能声明已被独立复现。
+V3 的四个机制面继续保留，因为它们披露更完整、sim 可运行；V4 的跨 stage 教学与 Qwen3.8、Kimi K3、GLM-5.3 对照集中在
+[Frontier Model Lifecycle](../../cross-track-frontier-model-lifecycle/RESEARCH.md)。
 
 ### 6.3 SLAI T-Rex：单源新条目，仅录不展开
 
@@ -390,7 +396,7 @@ V3 §4.2（Hyper-Parameters）披露的稳定性相关旋钮里，**梯度裁剪
 | DeepSeek-V2 | arXiv:2405.04434 (v5) | DeepSeek-V2: A Strong, Economical, and Efficient MoE Language Model | 2024-05-07 / v5 2024-06-19 | API 核验；ar5iv 1,154,446 B，93.3% 口径 + §2.1/§2.1.3 节号实在 |
 | DeepSeekMoE | arXiv:2401.06066 (v1) | DeepSeekMoE: Towards Ultimate Expert Specialization... | 2024-01-11 | API 核验 |
 | Aux-Loss-Free Load Balancing | arXiv:2408.15664 (v1) | Auxiliary-Loss-Free Load Balancing Strategy for MoE | 2024-08-28 | API 核验 |
-| DeepSeek-V4 | arXiv:2606.19348 (v1) | DeepSeek-V4: Towards Highly Efficient Million-Token Context Intelligence | 2026-04-26 | API 核验（存在性坐实）；机制细节 [TODO: verify] 不作教学主体 |
+| DeepSeek-V4 | arXiv:2606.19348 (v1) | DeepSeek-V4: Towards Highly Efficient Million-Token Context Intelligence | 2026-04-26 | 完整报告正文核验；架构、预训练与 OPD 作为一手事实，性能数字仍为官方声明 |
 | SLAI T-Rex | arXiv:2607.20145 (v2) | SLAI T-Rex: Full-Parameter Post-training of the DeepSeek-V4 Family on Ascend SuperPOD | 2026-07-22 / v2 2026-07-30 | API 核验；[transient/单源] |
 | 官方推理源码 | github.com/deepseek-ai/DeepSeek-V3 `inference/model.py` | — | main 分支 2026-08-12 抓取 32,831 B md5 `18498c730ab8e3460b93de313c2bc6cc` | 行锚点逐一核验在位 |
 | 官方配置 | 同上 `inference/configs/config_671B.json` | — | main 分支 2026-08-12 抓取 503 B md5 `bb3ea9736753cadf24f8cd6f4275bd6c` | 17 字段与 sim 逐项吻合 |
@@ -411,6 +417,6 @@ V3 §4.2（Hyper-Parameters）披露的稳定性相关旋钮里，**梯度裁剪
 - **原文声称**（V3/V2 报告逐字引文，§8.1 现场核验）：671B/37B、93.3%、γ=0.001→0.0、α=0.0001、clip norm 1.0、K=4096 近 2%、14 bits、Online Quantization、promotion to CUDA Cores、no irrecoverable loss spikes、2.788M H800 GPU hours、14.8T tokens、batch 3072→15360 等。
 - **源码已有**（官方 `inference/` 逐行核验）：Gate.forward 路由逻辑、MLA absorbed 路径、kv_norm、bias 仅 671B。
 - **合理推断**（有上述一手来源支撑的综合判断）：§1.5/§2.5/§3.4/§4.4 的取舍分析、§5 的 nano↔V3 对应关系。
-- **猜测 / 待验**：V4 机制细节（CSA/HCA/mHC/Muon，摘要级 `[TODO: verify]`）；全部 GPU 绝对数字 `[TODO: verify on real system]`；T-Rex 具体方法（单源，未展开）。
+- **猜测 / 待验**：V4 官方性能数字的独立复现；全部 GPU 绝对数字 `[TODO: verify on real system]`；T-Rex 具体方法（单源，未展开）。
 
 > 反幻觉底线：所有数字/API/行数/benchmark 均可溯源至 §8.1 现场抓取件或 sim 真实输出；拿不到一手来源处一律标 `[TODO: verify]`，绝不凭印象写。

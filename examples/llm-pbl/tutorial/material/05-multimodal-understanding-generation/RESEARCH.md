@@ -2,6 +2,7 @@
 
 > 对齐日：2026-08-31。本文把**论文机制、官方发布事实、源码/配置事实、课程推断和开放缺口**分开。
 > 前沿模型、仓库和许可证会变化；进入 L1–L3 前必须固定 revision 并重新核验。
+> 局部刷新：2026-09-04 只复核 Qwen3-VL L1 的模型卡、精确 commit 与官方调用接口；不据此更新其余条目的对齐日。
 
 ## 0. 不是模型动物园：三条技术谱系
 
@@ -33,6 +34,23 @@
 - **图像依赖**：image-drop/swap/shuffle 后输出是否按因果预期变化。
 
 总 accuracy 会混合技能分布。L1 起固定分技能样本和 counterfactual pair；拒答也要单列，不能把无证据时的自信回答算“流畅”。
+
+### Qwen3-VL L1 的可复现锚（2026-09-04 局部刷新）
+
+- 模型身份固定为 [Qwen/Qwen3-VL-2B-Instruct 官方模型卡](https://huggingface.co/Qwen/Qwen3-VL-2B-Instruct)，
+  权重/配置 revision 固定为
+  [`89644892e4d85e24eaac8bacfd4f463576704203`](https://huggingface.co/Qwen/Qwen3-VL-2B-Instruct/commit/89644892e4d85e24eaac8bacfd4f463576704203)。
+- [官方仓库用法](https://github.com/QwenLM/Qwen3-VL/blob/main/README.md)采用
+  `AutoModelForImageTextToText`、`AutoProcessor` 与 `apply_chat_template`，并要求 Transformers 4.57.0 及以上；
+  课程 L1 跟随这条公开接口，但仍在运行记录中写出实际安装版本。
+- 真机无法访问 Hugging Face，因此从 [Qwen 官方 ModelScope 仓库](https://modelscope.cn/models/Qwen/Qwen3-VL-2B-Instruct)
+  转移快照后离线加载。ModelScope `master` 是可变分支：课程不把它写成 pinned revision，而是验证权重 SHA256
+  `7de1838c87a5349b016c26a1c3f7d2bc400a3d485f95ef39a7059ffd734977a0` 与 HF 固定 revision 相同，并逐文件
+  交叉核验 10 个运行时关键文件；13 文件本地快照 manifest 为
+  `b4f1f572206cd2e60255e7357166ee41bf2ffe3b8b52fa9da739370af895a99f`。
+- 两个独立离线进程的 8/8 checks、答案、token 账和 digest 均一致。六例 normalized semantic accuracy 为 0.833，
+  原始 OCR 回答保留为 `CODE`（期望 `CODE 7319`）。这形成固定小诊断上的实现证据；API、revision 与哈希只解决
+  provenance，六个 synthetic diagnostics 仍不能外推成自然图像 benchmark。
 
 ## 2. 文生图谱系：从 latent diffusion 到 DiT/rectified flow
 

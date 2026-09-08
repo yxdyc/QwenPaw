@@ -1,7 +1,7 @@
 # SOTA Deep-Dive — 后训练 / Agentic RL 规模化
 
 > **深挖对象**：01 轨两个主题——① 后训练算法演进 PPO→GRPO/RLVR→OPD（首版 ✅ + 深化 ✅）；② Kimi-K3 agentic RL 规模化（独立成篇 ✅）。
-> **状态**：首版主题完成（2026-08-11）；深化与来源重对齐完成（2026-08-13，18 个 arXiv ID 复核，四项 `[TODO: verify]` 闭合）。
+> **状态**：首版主题完成（2026-08-11）；深化与来源重对齐完成（2026-08-13）；2026-09-08 已加入四家 frontier lifecycle 串联。
 > **对照基础**：nano-verl、nano-opd、nano-llamafactory 均已覆盖 L0–L3。
 > **深化落点**：[`post-training-algorithm-evolution-deepening.md`](post-training-algorithm-evolution-deepening.md)——四机制面可运行 sim（IS+clip / GRPO 组基线 / ratio 粒度 / OPD 合流，self-check 24/24）+ Kimi K3 / MOPD / DeepSeek-V4 正文层闭合 + survey v3→v4 版本漂移录值。
 
@@ -11,6 +11,7 @@
 
 1. **后训练算法演进**（首版已覆盖 + 深化已覆盖）：PPO 奠基（IS + clipping）→ GRPO 族与 RLVR（去 value model、reward 换可验证信号）→ OPD（蒸馏与 RL 合流）；算法与 infra 共演化。落点：[`post-training-algorithm-evolution.md`](post-training-algorithm-evolution.md) §2–§7，2026 格局三层锚点 → §8；深化落点：[`post-training-algorithm-evolution-deepening.md`](post-training-algorithm-evolution-deepening.md)（四机制面 native sim 实测锚 + 2026-08-13 重对齐 + 引用链）。
 2. **[Kimi-K3 agentic RL 规模化](kimi-k3-agentic-rl-scale.md)**（已完成）：rollout 吞吐、co-located 权重可见性与内存竞争、长轨迹 credit assignment、多步工具 reward、AgentENV sandbox；配套纯标准库 [native sim](kimi_k3_agentic_rl_sim.py) 覆盖 27 项 self-check。
+3. **[Frontier Model Lifecycle](../../cross-track-frontier-model-lifecycle/)**（跨轨 L0 已完成）：不再增加一篇模型列表，而是用 DeepSeek-V4 的 multi-teacher OPD、Qwen3.8 未披露的 post-training recipe、Kimi K3 的长轨 RL 与 GLM-5.3 same-base delta，训练 stage 归因和拒答能力。
 
 ## 信息溯源要求（反幻觉硬约束）
 
@@ -26,6 +27,13 @@
 - [x] 2026-08-13 重对齐闭合四项：Kimi K3 正文层（ar5iv 全文）/ MOPD 正文层 + 同一性（Xiaomi LLM Core 署名 + MiMo-V2-Flash 报告自命名）/ DeepSeek-V4（报告 §5.1/§5.1.2 直接一手，强于 survey 转述；并录 survey v4 已移除该转述的版本漂移）。
 - [ ] 待核（负结果延续）：Qwen3.5 配方细节（arXiv 检索仅 Omni 报告、博客 JS 渲染，2026-08-13 录值）；另新增三项见深化文档 §8.4（K3/MOPD/DSV4 benchmark 表逐项、MOPD 实验表逐项、survey v3/v4 全文 diff）。
 - C 层纪律：MAD-OPD / Uni-OPD 等单源变体无已核验 arXiv ID，只作机制类别出现，不补造 ID。
+
+## 2026-09-08 前沿刷新边界
+
+- DeepSeek-V4 的完整报告现可作为 specialist RL → 多教师 full-vocabulary reverse-KL OPD 的一手锚，不再只依赖 survey 转述。
+- Qwen3.8-Flash-Next 官方报告聚焦架构与预训练；详细 SFT/RL 配方仍记为 unknown，不能从其他 Qwen 代际迁移。
+- GLM-5.3 官方卡把增益归于同 GLM-5.2 base 上的 post-training；GLM-5.3-Flash 是新 base，二者比较不能当作后训练消融。
+- 四家的参数、stage、开放与比较合同集中在 [证据账本](../../cross-track-frontier-model-lifecycle/RESEARCH.md)；本目录继续专注算法与 agentic RL 纵深。
 
 ## native sim 复现声明（2026-08-13）
 

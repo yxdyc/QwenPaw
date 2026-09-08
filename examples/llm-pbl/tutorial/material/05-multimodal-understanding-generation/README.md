@@ -15,6 +15,40 @@
 
 原生音频只在 H3 综合案例中作为联合生成合同出现；本里程碑不另建音频轨。
 
+## 一张图抓住本质
+
+理解与生成可以先用一对相反的信息流统一理解；真正进入模型后，两者的训练目标、输入输出与评测仍然不同：
+
+```text
+理解：media --tokenize--> evidence tokens --condition question--> answer
+生成：noise --predict conditional velocity repeatedly--> media latents --decode--> media
+视频：在两条链上都再加入 time；token 更多，跨帧一致性也成为新的约束
+H3：把 context / video / audio rows 打进同一序列，但按模态保留各自的输入输出头与 flow scheduler
+```
+
+- **VLM 的核心估计量**是 $p(y\mid x_{media},q)$；只测 $y$ 是否答对不够，还要换图或丢图，检查
+  $p(y\mid x,q)$ 是否真的随视觉证据改变。答对、依赖图像、格式遵循和执行成功是四件事。
+- **DiT 的核心对象**不是像素，而是条件向量场 $v_\theta(z_t,t,c)$。在约定的时间参数化下，采样是在 latent
+  空间数值积分 $\mathrm dz/\mathrm dt=v_\theta$；符号、步长或 CFG 强度错了，即使网络结构正确也会沿错误轨迹走。
+- **Video DiT 的新增困难**不是“多生成几张图”，而是 token 从 $HW$ 扩成 $THW$，并要求同一对象沿时间连续。
+  若做 full attention，序列翻倍会让 attention pair 近似增至四倍；逐帧质量不能推出低 flicker。
+- **Omni 模型的系统难点**是保持联合语义与模态合同同时成立：序列可以共享 attention，video/audio 的
+  latent 率、row index、位置与 scheduler 却不能混用。
+
+这四条是不随模型品牌变化的课程主干；Qwen3-VL、Qwen-Image、HunyuanVideo/Wan 与 H3 用来验证它们在真实实现里怎样落地。
+
+## 为什么按 L0 → L3，而不是直接下载最大模型
+
+| 级别 | 新增的真实约束 | 本级应回答 | 暂时不能回答 | ROI gate |
+|---|---|---|---|---|
+| L0 机制 | 最小状态、显式 oracle/手工 readout | 数据流、不变量和错误注入是否成立 | 训练后能力、自然媒体质量 | 分钟级 CPU；反例不能稳定触发就不升 L1 |
+| L1 小模型 | 真实 tensor、优化或真实小权重 | 机制进入学习系统后是否仍可测、失败归因是否清楚 | 大模型质量、生产吞吐 | 单卡小时内；先闭合 correctness/completion 再扩样本 |
+| L2 开放系统 | 真实 processor、VAE、offload/batching 与固定 revision | token/显存/延迟账和质量 rubric 是否可复现 | 托管私有模块、跨集群 SLA | 只在 L1 暴露的瓶颈值得放大时下载重权重 |
+| L3 综合 | 多模态合同、部署边界、人工与代理评测 | 组件组合后是否仍可审计，能力—成本—许可证是否同表 | “一次 smoke 即生产可用” | 先过许可证/磁盘/GPU go-no-go，再做最小案例 |
+
+因此，本轨的前沿性来自“经典机制 + 当前开放实现 + 可证伪边界”，不是模型名密度；ROI 来自先用低成本实验排除
+方向、条件、token 账或评测构念错误，再支付大权重和人工盲评成本。
+
 ## 先修关系
 
 ```mermaid
@@ -32,7 +66,7 @@ flowchart LR
 
 | 顺序 | 模块 | L0 当前回答的问题 | 当前状态 |
 |---|---|---|---|
-| 1 | [nano-vlm-understanding](nano-vlm-understanding/) | patch、projector、2D position 与图像依赖反事实 | L0 完成 |
+| 1 | [nano-vlm-understanding](nano-vlm-understanding/) | patch、projector、2D position 与图像依赖反事实 | L0–L1 完成；L1 已有单张 L20 双进程证据 |
 | 2 | [nano-image-dit](nano-image-dit/) | latent patch、AdaLN、rectified flow、Euler 与 CFG | L0 完成 |
 | 3 | [nano-video-dit](nano-video-dit/) | 3D token、端点条件、时序耦合、flicker 与 $N^2$ 成本 | L0 完成 |
 | 4 | [minimax-h3-capstone](minimax-h3-capstone/) | packed omni sequence、视频/音频双 flow 与本地/托管边界 | L0 完成 |
@@ -62,10 +96,16 @@ L0 的共同验收不是“看起来像”，而是固定反例和量化不变�
 
 ## L1：真实小模型
 
-- **VLM**：Qwen3-VL-2B-Instruct 小样本推理；固定 OCR、空间关系、计数、image-swap 和证据不足拒答集。
+- **VLM**：Qwen3-VL-2B-Instruct 小样本推理；固定 OCR、空间关系、计数、image-swap 和证据不足拒答集；
+  分开报告 normalized semantic accuracy、strict-format accuracy、swap sensitivity/correctness、completion 与重复稳定性。
 - **Image DiT**：PyTorch CPU/GPU 训练微型 rectified-flow DiT。公开真实样本与合成条件分别报告，合成集不代表真实质量。
 - **Video DiT**：moving-digit 小视频训练时空 DiT；验证运动条件、首尾帧和 held-out temporal consistency。
 - **H3**：只下载公开 config/tokenizer metadata，复算结构、序列和显存账，不下载大权重。
+
+VLM L1 已于 2026-09-04 闭环：固定 Qwen3-VL-2B-Instruct revision，两个独立离线进程各重复两轮；均为 8/8
+系统 checks，稳定 digest `5ee6a7c212010936`，峰值 allocated VRAM 4.044 GiB。六例中 OCR 漏掉数字，故语义和
+严格格式准确率均为 0.833；image-swap 的 sensitivity 与 correctness 均为真。详见
+[L1 教程](nano-vlm-understanding/tutorial_L1.md)。这是固定 synthetic diagnostics 的实现证据，不是自然图像 benchmark。
 
 ## L2：真实开放系统
 
@@ -77,7 +117,7 @@ L0 的共同验收不是“看起来像”，而是固定反例和量化不变�
 ## L3：H3 真机综合
 
 执行前重新只读确认 GPU、磁盘、依赖和许可证，固定 H3、SGLang/Diffusers 与模型 revision。首批只下载 FL2VA，
-在可用 H20 机器上跑 BF16、短边 768p、24 FPS、4 秒三个最小案例：直接 T2VA、同 seed 本地结构化 prompt T2VA、
+在通过前置 gate 的 GPU 机器上跑 BF16、短边 768p、24 FPS、4 秒三个最小案例：直接 T2VA、同 seed 本地结构化 prompt T2VA、
 首尾帧 FL2VA。
 
 不调用付费 Context-IR/2K API，不声称本地复现 2K 完整系统；Ref2VA 大权重与第二 checkpoint 另批批准。每次记录
