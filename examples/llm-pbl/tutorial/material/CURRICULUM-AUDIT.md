@@ -1,6 +1,6 @@
 # LLM-PBL 课程完备性与质量审计
 
-> 快照日期：2026-09-08
+> 快照日期：2026-09-14
 > 审计范围：`tutorial/material` 的结构、阅读路径、发布卫生与证据分层。
 > 重要边界：本页不等于“全部实验已重跑”或“全部外部主张已重新联网核验”。
 
@@ -27,7 +27,7 @@ architecture → pretraining → post-training → serving → evaluation 串联
 | `nano-*` 模块 | 20 | 递归目录名计数；H3 capstone 不在该命名口径内 |
 | 跨轨模块 | 4 | Capability Factory、EpisodeRecord、Evaluation Gate、Frontier Model Lifecycle |
 | deep-dive 目录 | 4 | 01–04 各一处；05 以 `RESEARCH.md` 承担研究账本 |
-| Markdown | 121 | `tutorial/material` 全树 |
+| Markdown | 122 | `tutorial/material` 全树；新增多模态模型解剖与训练专题 |
 | `tutorial_L*.md` | 77 | 包含 Evaluation Gate 的敏感性补充教程、VLM L1 真机教程与 Frontier Lifecycle L0 |
 | Python | 85 | 课程材料树内脚本，不含仓库级校验器 |
 
@@ -47,7 +47,7 @@ architecture → pretraining → post-training → serving → evaluation 串联
 | 02 预训练 | FSDP、Megatron 已到 L3；pretraining lifecycle 到 gloo exact resume L2；DeepSeek/Qwen/Kimi/GLM 已有跨代机制/血缘地图；Megatron 有 PP2 与 TP2/4/8 L20/NCCL 证据 | hybrid sparse/linear attention、Muon、mHC、QAT 仍缺独立实验；分片 checkpoint schema 尚未闭合 | metadata ledger 后，每次只做一个小型 architecture/optimizer factorial |
 | 03 数据/分布式/RSI | Data-Juicer、Ray、vLLM/SGLang 到 L3；平台、编排、RAG 到 L2 | 跨组件 schema 演进、离线/在线一致性和真实引擎证据仍分散 | 用一条 EpisodeRecord 贯穿 snapshot → retrieval → rollout → admission，并补真实 SGLang 固定提示集 |
 | 04 Agent | AgentScope、QwenPaw 到 L3；transactional runtime L2 已覆盖多 worker、outbox、compensation 与 provider-checked fencing epoch | fencing 仍是单机 SQLite 机制证据；网络分区、真实 token 与外部 runtime 尚未实证 | 以 HTTP mock/真实 runtime 注入 stale owner、响应丢失、权限重放与补偿失败 |
-| 05 多模态 | 四个 L0 可独立学习；Qwen3-VL-2B L1 已有单张 L20、双独立进程的真实 checkpoint 证据 | VLM 仍只有六例 synthetic diagnostics；真实图像/视频质量和 H3 配置账尚未落地 | 训练微型 Image DiT，再做 moving-video DiT 与 H3 config-only 复算 |
+| 05 多模态 | 四个 L0 可独立学习；Qwen3-VL-2B L1 已有单张 L20、双独立进程的真实 checkpoint 证据；新增 readout、encoder/VAE、参数口径和现代训练路线 | VLM 仍只有六例 synthetic diagnostics；真实图像/视频质量和 H3 配置账尚未落地 | 训练微型 Image DiT，再做 moving-video DiT 与 H3 config-only 复算 |
 
 跨轨部分已经承担“系统闭环”而非补充阅读：
 

@@ -88,6 +88,7 @@ LLM-PBL/
     │   ├── nano-agentscope/  nano-qwenpaw/  nano-agent-runtime/
     │   └── sota-deepdive/
     └── 05-multimodal-understanding-generation/
+        ├── MODEL_ANATOMY_AND_TRAINING.md  # readout、encoder/VAE、参数与现代训练配方
         ├── nano-vlm-understanding/  nano-image-dit/  nano-video-dit/
         └── minimax-h3-capstone/
 ```
@@ -100,3 +101,4 @@ LLM-PBL/
 - 想从某一层切入 → 进对应 `tutorial/material/0X-*/README.md`
 - 想理解“candidate 怎样被裁决、可靠激活、治理 evaluator，并发布到独立 router” → 跑 [Evaluation Gate L0→L3a](tutorial/material/cross-track-evaluation-gate/)
 - 想把 DeepSeek-V4、Qwen3.8-Flash-Next、Kimi K3、GLM-5.3，以及闭源 GPT-6 Astra / Claude Fable 5.1 串成“身份→stage→服务→评测”的证据链 → 跑 [Frontier Model Lifecycle L0](tutorial/material/cross-track-frontier-model-lifecycle/)
+- 想区分多模态 readout、vision/condition encoder、VAE、参数占比与现代多阶段训练 → 读 [多模态模型解剖与训练](tutorial/material/05-multimodal-understanding-generation/MODEL_ANATOMY_AND_TRAINING.md)

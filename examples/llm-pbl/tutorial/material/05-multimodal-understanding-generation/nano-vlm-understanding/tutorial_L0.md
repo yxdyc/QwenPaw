@@ -3,6 +3,12 @@
 > 目标：不用神经网络框架，亲手跑通 `pixel grid → patch → projector → 2D position → packed tokens → causal readout`，
 > 并证明答案不是只从问题文本猜出来的。
 
+> 先修：能运行 Python 3.10+，知道 softmax 会把 score 变成权重；不需要 PyTorch。
+
+> 验收：能用 image-drop/swap 区分“答对”与“依赖图像答对”，并能判断一个失败更像 encoder、位置表示还是 readout 问题。
+
+> 边界：本 L0 的 projector、attention 和 readout 都是手工构造；它验证信息流与反事实诊断，不证明已训出 VLM 能力。
+
 ## 0. 先预测失败模式
 
 一个模型即使图像全丢了也可能答对常识题，所以只报 VQA accuracy 不足以证明“看了图”。运行前先写下预测：
@@ -71,11 +77,23 @@ RESULT_JSON={"checks":{"baseline_all_correct":true,"drop_hurts":true,"no_2d_posi
 
 baseline 是 9/9；drop、shuffle、无位置各只剩 3/9。这里的 0.333 不是自然数据集上的估计，而是三个精心构造网格的确定性结果。
 
-## 4. 从 toy 迁移到真实 VLM
+## 4. readout 到底是什么
 
-真实系统会把固定 projector 换成视觉编码器与可训练 connector/resampler，把 one-hot 坐标换成 2D/多模态位置编码，
-并在 multimodal pretraining/SFT 中学会 readout。但同一诊断仍成立：固定问题，交换图像；固定图像，扰乱空间；按 OCR、
-计数、空间、grounding 分技能报分，不能让平均数藏住失败。
+readout 是“怎样从已经融合的 hidden states 得到任务输出”的路径，不一定是独立网络层。本脚本用最后一个问题 token 作 query，
+对视觉 values 加权求和并四舍五入；分类 VLM 可以用 pooled hidden state 接 linear head；decoder-only VLM 通常把最后位置的
+hidden state 送进 `lm_head`，逐 token 读出文字、box 或 action。
+
+这一区分有直接的诊断价值：
+
+- 视觉 encoder/patch merge 没保留小字时，readout 再强也无法恢复不存在的信息；
+- hidden state 已包含正确内容但 box/JSON 格式错误，更可能是 SFT 或 readout contract 问题；
+- 最终答案正确，只证明端到端结果；必须配合 image-drop/swap 才能识别证据来源。
+
+真实系统会把固定 projector 换成视觉编码器与可训练 connector/resampler，把 one-hot 坐标换成 2D/多模态位置编码。
+现代训练也不止 VQA：常见路线是 connector warm-up、全参数多模态继续预训练、长上下文/专项 curriculum，再接 SFT、蒸馏与 RL。
+完整的组件、参数和训练分阶段解释见[《多模态模型解剖与训练》](../MODEL_ANATOMY_AND_TRAINING.md)。
+
+同一诊断仍成立：固定问题，交换图像；固定图像，扰乱空间；按 OCR、计数、空间、grounding 分技能报分，不能让平均数藏住失败。
 
 ## 5. 动手题与边界
 

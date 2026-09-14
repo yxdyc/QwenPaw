@@ -10,7 +10,8 @@ python3 -B L0_h3_system_contract.py
 ```
 
 仅依赖 Python 3.10+ 标准库，CPU、离线可跑。先读 [tutorial_L0.md](tutorial_L0.md)，事实出处见
-[上级研究账本](../RESEARCH.md)。
+[上级研究账本](../RESEARCH.md)；VLM readout、VAE、DiT flow 与训练分阶段见
+[《多模态模型解剖与训练》](../MODEL_ANATOMY_AND_TRAINING.md)。
 
 ## L0–L3 阶梯
 
@@ -33,4 +34,5 @@ python3 -B L0_h3_system_contract.py
 
 - [L0_h3_system_contract.py](L0_h3_system_contract.py)
 - [tutorial_L0.md](tutorial_L0.md)
+- [上级概念教程](../MODEL_ANATOMY_AND_TRAINING.md)
 - [上级研究账本](../RESEARCH.md)

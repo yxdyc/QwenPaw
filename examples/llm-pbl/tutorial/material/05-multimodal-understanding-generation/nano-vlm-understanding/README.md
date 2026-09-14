@@ -2,6 +2,7 @@
 
 这个模块回答一个基础问题：二维像素怎样变成 LLM 能消费、又能被问题选择的 token？它先拆开
 `patch → projector → 2D position → packed sequence → causal attention → answer`，再用反事实证明模型是否真的看图。
+其中 readout 指从融合后的 hidden states 选择、聚合并映射为文字/坐标/动作的路径，不等同于视觉 encoder，也不必是独立层。
 
 ## 立即运行
 
@@ -69,4 +70,5 @@ python3 -B L1_qwen3_vl_real_probe.py --self-test-metrics
 - [tutorial_L0.md](tutorial_L0.md)：推导、真实输出、反例与练习。
 - [L1_qwen3_vl_real_probe.py](L1_qwen3_vl_real_probe.py)：真实 2B checkpoint 诊断脚本与可离线自测的评测合同。
 - [tutorial_L1.md](tutorial_L1.md)：五类 estimand、token 账、L20 实测、复验命令和失败归因。
-- [上级研究账本](../RESEARCH.md)：CLIP → Flamingo → BLIP-2 → LLaVA → Qwen3-VL 的证据谱系。
+- [上级概念教程](../MODEL_ANATOMY_AND_TRAINING.md)：readout、encoder/VAE、参数口径与现代训练阶段。
+- [上级研究账本](../RESEARCH.md)：经典谱系、当前模型身份与一手证据边界。

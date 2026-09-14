@@ -148,12 +148,13 @@ L0 验证的是证据纪律，没有本地复现这些前沿模型。
 
 ### 路线 E：多模态理解与生成
 
-1. [visual tokens → language](05-multimodal-understanding-generation/nano-vlm-understanding/tutorial_L0.md)：二维位置和图像依赖反事实；
-2. [Qwen3-VL L1 真机诊断](05-multimodal-understanding-generation/nano-vlm-understanding/tutorial_L1.md)：真实 checkpoint 的五类估计量、token 账、L20 复验与 OCR 失败；
-3. [rectified-flow Image DiT](05-multimodal-understanding-generation/nano-image-dit/tutorial_L0.md)：latent token、AdaLN、Euler 与 CFG；
-4. [spatiotemporal Video DiT](05-multimodal-understanding-generation/nano-video-dit/tutorial_L0.md)：3D position、端点条件、flicker 与序列成本；
-5. [MiniMax H3 capstone](05-multimodal-understanding-generation/minimax-h3-capstone/tutorial_L0.md)：packed rows、视听双 flow 与开放边界；
-6. [证据账本](05-multimodal-understanding-generation/RESEARCH.md)：从经典谱系到 H3 官方/源码/缺口的分层核验。
+1. [模型解剖与训练](05-multimodal-understanding-generation/MODEL_ANATOMY_AND_TRAINING.md)：readout、三类 encoder/VAE、参数口径，以及从 LLaVA 到 CPT/SFT/蒸馏/RL；
+2. [visual tokens → language](05-multimodal-understanding-generation/nano-vlm-understanding/tutorial_L0.md)：二维位置和图像依赖反事实；
+3. [Qwen3-VL L1 真机诊断](05-multimodal-understanding-generation/nano-vlm-understanding/tutorial_L1.md)：真实 checkpoint 的五类估计量、token 账、L20 复验与 OCR 失败；
+4. [rectified-flow Image DiT](05-multimodal-understanding-generation/nano-image-dit/tutorial_L0.md)：latent token、AdaLN、Euler 与 CFG；
+5. [spatiotemporal Video DiT](05-multimodal-understanding-generation/nano-video-dit/tutorial_L0.md)：3D position、端点条件、flicker 与序列成本；
+6. [MiniMax H3 capstone](05-multimodal-understanding-generation/minimax-h3-capstone/tutorial_L0.md)：packed rows、视听双 flow 与开放边界；
+7. [证据账本](05-multimodal-understanding-generation/RESEARCH.md)：区分当前模型身份、经典谱系、训练事实和开放缺口。
 
 完成后应能解释“视觉证据如何进入语言模型”和“媒体 latent 如何从噪声生成”是两类不同问题，并能拒绝把 toy、
 开放权重、托管模块或代理分数误写成完整生产能力。

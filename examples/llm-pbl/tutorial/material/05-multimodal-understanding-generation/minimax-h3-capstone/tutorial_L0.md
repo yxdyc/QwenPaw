@@ -83,6 +83,12 @@ RESULT_JSON={"checks":{"FL2VA_contract":true,"Ref2VA_contract":true,"T2VA_via_FL
 
 ## 6. L3 真机预注册
 
+H3 不按 VQA 目标生成媒体：Qwen3-VL encoder 提供上下文条件，H3-Omni-Transformer 学习视频/音频 latent 的联合
+rectified flow，最后分别解码。官方仓库已经公开架构、checkpoint 和部分最终阶段设计，但尚未给出足以复建 foundation
+run 的完整数据组成、各阶段 token/step、优化器与消融。这里不能套用 Qwen3-VL 的公开训练表替 H3 补空白；两者共享
+encoder 身份，不代表共享完整训练 recipe。理解模型、DiT 与 omni 训练差异见
+[《多模态模型解剖与训练》](../MODEL_ANATOMY_AND_TRAINING.md)。
+
 真机前重新只读确认 GPU、磁盘、依赖和许可证，并固定 H3、Diffusers/SGLang 与模型 revision。首批只下载 FL2VA，跑
 BF16、短边 768p、24 FPS、4 秒：直接 T2VA、同 seed 的本地结构化 prompt T2VA、首尾帧 FL2VA。记录 prompt、seed、
 revision、GPU、耗时、峰值显存、SHA256、时长/FPS 与 32 kHz stereo 契约；媒体存仓库外。

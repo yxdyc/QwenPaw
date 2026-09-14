@@ -36,6 +36,21 @@ H3：把 context / video / audio rows 打进同一序列，但按模态保留各
   latent 率、row index、位置与 scheduler 却不能混用。
 
 这四条是不随模型品牌变化的课程主干；Qwen3-VL、Qwen-Image、HunyuanVideo/Wan 与 H3 用来验证它们在真实实现里怎样落地。
+如果还不确定 readout、三类 encoder/VAE、参数口径和现代多阶段训练分别指什么，先读
+[《多模态模型解剖与训练》](MODEL_ANATOMY_AND_TRAINING.md)，再进入四个实验模块。
+
+## 当前模型名怎样读
+
+截至 2026-09-14，课程不再把“发布日期最新”直接写成“最适合实验”或“SOTA”：
+
+| 方向 | 当前前沿追踪 | 本课程可复现锚 | 为什么不强行统一 |
+|---|---|---|---|
+| 图文/视频理解 | Qwen3.8-Flash-Next、Qwen3.5-Omni、InternVL3.5 / InternVL-U | Qwen3-VL-2B-Instruct | 新模型可能更大、仅托管或属于不同任务族；2B 锚已有固定 revision 和失败样例 |
+| 文生图/编辑 | Qwen-Image-2.0、InternVL-U | Qwen-Image-2512 | 2.0 更新，但官方开放仓库当前可下载 T2I 基线仍是 2512 |
+| 文生视频 | MiniMax H3、Wan2.2、HunyuanVideo-1.5 | Wan2.2 / HunyuanVideo-1.5；H3 分批 gate | H3 是原生视听生成系统，不能与纯 T2V 模型只按一个总分排序 |
+
+这里的“前沿”只表示应该持续跟踪的公开模型，不等于跨任务全局第一。模型身份、开放层级与一手来源见
+[证据账本](RESEARCH.md)；实验时仍须固定 checkpoint 和代码 revision。
 
 ## 为什么按 L0 → L3，而不是直接下载最大模型
 
@@ -71,7 +86,8 @@ flowchart LR
 | 3 | [nano-video-dit](nano-video-dit/) | 3D token、端点条件、时序耦合、flicker 与 $N^2$ 成本 | L0 完成 |
 | 4 | [minimax-h3-capstone](minimax-h3-capstone/) | packed omni sequence、视频/音频双 flow 与本地/托管边界 | L0 完成 |
 
-完整论文、模型卡、配置、源码和开放缺口见 [RESEARCH.md](RESEARCH.md)。
+完整论文、模型卡、配置、源码和开放缺口见 [RESEARCH.md](RESEARCH.md)；概念、参数与训练路线见
+[MODEL_ANATOMY_AND_TRAINING.md](MODEL_ANATOMY_AND_TRAINING.md)。
 
 ## L0：纯标准库机制闭环
 
@@ -109,7 +125,8 @@ VLM L1 已于 2026-09-04 闭环：固定 Qwen3-VL-2B-Instruct revision，两个�
 
 ## L2：真实开放系统
 
-- **VLM**：Qwen3-VL 动态分辨率、visual token budget、DeepStack、interleaved MRoPE、batching 与 connector/LoRA 小实验。
+- **VLM**：以 Qwen3-VL 做动态分辨率、visual token budget、DeepStack、interleaved MRoPE、batching 与 connector/LoRA
+  小实验；Qwen3.8-Flash-Next 先做 metadata/资源 gate，不因发布时间更新就替换既有 2B 对照。
 - **Image DiT**：以 Qwen-Image-2512 做真实生成，检查文字、空间、组合、延迟和显存；vendor leaderboard 仅作外部声明。
 - **Video DiT**：HunyuanVideo 1.5 / Wan2.2 的 3D VAE、DiT、offload、tiling、稀疏/序列并行与固定提示集实证。
 - **统一评测**：CLIP/VLM judge 等自动分只作代理，必须与盲评 rubric 分栏，不让单一 judge 证明视觉质量。

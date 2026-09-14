@@ -20,7 +20,8 @@ python3 -B L0_rectified_flow_dit_oracle.py
 | L2 | Qwen-Image-2512 真实生成 | 文字、空间、组合遵循、延迟、显存；盲评 + 代理指标 | 规划中 |
 | L3 | 源码/系统对照 | rectified flow、MMDiT/VLM conditioning、offload/tiling 与 revision 固定 | 规划中 |
 
-Qwen-Image-2512 是当前预定真实开放基线；Qwen-Image 2.0/3.0 只进入前沿追踪，开放状态未复核前不进入可复现阶梯。
+Qwen-Image-2512 是当前预定真实开放基线。Qwen-Image-2.0 已有更新的官方模型与技术报告，但截至 2026-09-14，
+官方开放仓库尚未给出 2.0 本地权重 quick start，因此只进入前沿追踪；未经一手发布的后续型号不写进事实表。
 
 ## L0 量化合同
 
@@ -35,4 +36,5 @@ L0 使用显式 oracle velocity，没有学习任何生成分布；零重建误�
 
 - [L0_rectified_flow_dit_oracle.py](L0_rectified_flow_dit_oracle.py)
 - [tutorial_L0.md](tutorial_L0.md)
+- [上级概念教程](../MODEL_ANATOMY_AND_TRAINING.md)：condition encoder、VAE/DiT 分阶段训练与参数口径。
 - [上级研究账本](../RESEARCH.md)

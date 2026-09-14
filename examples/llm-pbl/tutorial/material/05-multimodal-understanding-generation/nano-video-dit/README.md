@@ -33,4 +33,5 @@ L0 的联合轨迹是确定性线性插值，不是训练后的运动先验；�
 
 - [L0_spatiotemporal_latent_dit.py](L0_spatiotemporal_latent_dit.py)
 - [tutorial_L0.md](tutorial_L0.md)
+- [上级概念教程](../MODEL_ANATOMY_AND_TRAINING.md)：3D VAE、Video DiT 渐进训练、参数与开放资产口径。
 - [上级研究账本](../RESEARCH.md)
