@@ -1,8 +1,9 @@
 # 05 多模态理解与生成：研究谱系与证据账本
 
-> 对齐日：2026-09-14。本文把**论文机制、官方发布事实、源码/配置事实、课程推断和开放缺口**分开。
+> 对齐日：2026-09-15。本文把**论文机制、官方发布事实、源码/配置事实、课程推断和开放缺口**分开。
 > 前沿模型、仓库和许可证会变化；进入 L1–L3 前必须固定 revision 并重新核验。
-> 本轮刷新模型身份、开放层级与训练证据；2026-09-04 的 Qwen3-VL L1 精确 revision 和真机结果保持原实验快照。
+> 本轮进一步拆分 latest service、latest open weight 与 reproducible anchor，并补入 multimodal long-context/RAG 证据；
+> 2026-09-04 的 Qwen3-VL L1 精确 revision 和真机结果保持原实验快照。
 
 ## 0. 不是模型动物园：三条技术谱系
 
@@ -19,9 +20,9 @@
 
 | 词 | 本账本的判定方法 | 常见误判 |
 |---|---|---|
-| 最新发布 | 官方公告/仓库给出日期和模型身份 | 新日期自动覆盖所有旧任务族 |
+| 最新产品/API | 官方发布页或服务文档给出当前 model ID | API 可用等于权重/训练代码开放 |
+| 最新开放权重 | 官方仓库/模型库提供 checkpoint，单独核验许可证 | 它必然和最新 API 同代 |
 | SOTA | 固定任务、数据版本、输入/推理预算与比较协议 | 厂商平均榜单等于全场景第一 |
-| 开放权重 | 官方提供 checkpoint，并单独核验许可证 | 权重可下等于数据和训练 recipe 全开 |
 | 课程可复现锚 | revision、依赖、硬件与验收预算能固定 | 最大、最新的 checkpoint 必然最适合教学 |
 
 截至本对齐日的模型定位如下。这里不做跨任务总排名：
@@ -32,8 +33,11 @@
 | Qwen Omni | [Qwen3.5-Omni 报告](https://arxiv.org/abs/2604.15804)给出更新的原生音视频训练路线；官方服务与公开权重边界不能混写 | 用报告讲训练；本地实验只用已确认可下载的 checkpoint |
 | Qwen Image | [Qwen-Image-2.0](https://arxiv.org/abs/2605.10730)是更新模型/报告；[官方仓库](https://github.com/QwenLM/Qwen-Image)当前本地 T2I quick start 仍指向 2512 | 2.0 作前沿研究，2512 保持 L2 开放权重基线 |
 | InternVL | InternVL3.5 仍是专用开放 VLM 家族；[InternVL-U](https://github.com/OpenGVLab/InternVL-U)是 2026-03 开放的 4B 理解—生图—编辑统一研究线 | 两条路线并列，不用发布日期替代任务定义 |
-| Wan | [Wan2.2](https://github.com/Wan-Video/Wan2.2)仍是官方通用开放视频 foundation family；更晚的 [Animate-2](https://github.com/Wan-Video/Wan-Animate-2) / [Dancer](https://github.com/Wan-Video/Wan-Dancer) 属专项派生线 | T2V/I2V 对照保留 Wan2.2，专项模型另立任务 |
-| Hunyuan | [HunyuanVideo-1.5](https://github.com/Tencent-Hunyuan/HunyuanVideo-1.5)仍是最新开放基础视频生成线；[OmniWeaving](https://github.com/Tencent-Hunyuan/OmniWeaving)等更新项目解决不同问题 | 基础视频 L2 保留 1.5，不从论文日期推出全面替代 |
+| Wan 视频 | [Wan3.0 Video](https://docs.modelstudio.console.alibabacloud.com/en/model-studio/wan3-video-generation-guide) 是当前 All-in-One 服务主线，[官方产品仓](https://github.com/AlibabaCloud-Official/Wan3.0)当前只有 README/许可证而无 checkpoint/推理源码；[官方模型矩阵](https://www.alibabacloud.com/help/en/model-studio/video-generate-edit-model)中 Wan2.7 已成上一代 API，[Wan2.2](https://github.com/Wan-Video/Wan2.2)仍是通用本地权重/源码锚 | Wan3.0 做 hosted contract/eval；Wan2.2 做本地源码和资源实证，不能把 public repo 标成完整开源模型 |
+| Hunyuan 文本 | [Hy4 preview](https://github.com/Tencent-Hunyuan/Hy4-preview) 是 770B total/49B active、1M context 的开放文本 LLM，官方 checkpoint 没有视觉输入合同 | 可作 long-context/稀疏 attention 参照，不写成 VLM 或 Video DiT 替代 |
+| Hunyuan 图像 | [HunyuanImage-3.0](https://github.com/Tencent-Hunyuan/HunyuanImage-3.0) 是 80B total/13B active 的原生多模态自回归生图/编辑线，已有 Base、Instruct 和 Distil 权重 | 作 DiT 之外的前沿架构对照；先做硬件/许可/revision gate |
+| Hunyuan 视频 | [官方迁移页](https://cloud.tencent.com/announce/detail/2405)的当前服务是 HY-Video-1.5；[HunyuanVideo-1.5](https://github.com/Tencent-Hunyuan/HunyuanVideo-1.5) 是开放基座，[OmniWeaving](https://github.com/Tencent-Hunyuan/OmniWeaving) 增加自由组合/推理控制 | L2 仍以 1.5 复现，但不再用一个“Hunyuan 最新”概括所有任务族 |
+| Hunyuan 3D | [服务迁移主线](https://cloud.tencent.com/announce/detail/2405)是 HY-3D-3.1；[Hunyuan3D-Buffalo 1.0](https://github.com/Tencent-Hunyuan/Hunyuan3D-Buffalo1.0) 是更新的统一 3D 理解—生成—编辑研究线，当前官方页主要提供论文/项目证据 | 列为新的 3D multimodal 候选，不写成已有完整本地权重/recipe |
 | MiniMax | [MiniMax M3](https://www.minimax.io/blog/minimax-m3)偏理解/Agent；[MiniMax H3](https://github.com/MiniMax-AI/MiniMax-H3)是 2026-07 发布的开放视听生成系统 | H3 做生成 capstone，不与通用助手榜单直接排序 |
 
 下一次 source refresh 应重新读取官方发布页、仓库和模型文件列表。搜索结果摘要、第三方排行榜和模型名猜测不能单独改变
@@ -71,7 +75,8 @@
 | Qwen3.5-Omni | 固定 LLM 训练 adapter/encoder → 约 4T token 全参数 omni pretrain → 262K 长上下文 → 专项/在线蒸馏和交互 RL | 原生 omni 从早期混合模态，不能简化成末尾增加音频/视频 VQA |
 
 上述数字来自各模型公开报告，只描述报告中的训练口径，不表示课程能够获得相同数据或复现 foundation run。系统推导、
-readout、参数分母和逐阶段可训练参数见 [MODEL_ANATOMY_AND_TRAINING.md](MODEL_ANATOMY_AND_TRAINING.md)。
+readout、参数分母和逐阶段可训练参数见 [MODEL_ANATOMY_AND_TRAINING.md](MODEL_ANATOMY_AND_TRAINING.md)；
+256K/1M 的实际任务、多模态 token 膨胀与 RAG/hybrid 选择见 [LONG_CONTEXT_OR_RAG.md](LONG_CONTEXT_OR_RAG.md)。
 
 ### Qwen3-VL L1 的可复现锚（2026-09-04 局部刷新）
 
@@ -98,6 +103,7 @@ readout、参数分母和逐阶段可训练参数见 [MODEL_ANATOMY_AND_TRAINING
 | DiT | [Scalable Diffusion Models with Transformers](https://arxiv.org/abs/2212.09748) | 把 latent patch 当 Transformer token；用 AdaLN 等方式接入 timestep/class 条件 | L0 的 latent patch、AdaLN 和序列成本锚 |
 | SD3 / MMDiT | [Scaling Rectified Flow Transformers](https://arxiv.org/abs/2403.03206) | rectified flow + multimodal diffusion Transformer，文本/图像表示共同参与 | L0 校准 flow 方向和 CFG；L1 才学习速度场 |
 | Qwen-Image | [官方仓库](https://github.com/QwenLM/Qwen-Image) · [技术报告](https://arxiv.org/abs/2508.02324) | VLM 条件编码与图像生成/编辑系统 | L2 真实开放实验锚 |
+| HunyuanImage-3.0 | [官方仓库](https://github.com/Tencent-Hunyuan/HunyuanImage-3.0) | 80B total/13B active，用原生多模态自回归框架统一理解、T2I/I2I 与 prompt reasoning | 作为对 DiT/flow 路线的架构反例；资源 gate 通过前不进入真机完成表 |
 
 ### 可复现基线与前沿追踪要分开
 
@@ -118,9 +124,12 @@ readout、参数分母和逐阶段可训练参数见 [MODEL_ANATOMY_AND_TRAINING
 | 首尾帧/参考控制 | 条件是否在中间帧持续生效 | endpoint error + 中间轨迹/遮挡检查 |
 | 训练/推理并行 | sequence parallel、offload、tiling 是否保持语义与确定性 | 固定 prompt/seed/revision 的 paired run |
 
-源码对照采用 [HunyuanVideo 1.5 官方仓库](https://github.com/Tencent-Hunyuan/HunyuanVideo-1.5)
+源码/权重对照采用 [HunyuanVideo 1.5 官方仓库](https://github.com/Tencent-Hunyuan/HunyuanVideo-1.5)
 （报告 [arXiv:2511.18870](https://arxiv.org/abs/2511.18870)）与 [Wan2.2 官方仓库](https://github.com/Wan-Video/Wan2.2)。
-课程不会仅凭仓库 README 的展示样例宣称质量领先；L2 用固定提示集、完成率、资源账和盲评分栏复核。
+产品前沿另行记录 [Wan3.0 Video](https://docs.modelstudio.console.alibabacloud.com/en/model-studio/wan3-video-generation-guide)：它是当前托管 All-in-One 服务；
+其[官方产品仓](https://github.com/AlibabaCloud-Official/Wan3.0)目前只有 README 与许可证，不能据此声称 checkpoint、推理源码或训练 recipe 已开放。
+两类对照都不凭 README/产品页样例宣称质量领先；
+L2 用固定提示集、完成率、资源/计费账和盲评分栏复核。
 
 ## 4. MiniMax H3：综合系统证据分层
 
@@ -171,8 +180,8 @@ readout、参数分母和逐阶段可训练参数见 [MODEL_ANATOMY_AND_TRAINING
 
 | 阶段 | 新增证据 | 仍然不能声称 |
 |---|---|---|
-| L0 | 机制合同、反例、确定性 token/metric 账 | 权重能力、真实质量、官方私有 schema |
-| L1 | 真实 Qwen3-VL 小模型 / tiny trained DiT / H3 metadata | 大模型生产性能、真实视频 SOTA |
+| L0 | 机制合同、selector 反例、确定性 token/metric 账 | 权重能力、真实质量、真实检索/推理、官方私有 schema |
+| L1 | 真实 Qwen3-VL 小模型 / tokenizer+retriever / tiny trained DiT / H3 metadata | 大模型生产性能、真实视频 SOTA |
 | L2 | 固定 revision 的开放系统生成、资源测量、盲评 | H3 托管 Context-IR/2K 已本地复现 |
 | L3 | H3 FL2VA 单 checkpoint 三案例真机 manifest | 广泛提示分布、Ref2VA、完整系统或商业可用性 |
 
@@ -180,7 +189,7 @@ readout、参数分母和逐阶段可训练参数见 [MODEL_ANATOMY_AND_TRAINING
 
 ## 6. 决策门
 
-- **Go L1**：四个 L0 的稳定 JSON、反例和教程输出全部通过 fresh-CWD 验收。
+- **Go L1**：五个 L0 的稳定 JSON、反例和教程输出全部通过 fresh-CWD 验收。
 - **Go L2**：模型/代码/数据 revision 和许可证可固定；真实样本与合成样本、代理指标与人工 rubric 已分栏。
 - **Go H3 真机**：只读硬件/磁盘/依赖检查通过，FL2VA 许可与下载范围获确认，媒体输出目录在仓库外。
 - **Stop/Pivot**：任何组件只能由付费 hosted API 获得，就改为接口/边界分析；不得把 API 结果写成本地复现。

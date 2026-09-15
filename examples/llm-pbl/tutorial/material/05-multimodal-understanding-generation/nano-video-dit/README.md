@@ -20,6 +20,12 @@ python3 -B L0_spatiotemporal_latent_dit.py
 | L2 | HunyuanVideo 1.5 / Wan2.2 | 3D VAE、offload、tiling、固定提示集、显存与延迟 | 规划中 |
 | L3 | 并行与源码对照 | 长序列 attention、稀疏/序列并行、revision 固定与真机账本 | 规划中 |
 
+这张表的 L2 列的是**开放权重/源码实验锚**，不是厂商产品最新榜。截至 2026-09-15，
+[Wan3.0 Video](https://docs.modelstudio.console.alibabacloud.com/en/model-studio/wan3-video-generation-guide) 已是官方最新 All-in-One 托管视频主线，
+Wan2.7 为上一代 API；Wan3.0 的公开产品仓目前只有 README/许可证，Wan2.2 才有本地 checkpoint 与推理源码。
+课程对前者只做 API 合同/计费/质量评测，
+对后者才做本地结构与资源复现。Hunyuan 也按 HY-Video-1.5 服务、HunyuanVideo-1.5 开放基座与 OmniWeaving 控制扩展分栏。
+
 ## L0 量化合同
 
 - 首尾帧误差：约束是否被满足。
@@ -34,4 +40,5 @@ L0 的联合轨迹是确定性线性插值，不是训练后的运动先验；�
 - [L0_spatiotemporal_latent_dit.py](L0_spatiotemporal_latent_dit.py)
 - [tutorial_L0.md](tutorial_L0.md)
 - [上级概念教程](../MODEL_ANATOMY_AND_TRAINING.md)：3D VAE、Video DiT 渐进训练、参数与开放资产口径。
+- [超长上下文与 RAG](../LONG_CONTEXT_OR_RAG.md)：帧率、每帧 token、temporal merge 与长视频检索。
 - [上级研究账本](../RESEARCH.md)

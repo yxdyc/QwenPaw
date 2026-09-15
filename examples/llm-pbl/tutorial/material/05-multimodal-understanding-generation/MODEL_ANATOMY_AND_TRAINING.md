@@ -1,6 +1,6 @@
 # 多模态模型解剖与训练：从 readout 到现代 SOTA 配方
 
-> 资料快照：2026-09-14。本文回答四个容易混在一起的问题：readout 是什么；视觉 encoder/VAE 是否开放、怎样训练；
+> 资料快照：2026-09-15。本文回答四个容易混在一起的问题：readout 是什么；视觉 encoder/VAE 是否开放、怎样训练；
 > 模型参数中的“视觉占比”怎样计算；当前多模态训练是否仍只是 LLaVA 式多阶段 VQA。
 > “最新发布”“榜单 SOTA”“开放权重”“本课程可复现”是四个不同标签，进入实验前仍须按 revision 重核。
 
@@ -66,14 +66,16 @@ $$
 | Qwen3-VL-235B-A22B | 235B total、22B active；vision/merger 与 LLM 联合工作 | 应同时报告 total、active 与视觉 token 成本 | 用一个“视觉百分比”解释推理成本 |
 | Qwen3.8-Flash-Next | 125B 主模型 + 51B n-gram embedding，6B/token active | MoE 的磁盘、驻留和每 token 计算是三本账 | 只用 active=6B 推出可在小显存完整加载 |
 | Qwen-Image（初代） | 7B 条件 VLM、VAE encoder 54M/decoder 73M、MMDiT 20B | DiT 主干远大于 VAE，VAE 小却决定重建上限 | 把条件 VLM 全算作“生成 decoder” |
+| HunyuanImage-3.0 | 80B total、13B active 的原生多模态自回归生图/编辑模型 | 生图不只有 VAE+DiT/flow 一条架构路线 | 把 13B active 当成完整权重驻留量 |
 | Wan2.2-A14B | 两个约 14B denoising experts，约 27B total、每步约 14B active | expert 按噪声阶段切换，active 与 total 不同 | 套用语言 MoE 的逐 token routing 解释 |
 | HunyuanVideo-1.5 | 8.3B DiT，另有 3D causal VAE 与条件组件 | “8.3B”主要是生成主干口径 | 把 8.3B 当完整 pipeline 驻留量 |
 | MiniMax H3 | 32B Qwen3-VL encoder + 33B Omni Transformer，另有视听 VAE；Transformer 中约 13B 为 AdaLN 分支 | H3 是多组件系统，不能只报 33B | 把共享 Transformer 精确分摊成视觉/音频百分比 |
 
 InternVL 的逐组件数字来自 [InternVL3.5 技术报告](https://arxiv.org/html/2508.18265)；Qwen3-VL 与 Qwen3.8 的参数口径分别见
 [官方模型卡](https://huggingface.co/Qwen/Qwen3-VL-235B-A22B-Instruct)和[官方仓库](https://github.com/QwenLM/Qwen3.8-Flash-Next)；
-Qwen-Image、Wan2.2、HunyuanVideo-1.5 与 H3 的数字分别见各自
-[技术报告](https://arxiv.org/html/2508.02324)、[官方仓库](https://github.com/Wan-Video/Wan2.2)、
+Qwen-Image、HunyuanImage-3.0、Wan2.2、HunyuanVideo-1.5 与 H3 的数字分别见各自
+[技术报告](https://arxiv.org/html/2508.02324)、[官方仓库](https://github.com/Tencent-Hunyuan/HunyuanImage-3.0)、
+[官方仓库](https://github.com/Wan-Video/Wan2.2)、
 [技术报告](https://arxiv.org/html/2511.18870)和[官方仓库](https://github.com/MiniMax-AI/MiniMax-H3)。
 
 真正与推理 ROI 相关的账是：权重 bytes、KV/attention 激活、visual token 数、并行通信、VAE decode 峰值和成功率。
@@ -147,12 +149,15 @@ checkpoint 文件反推未披露训练过程。
 | Qwen omni | Qwen3.5-Omni 是更新的音视频理解/语音输出系统，但公开服务、报告与可下载权重边界不同 | 用报告讲原生 omni 训练；本地实验只选已确认开放 checkpoint |
 | Qwen image | Qwen-Image-2.0 是更新的模型/报告；官方开源仓库当前本地 quick start 仍以 2512 为最新 T2I 权重 | 2.0 作前沿研究，2512 作 L2 可复现基线 |
 | InternVL | InternVL3.5 仍是最新专用开放 VLM 家族；InternVL-U 是 2026-03 开放的更新统一理解/生图/编辑研究线 | 二者并列，不能用 InternVL-U 的“更新”否定 3.5 的专用 VLM 定位 |
-| Wan | Wan2.2 仍是官方最新通用开放视频 foundation family；更晚的 Animate/Dancer 属专项模型 | 通用 T2V/I2V 对照保留 Wan2.2，专项任务另立实验 |
-| Hunyuan | HunyuanVideo-1.5 仍是最新开放基础视频生成线；OmniWeaving 等更新研究解决自由组合/推理 | 基础生成对照保留 1.5，不把论文时间当全面替代关系 |
+| Wan video | Wan3.0 是当前托管 All-in-One 视频主线；Wan2.7 为上一代 API；Wan2.2 仍是官方开源组织的主要通用权重/源码基线 | API 评测跟踪 Wan3.0，本地机制/资源实证保留 Wan2.2，两者不合并为“已复现” |
+| Hunyuan text | Hy4 preview 是 770B total/49B active、1M context 的开放文本 LLM | 用于长上下文/稀疏 attention 对照，不写成 VLM/Video DiT |
+| Hunyuan image | HunyuanImage-3.0 是开放的 80B/13B-active 原生多模态自回归生图线 | 列为 DiT 之外的架构对照，先做资源/revision gate |
+| Hunyuan video/3D | 当前服务分为 HY-Video-1.5 与 HY-3D-3.1；HunyuanVideo-1.5 是开放视频基座，Buffalo 1.0 是统一 3D 理解/生成/编辑研究线 | 不再用“Hunyuan 最新”跨文本、图像、视频和 3D 作总排名 |
 | MiniMax | M3 是理解/Agent 方向的原生多模态模型；H3 是 2026-07 发布的开放视听生成系统 | H3 capstone 只负责生成系统，不与通用 VLM 榜单直接排序 |
 
 “SOTA”必须带任务、数据版本、输入预算、推理预算和开放性。厂商平均榜单只能形成候选，不能替代本课程固定 prompt、
-counterfactual、completion、显存/延迟与人工 rubric 的同条件比较。完整来源账见 [RESEARCH.md](RESEARCH.md)。
+counterfactual、completion、显存/延迟与人工 rubric 的同条件比较。完整来源账见 [RESEARCH.md](RESEARCH.md)；
+超长上下文的现实任务、模态 token 账和 RAG/hybrid 取舍见 [LONG_CONTEXT_OR_RAG.md](LONG_CONTEXT_OR_RAG.md)。
 
 ## 7. 失败定位与最低成本实验
 

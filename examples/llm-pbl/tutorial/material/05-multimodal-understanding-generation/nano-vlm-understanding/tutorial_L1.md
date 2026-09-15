@@ -90,6 +90,10 @@ $$
 `input_tokens` 不应被简单写成“文本 token + $N_{visual}$”：chat template 和特殊 token 也占位置。真正需要稳定的是
 同一 revision、同一输入的账本在独立进程间一致；因此首轮 token ledger 被纳入稳定 digest，而计时不进入 digest。
 
+336 个 visual token 只描述本页单张 768×448 合成图，不代表多模态永远不需要长窗口。多页扫描件和长视频会让
+token 按页数、采样帧数和每帧预算累加；是否直接使用 512K/1M，仍要和 RAG/hybrid 做同问题、同模型、同输出合同的
+质量—成本对照。完整决策题见 [Long Context 还是 RAG](../LONG_CONTEXT_OR_RAG.md)。
+
 ## 4. 先验证尺子，再测模型
 
 运行：

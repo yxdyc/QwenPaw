@@ -71,4 +71,5 @@ python3 -B L1_qwen3_vl_real_probe.py --self-test-metrics
 - [L1_qwen3_vl_real_probe.py](L1_qwen3_vl_real_probe.py)：真实 2B checkpoint 诊断脚本与可离线自测的评测合同。
 - [tutorial_L1.md](tutorial_L1.md)：五类 estimand、token 账、L20 实测、复验命令和失败归因。
 - [上级概念教程](../MODEL_ANATOMY_AND_TRAINING.md)：readout、encoder/VAE、参数口径与现代训练阶段。
+- [Long Context / RAG 决策教程](../LONG_CONTEXT_OR_RAG.md)：把图像、视频和音频 token 账接到架构与成本选择。
 - [上级研究账本](../RESEARCH.md)：经典谱系、当前模型身份与一手证据边界。

@@ -35,19 +35,22 @@ H3：把 context / video / audio rows 打进同一序列，但按模态保留各
 - **Omni 模型的系统难点**是保持联合语义与模态合同同时成立：序列可以共享 attention，video/audio 的
   latent 率、row index、位置与 scheduler 却不能混用。
 
-这四条是不随模型品牌变化的课程主干；Qwen3-VL、Qwen-Image、HunyuanVideo/Wan 与 H3 用来验证它们在真实实现里怎样落地。
+这四条是不随模型品牌变化的课程主干；另用 context routing 横切理解与生成，检验长序列是否应该全量进入模型。
+Qwen3-VL、Qwen-Image、HunyuanVideo/Wan 与 H3 用来验证这些机制在真实实现里怎样落地。
 如果还不确定 readout、三类 encoder/VAE、参数口径和现代多阶段训练分别指什么，先读
-[《多模态模型解剖与训练》](MODEL_ANATOMY_AND_TRAINING.md)，再进入四个实验模块。
+[《多模态模型解剖与训练》](MODEL_ANATOMY_AND_TRAINING.md)；如果疑问是“为什么需要 512K/1M，还是应该用 RAG”，
+读 [《多模态 Long Context》](LONG_CONTEXT_OR_RAG.md)。
 
 ## 当前模型名怎样读
 
-截至 2026-09-14，课程不再把“发布日期最新”直接写成“最适合实验”或“SOTA”：
+截至 2026-09-15，课程分别记录最新产品/API、最新开放权重与可复现锚，不再用一个“latest”合并：
 
 | 方向 | 当前前沿追踪 | 本课程可复现锚 | 为什么不强行统一 |
 |---|---|---|---|
 | 图文/视频理解 | Qwen3.8-Flash-Next、Qwen3.5-Omni、InternVL3.5 / InternVL-U | Qwen3-VL-2B-Instruct | 新模型可能更大、仅托管或属于不同任务族；2B 锚已有固定 revision 和失败样例 |
-| 文生图/编辑 | Qwen-Image-2.0、InternVL-U | Qwen-Image-2512 | 2.0 更新，但官方开放仓库当前可下载 T2I 基线仍是 2512 |
-| 文生视频 | MiniMax H3、Wan2.2、HunyuanVideo-1.5 | Wan2.2 / HunyuanVideo-1.5；H3 分批 gate | H3 是原生视听生成系统，不能与纯 T2V 模型只按一个总分排序 |
+| 文生图/编辑 | Qwen-Image-2.0、HunyuanImage-3.0、InternVL-U | Qwen-Image-2512 | HunyuanImage-3.0 是已开放的自回归反例，不应被 DiT 主线隐去；大权重先做资源 gate |
+| 文生视频 | Wan3.0 API、MiniMax H3、HY-Video-1.5 / OmniWeaving | Wan2.2 / HunyuanVideo-1.5；H3 分批 gate | Wan3.0 是最新托管主线，Wan2.2 才是当前官方本地权重/源码锚 |
+| Hunyuan 其他线 | Hy4 preview（文本 LLM）、HY-3D-3.1（服务）、Hunyuan3D-Buffalo 1.0（研究） | 本轨暂无 3D L0 | 不把文本、图像、视频和 3D 的版本号当成一条升级链 |
 
 这里的“前沿”只表示应该持续跟踪的公开模型，不等于跨任务全局第一。模型身份、开放层级与一手来源见
 [证据账本](RESEARCH.md)；实验时仍须固定 checkpoint 和代码 revision。
@@ -77,25 +80,28 @@ flowchart LR
 - 从 03 带入数据 provenance、batching、offload 与服务评测；本轨增加媒体数据和生成服务。
 - 学完 05 再回到 04，才能判断 Agent 收到的是可靠视觉证据、生成代理，还是不可审计的媒体副作用。
 
-## 四模块学习顺序
+## 五模块学习顺序
 
 | 顺序 | 模块 | L0 当前回答的问题 | 当前状态 |
 |---|---|---|---|
 | 1 | [nano-vlm-understanding](nano-vlm-understanding/) | patch、projector、2D position 与图像依赖反事实 | L0–L1 完成；L1 已有单张 L20 双进程证据 |
-| 2 | [nano-image-dit](nano-image-dit/) | latent patch、AdaLN、rectified flow、Euler 与 CFG | L0 完成 |
-| 3 | [nano-video-dit](nano-video-dit/) | 3D token、端点条件、时序耦合、flicker 与 $N^2$ 成本 | L0 完成 |
-| 4 | [minimax-h3-capstone](minimax-h3-capstone/) | packed omni sequence、视频/音频双 flow 与本地/托管边界 | L0 完成 |
+| 2 | [nano-long-context-routing](nano-long-context-routing/) | whole-context、top-k RAG 与 neighbor hybrid 的证据召回/成本反例 | L0 完成 |
+| 3 | [nano-image-dit](nano-image-dit/) | latent patch、AdaLN、rectified flow、Euler 与 CFG | L0 完成 |
+| 4 | [nano-video-dit](nano-video-dit/) | 3D token、端点条件、时序耦合、flicker 与 $N^2$ 成本 | L0 完成 |
+| 5 | [minimax-h3-capstone](minimax-h3-capstone/) | packed omni sequence、视频/音频双 flow 与本地/托管边界 | L0 完成 |
 
 完整论文、模型卡、配置、源码和开放缺口见 [RESEARCH.md](RESEARCH.md)；概念、参数与训练路线见
-[MODEL_ANATOMY_AND_TRAINING.md](MODEL_ANATOMY_AND_TRAINING.md)。
+[MODEL_ANATOMY_AND_TRAINING.md](MODEL_ANATOMY_AND_TRAINING.md)；上下文预算与 RAG/hybrid 选择见
+[LONG_CONTEXT_OR_RAG.md](LONG_CONTEXT_OR_RAG.md)。
 
 ## L0：纯标准库机制闭环
 
-四个脚本都满足：单文件、不超过 200 行、Python 3.10+、CPU、无网络和模型下载，末行输出稳定
+五个脚本都满足：单文件、不超过 200 行、Python 3.10+、CPU、无网络和模型下载，末行输出稳定
 `RESULT_JSON=`。建议依次运行：
 
 ```bash
 python3 -B nano-vlm-understanding/L0_visual_tokens_to_language.py
+python3 -B nano-long-context-routing/L0_context_rag_hybrid.py
 python3 -B nano-image-dit/L0_rectified_flow_dit_oracle.py
 python3 -B nano-video-dit/L0_spatiotemporal_latent_dit.py
 python3 -B minimax-h3-capstone/L0_h3_system_contract.py
@@ -106,6 +112,7 @@ L0 的共同验收不是“看起来像”，而是固定反例和量化不变�
 | 模块 | 正向量 | 必须失败的反例 | 证据边界 |
 |---|---|---|---|
 | VLM | 分技能 EM、图像依赖增益、swap sensitivity | drop/swap/shuffle/remove-2D-position | 固定 readout，不是训练 VLM |
+| Context routing | evidence recall、oracle correctness、token proxy | sparse/temporal/exhaustive 三种证据形状 | selector surrogate，不是 LLM/RAG 质量 |
 | Image DiT | latent MAE、条件命中、token 比 | wrong sign、CFG 过冲 | oracle velocity，不是学会生成 |
 | Video DiT | 端点误差、roughness、flicker、attention pairs | 逐帧抖动 | 线性 latent toy，不是视频质量 |
 | H3 | packed token、双 scheduler、单次 forward | row/tag/scheduler/deployment 错误 | surrogate contract，不是官方 IR/权重运行 |
@@ -114,6 +121,7 @@ L0 的共同验收不是“看起来像”，而是固定反例和量化不变�
 
 - **VLM**：Qwen3-VL-2B-Instruct 小样本推理；固定 OCR、空间关系、计数、image-swap 和证据不足拒答集；
   分开报告 normalized semantic accuracy、strict-format accuracy、swap sensitivity/correctness、completion 与重复稳定性。
+- **Context routing**：接入真实 tokenizer、小模型和 BM25/embedding，分开测 evidence recall、位置利用、答案/引用与 TTFT。
 - **Image DiT**：PyTorch CPU/GPU 训练微型 rectified-flow DiT。公开真实样本与合成条件分别报告，合成集不代表真实质量。
 - **Video DiT**：moving-digit 小视频训练时空 DiT；验证运动条件、首尾帧和 held-out temporal consistency。
 - **H3**：只下载公开 config/tokenizer metadata，复算结构、序列和显存账，不下载大权重。
@@ -127,8 +135,10 @@ VLM L1 已于 2026-09-04 闭环：固定 Qwen3-VL-2B-Instruct revision，两个�
 
 - **VLM**：以 Qwen3-VL 做动态分辨率、visual token budget、DeepStack、interleaved MRoPE、batching 与 connector/LoRA
   小实验；Qwen3.8-Flash-Next 先做 metadata/资源 gate，不因发布时间更新就替换既有 2B 对照。
-- **Image DiT**：以 Qwen-Image-2512 做真实生成，检查文字、空间、组合、延迟和显存；vendor leaderboard 仅作外部声明。
-- **Video DiT**：HunyuanVideo 1.5 / Wan2.2 的 3D VAE、DiT、offload、tiling、稀疏/序列并行与固定提示集实证。
+- **Image generation**：以 Qwen-Image-2512 做 DiT 真实生成；HunyuanImage-3.0 先做自回归架构与资源 gate，
+  不在超出硬件预算时为了“最新”强行运行。
+- **Video generation**：HunyuanVideo 1.5 / Wan2.2 负责开放权重的 3D VAE、DiT、offload、tiling 和并行实证；
+  Wan3.0 只做 hosted API 合同、计费和同 prompt 评测，不写成本地复现。
 - **统一评测**：CLIP/VLM judge 等自动分只作代理，必须与盲评 rubric 分栏，不让单一 judge 证明视觉质量。
 
 ## L3：H3 真机综合
@@ -146,7 +156,8 @@ prompt、seed、revision、GPU、耗时、峰值显存、输出 SHA256、视频�
 学习者应能：
 
 1. 画出 visual token 到 LLM、latent token 到 DiT、spatiotemporal token 到 Video DiT 的三条数据流；
-2. 用反事实区分“答对”与“依赖图像”，用时序指标区分“逐帧好看”与“视频一致”；
-3. 写出 rectified-flow 目标和 CFG，识别 scheduler 方向/强度错误；
-4. 对 H3 分开陈述官方公开事实、源码实现、课程 surrogate、托管模块与许可证限制；
-5. 明确 toy、开放权重、代理指标和一次真机 smoke 各自不能证明什么。
+2. 按证据密度、顺序/多跳/穷尽要求与成本，在 whole context、RAG 和 hybrid 间做可检验选择；
+3. 用反事实区分“答对”与“依赖图像”，用时序指标区分“逐帧好看”与“视频一致”；
+4. 写出 rectified-flow 目标和 CFG，识别 scheduler 方向/强度错误；
+5. 对 H3 分开陈述官方公开事实、源码实现、课程 surrogate、托管模块与许可证限制；
+6. 明确 toy、开放权重、代理指标和一次真机 smoke 各自不能证明什么。
