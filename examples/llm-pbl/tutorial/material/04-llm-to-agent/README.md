@@ -42,6 +42,9 @@ Step 5  可靠性专题 L3            ← 网络分区、真实下游 conditiona
   │
   ▼
 Step 6  sota-deepdive           ← SOTA harness engineering 实践
+  │
+  ▼
+Step 7  跨轨长程训练             ← reasoning effort、长轨 SFT/RFT、partial rollout 与伪多轮边界
 ```
 
 ---
@@ -53,6 +56,7 @@ Step 6  sota-deepdive           ← SOTA harness engineering 实践
 - [ ] 能解释上下文工程：何时压缩、何时检索、记忆怎么放
 - [ ] 能说出 agent 动作为什么需要事务语义，并设计 payload-bound idempotency、prepare/commit 与 needs_human
 - [ ] 能讲清至少 2 个 SOTA harness 的工程选择（如上下文管理 / 工具设计 / 评测）
+- [ ] 能区分真实环境多轮、离线轨迹与格式“伪多轮”，并为长程 Agent 设计 SFT/RFT mask、预算和 timeout 口径
 
 ---
 
@@ -65,3 +69,6 @@ Step 6  sota-deepdive           ← SOTA harness engineering 实践
 - SOTA：代表性 harness / agent 框架工程博客或报告 `[TODO: verify]`；agent 评测基准（τ-bench / SWE-bench 等）`[TODO: verify]`
 
 → 深挖见 [sota-deepdive/](sota-deepdive/)
+
+训练侧专题见 [Reasoning effort 与长程 Agent 训练](../01-post-training-rl-sft/sota-deepdive/reasoning-effort-and-long-horizon-agent-training.md)；
+轨迹 tensor 合同见 [EpisodeRecord L2](../cross-track-episode-record/tutorial_L2.md)。

@@ -89,7 +89,9 @@ LLM-PBL/
     │   └── sota-deepdive/
     └── 05-multimodal-understanding-generation/
         ├── MODEL_ANATOMY_AND_TRAINING.md  # readout、encoder/VAE、参数与现代训练配方
-        ├── nano-vlm-understanding/  nano-image-dit/  nano-video-dit/
+        ├── LONG_CONTEXT_OR_RAG.md         # 512K/1M、多模态 token 账与 RAG/hybrid 决策
+        ├── nano-vlm-understanding/  nano-long-context-routing/
+        ├── nano-image-dit/  nano-video-dit/
         └── minimax-h3-capstone/
 ```
 
@@ -99,6 +101,10 @@ LLM-PBL/
 
 - 想先看全貌、按问题选课或查看跨轨依赖 → 读 [tutorial/material 学习总导航](tutorial/material/README.md)
 - 想从某一层切入 → 进对应 `tutorial/material/0X-*/README.md`
+- 想理解真实/伪多轮、observation/旧动作/teacher suffix 怎样 mask，以及一条 trajectory 何时拆成多个 sample → 跑 [EpisodeRecord L2](tutorial/material/cross-track-episode-record/tutorial_L2.md)
+- 想设计 thinking effort、长程 Agent SFT/RFT、max-budget→条件压缩与 adaptive selector → 读 [Reasoning effort 与长程 Agent 训练](tutorial/material/01-post-training-rl-sft/sota-deepdive/reasoning-effort-and-long-horizon-agent-training.md)
+- 想理解模型为何几个月追平、蒸馏刷榜怎样发生，以及怎样用 fresh evidence 判断真实泛化 → 读 [能力追平与蒸馏专题](tutorial/material/cross-track-frontier-model-lifecycle/CAPABILITY_GAP_AND_DISTILLATION.md)
 - 想理解“candidate 怎样被裁决、可靠激活、治理 evaluator，并发布到独立 router” → 跑 [Evaluation Gate L0→L3a](tutorial/material/cross-track-evaluation-gate/)
 - 想把 DeepSeek-V4、Qwen3.8-Flash-Next、Kimi K3、GLM-5.3，以及闭源 GPT-6 Astra / Claude Fable 5.1 串成“身份→stage→服务→评测”的证据链 → 跑 [Frontier Model Lifecycle L0](tutorial/material/cross-track-frontier-model-lifecycle/)
 - 想区分多模态 readout、vision/condition encoder、VAE、参数占比与现代多阶段训练 → 读 [多模态模型解剖与训练](tutorial/material/05-multimodal-understanding-generation/MODEL_ANATOMY_AND_TRAINING.md)
+- 想判断 512K/1M 是否真有必要、图像/视频 token 怎样膨胀，以及何时选 RAG 或 hybrid → 读 [多模态 Long Context 决策教程](tutorial/material/05-multimodal-understanding-generation/LONG_CONTEXT_OR_RAG.md)

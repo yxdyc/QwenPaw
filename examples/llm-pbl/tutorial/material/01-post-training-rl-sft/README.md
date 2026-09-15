@@ -50,7 +50,10 @@ Step 5  nano-opd L0–L3            ← 从 reverse-KL 算术到 multi-teacher �
 Step 6  sota-deepdive: Kimi-K3    ← 看 SOTA 如何把 agentic RL 规模化
   │
   ▼
-Step 7  Frontier Lifecycle L0      ← 用 DeepSeek/Qwen/Kimi/GLM 判断提升来自哪个 stage
+Step 7  effort + long-horizon      ← 条件预算、长轨 SFT/RFT、timeout 与 adaptive selector
+  │
+  ▼
+Step 8  Frontier Lifecycle L0      ← 用 DeepSeek/Qwen/Kimi/GLM 判断提升来自哪个 stage
 ```
 
 ---
@@ -60,8 +63,10 @@ Step 7  Frontier Lifecycle L0      ← 用 DeepSeek/Qwen/Kimi/GLM 判断提升�
 - [ ] 能用 single-file 跑通一个 toy SFT，并解释 data collator / loss mask 在做什么
 - [ ] 能画出 verl 的 actor-learner 分离图，说清「为什么不能边采样边训练」
 - [ ] 能解释 rollout 吞吐瓶颈，并说出 slime 用什么手段缓解
+- [ ] 能区分真实多轮与 physical sample 切段，为 observation/旧动作/teacher repair 写出 SFT 与 PPO 两套 mask
 - [ ] 能用 trinity-rft 风格的配置跑通 SFT→RL 两阶段，并对照权威实现说明配置抽象的取舍
 - [ ] 能讲清 Kimi-K3 在 agentic RL 规模化上的至少 2 个关键工程选择（基于一手技术报告）
+- [ ] 能把 reasoning effort 写成质量约束下的条件计算策略，解释为什么 max-budget-first 合理而机械 long-to-short 有风险
 - [ ] 能 single-file 跑通一个 toy OPD，解释「学生自采样 + reverse KL」为何在长程生成上优于静态教师文本的 SFT 蒸馏
 - [ ] 能说出 multi-teacher OPD 的至少一种工程形态（多教师分布融合 / 路由），及其相对单教师的动机
 - [ ] 能为同一条 EpisodeRecord 写出 PPO/GRPO/OPD adapter 的必填字段，并解释 `done` 与 `truncated`

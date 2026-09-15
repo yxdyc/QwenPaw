@@ -9,7 +9,7 @@
 
 | 级别 | 目标 | 状态 |
 |------|------|------|
-| L0 | 纯 Python bigram LM：document boundary、causal shift、mixture/shuffle/cursor、AdamW、warmup/decay、gradient accumulation、validation、完整 resume | ✅ [代码](L0_pretraining_lifecycle.py) · [教程](tutorial_L0.md) |
+| L0 | 纯 Python bigram LM：document boundary、causal shift、mixture/shuffle/cursor、AdamW、warmup/decay、gradient accumulation、validation、完整 resume，以及 live object→descriptor 重建边界 | ✅ [代码](L0_pretraining_lifecycle.py) · [教程](tutorial_L0.md) |
 | L1 | 单卡真实小 Transformer：tokenizer/packing/mask、AMP、真实 optimizer/scheduler/RNG checkpoint 与 exact-resume 边界 | ✅ [CPU 代码](L1_real_torch_lifecycle.py) · [GPU probe](L1_gpu_verify.py) · [教程](tutorial_L1.md) |
 | L2 | 两进程 torch.distributed/gloo：distributed sampler、global batch、rank-local checkpoint identity、exact resume 与 rollback replay | ✅ [代码](L2_distributed_exact_resume.py) · [教程](tutorial_L2.md) |
 | L3 | 对照权威框架的数据 loader、checkpoint schema、训练日志与吞吐/稳定性控制 | 🔲 |

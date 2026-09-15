@@ -8,7 +8,8 @@
 >
 > **运行**：`python3 L0_pretraining_lifecycle.py`；纯标准库、CPU、固定输出。
 >
-> **验收**：10/10 self-check；完整状态 resume 与连续训练参数逐位一致，丢 Adam state 或 cursor 必须分叉。
+> **验收**：12/12 self-check；完整状态 resume 与连续训练参数逐位一致，丢 Adam state 或 cursor 必须分叉；
+> live iterator 不能直接序列化，但其 descriptor 能重建等价的下一步行为。
 >
 > **边界**：bigram LM 只隔离 lifecycle；没有 Transformer activation、GPU kernel、分布式通信或真实数据质量结论。
 
@@ -64,7 +65,11 @@ python3 L0_pretraining_lifecycle.py
     reset Adam moments -> max parameter diff=...
     reset data cursor  -> max parameter diff=...
 
-SELF-CHECK: 10/10 PASS
+[5] Live object is not checkpoint state
+    JSON(live iterator) -> REJECT
+    descriptor(dataset_uri + cursor): consumed=10 restored_next=11
+
+SELF-CHECK: 12/12 PASS
 ```
 
 toy 的重点不是 loss 数值，而是三个反事实：完整状态续跑等于连续跑；少 optimizer state 不等；少 data cursor
@@ -163,7 +168,56 @@ sampler_seed + sampler_epoch + sampler_cursor + mixture
 
 ---
 
-## 7. validation 与 checkpoint selection 也要版本化
+## 7. 深刻理解“不可序列化对象”：保存重建配方，不保存正在发生的现场
+
+序列化不是“把一个 Python 对象塞进文件”，而是把它变成一份**稳定、可移植、可解释的描述**，使另一个进程
+能恢复我们关心的未来行为。设训练状态为 $Z_t$、下一批数据为 $B_t$：
+
+$$
+Z_{t+1}=T(Z_t,B_t).
+$$
+
+checkpoint 要保存的不是内存里每个对象的物理模样，而是足以让恢复进程得到等价 $Z_t$、取出同一个 $B_t$、
+继续执行同一个 $T$ 的最小状态。
+
+脚本的 `live_cursor_roundtrip()` 故意创建一个正在运行的 iterator。JSON 拒绝它，不是 JSON “功能太弱”，而是
+iterator 的核心含义藏在解释器内部：它指向哪个容器、已经推进到哪里、容器是否会变化。把某个内存地址写进文件，
+另一个进程也无法用这个地址继续 `next()`。
+
+L0 改存：
+
+```text
+dataset_uri=toy://train-v1 + cursor=1
+```
+
+恢复时在 versioned registry 中重新打开相同数据，再 seek 到 cursor=1。原 live iterator 已消费 `10`，重建对象的
+下一项是 `11`。二者不是同一个 Python identity，却在课程关心的观测上**行为等价**。
+
+| live object | 为什么不能靠普通序列化恢复 | 应保存什么 |
+|---|---|---|
+| generator / iterator | instruction pointer、闭包、上游容器与 prefetch 状态隐含在进程里 | 数据快照、sampler seed/epoch/global cursor、worker/packing policy |
+| file handle | fd 是当前进程的内核表索引；文件可能被替换 | URI/path、offset、mode、内容 digest；恢复时重新 open + seek |
+| lock / condition | “谁持锁、谁在等待”属于并发现场 | durable lease/fencing epoch，或在安全点重建未持有锁 |
+| socket / HTTP stream | 对端连接和 TCP 状态不在对象字段里 | request/idempotency key、receipt、协议状态；重连并 reconcile |
+| CUDA context / stream / kernel | 绑定进程、设备、driver 与在途执行 | tensor/state_dict、device mapping、RNG；同步到安全点后重建 runtime |
+| DataLoader workers | 子进程、队列、prefetch 中样本共同决定“下一批” | global sample IDs/cursor、worker/shard policy；恢复后验证 next-batch identity |
+
+`pickle` 偶尔能 dump 某个自定义对象，也不能证明可移植恢复：它可能只保存 Python 实现细节，依赖同模块路径和代码，
+更不可能复活 OS lock、远端 socket 或 in-flight GPU kernel。正确边界通常是：
+
+```text
+可序列化 state/data manifest
+        +
+显式 reconstruct() 过程
+        +
+恢复后的行为探针
+```
+
+行为探针至少检查 next sample IDs/masks、optimizer/RNG step 和若干更新，而不是只检查“对象 load 成功”。
+
+---
+
+## 8. validation 与 checkpoint selection 也要版本化
 
 “保存最新 checkpoint”与“选择最好 checkpoint”是两个问题。最小记录至少包括：
 
@@ -179,7 +233,7 @@ model/optimizer/scheduler/RNG/sampler state, code/config digest
 
 ---
 
-## 8. 故障诊断顺序
+## 9. 故障诊断顺序
 
 出现 loss spike/NaN 时，先保留现场，再按因果半径排查：
 
@@ -194,7 +248,7 @@ model/optimizer/scheduler/RNG/sampler state, code/config digest
 
 ---
 
-## 9. 费曼自检
+## 10. 费曼自检
 
 **类比**：模型权重像汽车所在的位置；optimizer moments 是速度与惯性；scheduler 是油门计划；data cursor 是
 道路位置。只拍一张汽车照片再恢复，位置相同不代表下一秒运动相同。
@@ -206,6 +260,8 @@ model/optimizer/scheduler/RNG/sampler state, code/config digest
 3. 为什么“resume 后 loss 接得上”仍不足以证明 exact resume？
 4. validation 集换版后，为什么不能继续覆盖原来的 `best_score`？
 5. packing 允许跨文档 attention 时，需要怎样记录 mask/position/boundary policy？
+6. 为什么把 Python generator 用 `pickle` 成功写入文件（假设某实现碰巧支持）仍不足以证明 checkpoint 可恢复？
+7. 一个 DataLoader 不保存 worker queue，怎样验证 descriptor 恢复到了等价位置？
 
 <details>
 <summary>参考答案</summary>
@@ -215,6 +271,8 @@ model/optimizer/scheduler/RNG/sampler state, code/config digest
 3. 相邻两步 loss 接近可能只是数据容易或统计波动。判决性证据应包括下一批 sample IDs/mask、梯度或更新后参数 hash、optimizer step/moments、RNG 和多步 probe logits；这些共同证明续跑的是同一条轨迹。
 4. `best_score` 只在固定数据快照、预处理、指标、解码和 evaluator 下可比。验证集换版等于换尺子，应开启新 namespace 并重建 baseline，旧记录保留用于 lineage。
 5. manifest 至少记录文档 offset/segment、跨文档 attention mask、position reset、boundary token 是否计入 loss、packing 算法版本，以及 tokenizer/data snapshot。否则同一 token 序列可能代表不同监督问题。
+6. “能 dump/load”只证明某种对象编码可执行，不证明数据源、代码、OS/GPU 资源和下一步行为相同。应明确目标观测，保存 portable descriptor，并在新进程验证下一批与若干状态转移。
+7. 保存全局 sample identity/cursor、sampler epoch/seed、shard 与 worker/prefetch policy；恢复后先生成 next-batch manifest，与未中断运行的 sample IDs、document boundaries、mask 和 packing offsets 对比，再允许训练。
 
 </details>
 

@@ -300,9 +300,13 @@ admission 才能固定“是否已经训练过”。**
 
 ---
 
-## 10. 下一层：从可恢复 batch 到可审计消费
+## 10. 下一层：先固定 trajectory→segment，再进入可审计消费
 
-L2 将新增 append-only EpisodeStore，并把下面状态机做成可运行故障注入：
+[L2](tutorial_L2.md) 先解决另一条在进入存储前必须明确的边界：真实多轮由 action→environment observation 的
+provenance 决定，一条 trajectory 可以 flatten 为一个 sample，也可以切成共享 `rollout_id` 的多个 segment；两种
+布局只有在 prefix、token IDs、loss 分母和 reward reducer 均守恒时才等价。
+
+后续 L3 再新增 append-only EpisodeStore，并把下面状态机做成可运行故障注入：
 
 ```text
 STORED -> LEASED(attempt, expiry) -> ADMITTED(trainer_run) -> CONSUMED

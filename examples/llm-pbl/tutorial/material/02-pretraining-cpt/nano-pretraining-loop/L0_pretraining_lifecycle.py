@@ -107,6 +107,20 @@ def train(state: dict, until_step: int, total_steps: int = 20) -> list[tuple[int
     return history
 def checkpoint_roundtrip(state: dict) -> dict:
     return json.loads(json.dumps(state, sort_keys=True, separators=(",", ":")))
+def live_cursor_roundtrip() -> tuple[bool, int, int]:
+    """A live iterator is not checkpoint state; its reconstruction recipe is."""
+    registry = {"toy://train-v1": (10, 11, 12, 13)}
+    live = iter(registry["toy://train-v1"])
+    first = next(live)
+    rejected = False
+    try:
+        json.dumps({"stream": live})
+    except TypeError:
+        rejected = True
+    descriptor = {"dataset_uri": "toy://train-v1", "cursor": 1}
+    restored = json.loads(json.dumps(descriptor, sort_keys=True))
+    rebuilt = iter(registry[restored["dataset_uri"]][restored["cursor"] :])
+    return rejected, first, next(rebuilt)
 def max_model_diff(a: dict, b: dict) -> float:
     return max(
         abs(a["model"][i][j] - b["model"][i][j])
@@ -160,6 +174,11 @@ def main() -> None:
     print(f"    reset Adam moments -> max parameter diff={optimizer_diff:.3e}")
     print(f"    reset data cursor  -> max parameter diff={cursor_diff:.3e}")
 
+    live_rejected, first_item, restored_next = live_cursor_roundtrip()
+    print("\n[5] Live object is not checkpoint state")
+    print(f"    JSON(live iterator) -> {'REJECT' if live_rejected else 'ADMIT'}")
+    print(f"    descriptor(dataset_uri + cursor): consumed={first_item} restored_next={restored_next}")
+
     checks = (
         (safe_pairs == 9 and leaked_pairs == 2, "document boundaries remove two cross-document targets"),
         (final_val < initial_val, "validation loss improves on this constructed task"),
@@ -171,8 +190,10 @@ def main() -> None:
         (optimizer_diff > 1e-4, "dropping Adam moments changes the result"),
         (cursor_diff > 1e-4, "dropping data cursor changes the result"),
         (selected_checkpoint[0] == 20, "best checkpoint is selected by its versioned validation artifact"),
+        (live_rejected, "live iterator is rejected by the portable checkpoint format"),
+        (first_item == 10 and restored_next == 11, "descriptor rebuilds equivalent next behavior"),
     )
-    print("\n[5] self-check")
+    print("\n[6] self-check")
     for ok, name in checks:
         print(f"    {'PASS' if ok else 'FAIL'} | {name}")
     failed = [name for ok, name in checks if not ok]

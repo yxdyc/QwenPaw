@@ -14,6 +14,9 @@ python3 -B tutorial/material/cross-track-frontier-model-lifecycle/L0_stage_claim
 验收看 12/12 checks。脚本把别名归一到可核验对象，分开总参数、激活参数和外置容量；遇到未披露配方就停在
 `unknown`。对 GPT-6 Astra 和 Claude Fable 5.1，它还会守住另一条边界：API 可访问只说明服务可调用，参数规模和训练配方仍为空。
 真实输出和逐段解释见 [tutorial_L0](tutorial_L0.md)，完整证据账本见 [RESEARCH](RESEARCH.md)。
+若要解释“为什么厂商几个月就能追平、蒸馏刷榜为何容易而泛化仍难”，读
+[能力追平、蒸馏与 benchmark validity](CAPABILITY_GAP_AND_DISTILLATION.md)：它把 response/preference/OPD/
+multi-teacher 四档迁移、fresh evidence ladder 和专项小队交付合同串起来。
 
 ## 沿生命周期读模型
 
@@ -58,6 +61,7 @@ failure-aware evaluation ── same base? same harness? completion in denominat
 | sparse/linear attention 的检索保真 | Megatron 教切分，VLM 教 position；缺选择器反事实 | tiny dense-vs-sparse retrieval recall/cost factorial | P0 |
 | Muon 参数分组与 batch scaling | pretraining lifecycle 目前以 AdamW 为主 | 同模型/数据预算的 AdamW-vs-Muon 小实验 | P1 |
 | specialist → OPD 能力保留 | nano-opd 已有估计器/路由 | 固定学生、多个 teacher、最坏领域回归 | P0 |
+| benchmark-local gain 与真实能力混淆 | Lifecycle 已固定 stage/harness；缺 fresh family 梯级 | public→扰动→独立变体→live task 四层 paired evidence | P0 |
 | async RL staleness | nano-slime 已有 partial rollout / delta sync | TITO token version + direct IS mask 故障注入 | P1 |
 | QAT 的 train/serve 一致性 | FSDP L3 有精度账；缺后训练期 QAT | 小模型 SFT 前后量化 paired eval | P1 |
 | n-gram offload / prefetch | KV/cache 教程已有成本账 | host-memory/transfer/命中率的离散事件 sim | P2 |

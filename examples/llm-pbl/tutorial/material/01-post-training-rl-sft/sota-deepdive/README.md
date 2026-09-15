@@ -1,6 +1,7 @@
 # SOTA Deep-Dive — 后训练 / Agentic RL 规模化
 
-> **深挖对象**：01 轨两个主题——① 后训练算法演进 PPO→GRPO/RLVR→OPD（首版 ✅ + 深化 ✅）；② Kimi-K3 agentic RL 规模化（独立成篇 ✅）。
+> **深挖对象**：01 轨四个主题——① 后训练算法演进 PPO→GRPO/RLVR→OPD；② Kimi-K3 agentic RL
+> 规模化；③ reasoning effort/adaptive thinking 与长程 Agent 训练；④ frontier stage 与能力追平归因。
 > **状态**：首版主题完成（2026-08-11）；深化与来源重对齐完成（2026-08-13）；2026-09-08 已加入四家 frontier lifecycle 串联。
 > **对照基础**：nano-verl、nano-opd、nano-llamafactory 均已覆盖 L0–L3。
 > **深化落点**：[`post-training-algorithm-evolution-deepening.md`](post-training-algorithm-evolution-deepening.md)——四机制面可运行 sim（IS+clip / GRPO 组基线 / ratio 粒度 / OPD 合流，self-check 24/24）+ Kimi K3 / MOPD / DeepSeek-V4 正文层闭合 + survey v3→v4 版本漂移录值。
@@ -11,7 +12,11 @@
 
 1. **后训练算法演进**（首版已覆盖 + 深化已覆盖）：PPO 奠基（IS + clipping）→ GRPO 族与 RLVR（去 value model、reward 换可验证信号）→ OPD（蒸馏与 RL 合流）；算法与 infra 共演化。落点：[`post-training-algorithm-evolution.md`](post-training-algorithm-evolution.md) §2–§7，2026 格局三层锚点 → §8；深化落点：[`post-training-algorithm-evolution-deepening.md`](post-training-algorithm-evolution-deepening.md)（四机制面 native sim 实测锚 + 2026-08-13 重对齐 + 引用链）。
 2. **[Kimi-K3 agentic RL 规模化](kimi-k3-agentic-rl-scale.md)**（已完成）：rollout 吞吐、co-located 权重可见性与内存竞争、长轨迹 credit assignment、多步工具 reward、AgentENV sandbox；配套纯标准库 [native sim](kimi_k3_agentic_rl_sim.py) 覆盖 27 项 self-check。
-3. **[Frontier Model Lifecycle](../../cross-track-frontier-model-lifecycle/)**（跨轨 L0 已完成）：不再增加一篇模型列表，而是用 DeepSeek-V4 的 multi-teacher OPD、Qwen3.8 未披露的 post-training recipe、Kimi K3 的长轨 RL 与 GLM-5.3 same-base delta，训练 stage 归因和拒答能力。
+3. **[Reasoning effort 与长程 Agent 训练](reasoning-effort-and-long-horizon-agent-training.md)**：把“max-budget
+   起步”改写成质量门约束下的条件计算策略；覆盖 SFT/RFT mask、稀疏 credit、timeout censoring、paired budget
+   sweep、long-to-short/Toggle 与 adaptive selector。
+4. **[Frontier Model Lifecycle](../../cross-track-frontier-model-lifecycle/)**（跨轨 L0 已完成）：不再增加一篇模型列表，而是用 DeepSeek-V4 的 multi-teacher OPD、Qwen3.8 未披露的 post-training recipe、Kimi K3 的长轨 RL 与 GLM-5.3 same-base delta，训练 stage 归因和拒答能力；新增
+   [能力追平与蒸馏有效性专题](../../cross-track-frontier-model-lifecycle/CAPABILITY_GAP_AND_DISTILLATION.md)，区分 benchmark-local imitation、task-family learning 与可部署能力。
 
 ## 信息溯源要求（反幻觉硬约束）
 

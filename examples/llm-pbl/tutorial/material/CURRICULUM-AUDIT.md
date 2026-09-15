@@ -1,6 +1,6 @@
 # LLM-PBL 课程完备性与质量审计
 
-> 快照日期：2026-09-14
+> 快照日期：2026-09-15
 > 审计范围：`tutorial/material` 的结构、阅读路径、发布卫生与证据分层。
 > 重要边界：本页不等于“全部实验已重跑”或“全部外部主张已重新联网核验”。
 
@@ -8,10 +8,13 @@
 
 LLM-PBL 最有价值的教学模式已经稳定：把一个抽象机制压缩成可运行、可失败、可量化的最小实验，
 再逐级接到真实 tensor、分布式运行或真实系统。01–04 轨已有一批完整 L0–L3 纵深，05 多模态轨也补齐了
-“图文理解 → Image DiT → Video DiT → MiniMax H3”四个 L0 机制锚，并已把图文理解推进到真实 Qwen3-VL-2B L1。
+“图文理解 → Image DiT → Video DiT → MiniMax H3”四个主线 L0 机制锚，把图文理解推进到真实 Qwen3-VL-2B L1，
+并新增“512K/1M Long Context 还是 RAG”的 token 账与可运行三路 selector 对照。
 跨轨 Frontier Model Lifecycle 又把 DeepSeek-V4、Qwen3.8-Flash-Next、Kimi K3、GLM-5.3/Flash 按
 architecture → pretraining → post-training → serving → evaluation 串联，并把 GPT-6 Astra、Claude Fable 5.1
 放进闭源 API 的可观测合同。课程由此同时覆盖 stage 血缘、增益归因和路由 provenance，而不需要猜测未公开的模型内部。
+本次再补齐三条容易混淆的边界：live object 与可重建 checkpoint state、真实多轮 trajectory 与 physical sample
+切段、reasoning effort 与长程训练的条件计算策略；并新增能力追平/蒸馏的 fresh-evidence 梯级。
 
 下一阶段的最高收益不再是继续增加并列的综述或 toy，而是闭合三类证据缺口：
 
@@ -24,12 +27,12 @@ architecture → pretraining → post-training → serving → evaluation 串联
 | 维度 | 当前数量 | 口径 |
 |---|---:|---|
 | 主轨 | 5 | 01 后训练、02 预训练、03 数据/分布式/RSI、04 Agent、05 多模态 |
-| `nano-*` 模块 | 20 | 递归目录名计数；H3 capstone 不在该命名口径内 |
+| `nano-*` 模块 | 21 | 递归目录名计数；H3 capstone 不在该命名口径内 |
 | 跨轨模块 | 4 | Capability Factory、EpisodeRecord、Evaluation Gate、Frontier Model Lifecycle |
 | deep-dive 目录 | 4 | 01–04 各一处；05 以 `RESEARCH.md` 承担研究账本 |
-| Markdown | 122 | `tutorial/material` 全树；新增多模态模型解剖与训练专题 |
-| `tutorial_L*.md` | 77 | 包含 Evaluation Gate 的敏感性补充教程、VLM L1 真机教程与 Frontier Lifecycle L0 |
-| Python | 85 | 课程材料树内脚本，不含仓库级校验器 |
+| Markdown | 128 | `tutorial/material` 全树；新增长程训练、能力追平专题与 EpisodeRecord L2 |
+| `tutorial_L*.md` | 79 | 包含 EpisodeRecord L2、Evaluation Gate 补充教程、VLM L1、context-routing L0 与 Frontier Lifecycle L0 |
+| Python | 87 | 课程材料树内脚本，不含仓库级校验器 |
 
 数量只说明“内容存在”，不说明“生产可用”。本课程继续使用三层证据口径：
 
@@ -43,15 +46,15 @@ architecture → pretraining → post-training → serving → evaluation 串联
 
 | 轨道 | 已形成纵深 | 当前最重要缺口 | 下一步高 ROI |
 |---|---|---|---|
-| 01 后训练 | 5 个核心模块均有 L0–L3；覆盖 SFT、PPO/RLVR、rollout、RFT、OPD 与 Kimi K3；Frontier Lifecycle 已接入 V4 multi-teacher OPD 和 GLM same-base attribution | 真实 teacher 服务、同底座 paired replay、隐藏评估和端到端成本证据仍有限 | 先固定 model/stage metadata，再用小模型做 multi-teacher 与 same-base 对照 |
-| 02 预训练 | FSDP、Megatron 已到 L3；pretraining lifecycle 到 gloo exact resume L2；DeepSeek/Qwen/Kimi/GLM 已有跨代机制/血缘地图；Megatron 有 PP2 与 TP2/4/8 L20/NCCL 证据 | hybrid sparse/linear attention、Muon、mHC、QAT 仍缺独立实验；分片 checkpoint schema 尚未闭合 | metadata ledger 后，每次只做一个小型 architecture/optimizer factorial |
+| 01 后训练 | 5 个核心模块均有 L0–L3；覆盖 SFT、PPO/RLVR、rollout、RFT、OPD、Kimi K3，以及 effort/长程 Agent playbook；Frontier Lifecycle 已接入 multi-teacher 与 same-base attribution | 真实 teacher 服务、adaptive selector、同底座 paired replay、隐藏评估和端到端成本证据仍有限 | 先做 paired budget sweep 与 token/episode loss 消融，再用小模型做 multi-teacher 对照 |
+| 02 预训练 | FSDP、Megatron 已到 L3；pretraining lifecycle 到 gloo exact resume L2，L0 已补 live object→descriptor 重建边界；Megatron 有 PP2 与 TP2/4/8 L20/NCCL 证据 | hybrid sparse/linear attention、Muon、mHC、QAT 仍缺独立实验；分片 checkpoint schema 尚未闭合 | metadata ledger 后，每次只做一个小型 architecture/optimizer factorial |
 | 03 数据/分布式/RSI | Data-Juicer、Ray、vLLM/SGLang 到 L3；平台、编排、RAG 到 L2 | 跨组件 schema 演进、离线/在线一致性和真实引擎证据仍分散 | 用一条 EpisodeRecord 贯穿 snapshot → retrieval → rollout → admission，并补真实 SGLang 固定提示集 |
 | 04 Agent | AgentScope、QwenPaw 到 L3；transactional runtime L2 已覆盖多 worker、outbox、compensation 与 provider-checked fencing epoch | fencing 仍是单机 SQLite 机制证据；网络分区、真实 token 与外部 runtime 尚未实证 | 以 HTTP mock/真实 runtime 注入 stale owner、响应丢失、权限重放与补偿失败 |
-| 05 多模态 | 四个 L0 可独立学习；Qwen3-VL-2B L1 已有单张 L20、双独立进程的真实 checkpoint 证据；新增 readout、encoder/VAE、参数口径和现代训练路线 | VLM 仍只有六例 synthetic diagnostics；真实图像/视频质量和 H3 配置账尚未落地 | 训练微型 Image DiT，再做 moving-video DiT 与 H3 config-only 复算 |
+| 05 多模态 | 五个 L0 可独立学习；Qwen3-VL-2B L1 已有单张 L20、双独立进程的真实 checkpoint 证据；新增 readout、encoder/VAE、Long Context/RAG 决策、参数口径和现代训练路线 | VLM 仍只有六例 synthetic diagnostics；context-routing 仍是 oracle selector；真实图像/视频质量和 H3 配置账尚未落地 | 给 context-routing 接真实 tokenizer/小模型，再训练微型 Image DiT、moving-video DiT 与 H3 config-only 复算 |
 
 跨轨部分已经承担“系统闭环”而非补充阅读：
 
-- [EpisodeRecord](cross-track-episode-record/) 统一 PPO、GRPO、OPD、工具轨迹与 provenance 的数据契约；
+- [EpisodeRecord](cross-track-episode-record/) 已到 L2：统一 PPO、GRPO、OPD、工具轨迹与 provenance，并验证真实/伪多轮、flat/split loss 与 rollout reward 聚合；
 - [Capability Factory](cross-track-capability-factory/) 产生可追溯 candidate；
 - [Evaluation Gate](cross-track-evaluation-gate/) 用配对证据、隐藏 sentinel、回滚与激活日志约束晋升。
 - [Frontier Model Lifecycle](cross-track-frontier-model-lifecycle/) 把 model identity、parent、stage、参数口径与开放边界放进同一 claim contract。
@@ -107,6 +110,8 @@ data/RSI governance、Agent runtime，以及 VLM、rectified-flow DiT、Video Di
 Frontier Model Lifecycle 进一步用开放权重模型建立“架构候选三轴门—base/midtrain—specialist/agentic RL—OPD—QAT/serve—paired eval”主线；
 GPT-6 Astra 与 Claude Fable 5.1 则提供闭源对照：只教学官方 API 行为、路由/fallback、工具轨迹、缓存和成本回执，
 参数量、架构与训练 recipe 继续记为未知。官方声明、源码事实、未披露项和课程推断分栏，避免用厂商榜单替代机制证据。
+新增 reasoning-effort/长程 Agent 专题用当前官方 API 合同对照 Kimi K3 的公开训练锚；能力追平专题则把
+response/preference/OPD/MOPD 与 public→fresh→live 证据阶梯分开，避免把局部刷榜写成通用能力。
 
 05 轨的 [研究账本](05-multimodal-understanding-generation/RESEARCH.md) 特别需要保持三种事实分离：
 论文/官方模型卡声明、公开源码实现、课程推断。开放权重也不能写成整个托管系统全部开源。
