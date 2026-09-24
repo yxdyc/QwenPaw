@@ -85,7 +85,7 @@ def lineno_of(text: str, pat: str) -> int:
 
 
 # --------------------------------------------------------------------------
-# methodology sources: real files from the qwenpaw_coach repo
+# methodology sources: real files from the current repository
 # --------------------------------------------------------------------------
 HERE = Path(__file__).resolve()
 REPO_ROOT = next((p for p in HERE.parents if (p / "src/qwenpaw").is_dir()), HERE.parents[5])

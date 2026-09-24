@@ -48,7 +48,7 @@ GPU/多机/共享文件系统，跑不了真实 SGLang/Megatron/NCCL。建模的
 zlib-1 显式代替 zstd-1（slime 实测 zstd-1 在 wire size 与解压速度上压过
 lz4/gzip/snappy/brotli 故不可调，docs:L33——nano 只取「压缩吃零字节」这一
 结构性质，绝对压缩率不可外推）。时间常数是 toy 口径（承 L2），结构结论可外推、
-绝对值不可。真机验证 [TODO: verify on real system] 走 GPU 通道。
+绝对值不可。真机验证标为 [TODO: verify on real system]，需另行在可公开复现的 GPU 环境执行。
 依赖：零（纯标准库）。CPU 瞬时（<0.2s）。
 """
 

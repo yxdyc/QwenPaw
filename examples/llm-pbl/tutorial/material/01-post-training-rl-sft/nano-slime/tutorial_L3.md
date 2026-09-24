@@ -435,7 +435,7 @@ fully async 的背压设计（L2 §9 已引 fully_async_rollout.py:L85-89 逐字
 与引擎内部机制 → 轨道 03 [nano-vllm-sglang](../../03-data-distributed-rsi/nano-vllm-sglang/)；
 off-policy 的算法侧修正（IS ratio / mask-offpolicy 的损失账）→
 [nano-verl](../nano-verl/) L1/L3；真机 delta sync（SGLang `/pull_weights` +
-Megatron gather + 共享盘）`[TODO: verify on real system]`，走 GPU 通道攒批验证。
+Megatron gather + 共享盘）标为 `[TODO: verify on real system]`，需另行在可公开复现的 GPU 环境验证。
 
 ---
 

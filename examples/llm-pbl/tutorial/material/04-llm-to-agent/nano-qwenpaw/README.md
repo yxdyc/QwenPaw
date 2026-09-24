@@ -1,6 +1,6 @@
 # nano-qwenpaw
 
-> **抓的核心机制**：**agent harness / coach**——把 LLM 包成一个有方法论、有记忆、能自我检查的执行体（本仓库 qwenpaw_coach 同源）。
+> **抓的核心机制**：**agent harness / coach**——把 LLM 包成一个有方法论、有记忆、能自我检查的执行体（与本仓库实现同源）。
 > **对应真实系统**：qwenpaw（本仓库 `coach/`）
 > **轨道**：[04 LLM→Agent](../README.md) · **状态**：L0–L3 ✅（阶梯完成）
 

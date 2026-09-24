@@ -441,7 +441,7 @@ L0 的成本恒等式（`总 9 = 有效 5 + 重试救回 1 + 浪费 3`，L0 chec
 | heartbeat timeout 原因句「The Airflow worker ran out of memory and was OOMKilled」（§5(c)） | 文献已有（逐字引文） | 同上（Task Instance Heartbeat Timeout 节） |
 | BashOperator 引文「In general a non-zero exit code produces an AirflowException and thus a task failure.」（§3） | 文献已有（逐字引文） | https://airflow.apache.org/docs/apache-airflow-providers-standard/stable/operators/bash.html ，2026-08-14 抓取（131,531 B；h1 "BashOperator"） |
 | XComs 引文「If the first task was not successful then on every retry task XComs will be cleared to make the task run idempotent.」（§8） | 文献已有（逐字引文） | https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/xcoms.html ，2026-08-14 抓取（118,246 B；h1 "XComs"） |
-| `EX_TEMPFAIL 75 /* temp failure; user is invited to retry */`（§3） | 文献已有（逐字引文，本机文件在盘核验） | BSD 系标准头文件 sysexits.h，本机路径 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sysexits.h:L111（5,472 B，2026-08-14 核验） |
+| `EX_TEMPFAIL 75 /* temp failure; user is invited to retry */`（§3） | 文献已有（逐字引文） | BSD 系标准头文件 `<sysexits.h>` 的 `EX_TEMPFAIL` 定义；安装路径与行号随 OS/toolchain 变化，不作为课程锚点。 |
 | L0 状态机规则 A/B/C、PIPELINE/GRANTS fixture、终态向量期望值（checks 01–03）、成本恒等式（check 07）、合流性质 | 纲领/前级已有 | `L0_dag_scheduler_state_machine.py`（冻结锚 `a391f8e6…`/191 行）+ `tutorial_L0.md` §4–§7 |
 | 「落数据 → 推游标」「逻辑时钟从 catalog 重建」的同构类比（§4） | 姊妹模块已有 | nano-data-platform L1 `tutorial_L1.md`（锚 `d6bf53b0…`/382 行，交叉引用） |
 | 「exit code 是进程边界唯一通用通道」「两种故障模型（宿主死亡 vs 孤儿）」「幂等三形态（天然/去重键/原子发布）」「stale 字段由状态守卫赋义」「崩溃税的 at-least-once 解读」 | 合理推断 | 机制层归纳 / 本教程自论证，无外部引文；POSIX exit code 约定为通用常识 |

@@ -13,7 +13,7 @@ L0 用 6 条内联 dict 演示了 OP 可组合性。但真实训练数据长这�
 {"messages": [{"role": "user", "content": [{"type": "text", "text": "请直接回答以下单项选择题目..."}]}, {"role": "assistant", "content": [{"type": "text", "text": "<think>...\n\\boxed{C}"}]}]}
 ```
 
-这是一份真实的医学 SFT 样本（10 条，本地文件 `Data-Training-Router/ProjectZ/examples/medical/sft_data/train.jsonl`，仅作真实小样本使用）。
+以下结构来自 10 条经脱敏的医学 SFT 小样本；原始数据不随课程发布。复现时请用 `--data` 或 `LLM_PBL_DATA_PATH` 传入你有权使用的 JSONL 文件。
 结构是嵌套的 messages 格式，不是扁平的 `{"text": "..."}`。
 
 L1 要解决三个新问题：

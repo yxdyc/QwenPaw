@@ -268,7 +268,7 @@ CREATE VIRTUAL TABLE conversation_history_fts USING fts5(
 
 ## 8. 与 qwenpaw scroll 源码对照（2026-08-14 核验）
 
-权威实现就在本仓库：`qwenpaw_coach/src/qwenpaw/agents/context/scroll/`。以下锚点全部当日现场核验（sha256 见 §14）：
+权威实现就在本仓库：`src/qwenpaw/agents/context/scroll/`。以下锚点全部当日现场核验（sha256 见 §14）：
 
 | nano L1 | qwenpaw scroll | 核验锚点 | 差异与原因 |
 |---------|----------------|----------|-----------|

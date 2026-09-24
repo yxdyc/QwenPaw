@@ -560,8 +560,8 @@ nano-llamafactory 至此 L0–L3 完整：数据侧三件套（L0）→ 真实 S
 DPO 偏好对（L2）→ stage 分发层的抽象取舍（本级）。同一机制光谱的另外两端：
 RLVR/GRPO 族的 infra 取舍在 [nano-verl](../nano-verl/) L2/L3，on-policy
 distillation 的生产配方在 [nano-opd](../nano-opd/)。真机侧：真实 LoRA SFT/DPO
-跑通、多 stage yaml 一键切换的实测，标 `[TODO: verify on real system]`（GPU
-通道攒批，写作轮不 ssh）。
+跑通、多 stage yaml 一键切换的实测，标 `[TODO: verify on real system]`；需另行在
+可公开复现的真实 GPU 环境验证，本页不声明结果。
 
 ---
 

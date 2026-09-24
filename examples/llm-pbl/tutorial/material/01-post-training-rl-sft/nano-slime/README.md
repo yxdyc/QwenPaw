@@ -25,12 +25,12 @@
   绝对毫秒数为 CPU 小模型口径，结构结论（线性/压缩/G≫T）可外推，绝对值不可。
 - L2：零外部依赖（纯标准库），CPU 瞬时（<0.1s）。本级为可运行的本质模拟（本课程 L2 可运行性契约）：
   建模 slime 源码背书的双 regime 控制流 + 引擎代价模型；真实 SGLang/Megatron 验证
-  `[TODO: verify on real system]` 走 GPU 通道。
+  标为 `[TODO: verify on real system]`，需另行在可公开复现的 GPU 环境执行。
 - L3：零外部依赖（纯标准库），CPU 瞬时（<0.25s）。本级为可运行的本质模拟（本课程 L3 可运行性契约）：
   对照 slime 源码（THUDM/slime @ 2fa9a442，2026-08-16 codeload 抓取）逐行核验 buffer 回收与
   delta sync 机制；掩码输出锚 `1c85efaf…`/58 行、digest `482ddb8b…`（2 遍 × 2 新建空独立 CWD
   BYTE-IDENTICAL）。真实 SGLang `/pull_weights` + Megatron gather + 共享盘验证
-  `[TODO: verify on real system]` 走 GPU 通道。
+  标为 `[TODO: verify on real system]`，需另行在可公开复现的 GPU 环境执行。
 
 ## 核心要讲清的点
 

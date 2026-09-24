@@ -17,17 +17,109 @@ from urllib.parse import unquote
 LINK_RE = re.compile(r"!?\[[^\]]*\]\(([^)]+)\)")
 TODO_RE = re.compile(r"\b(?:TODO|FIXME|TBD)\b", re.IGNORECASE)
 SENSITIVE_PATTERNS = {
-    "absolute_local_path": re.compile(r"/(?:Users|nas|root)/"),
+    "absolute_local_path": re.compile(
+        r"(?:"
+        r"(?<![A-Za-z0-9_-])/(?:Users|home)/[^/\s`]+/|"
+        r"(?<![A-Za-z0-9_-])/(?:root|nas)(?:/|\b)|"
+        r"(?<![A-Za-z0-9_-])/Volumes/[^/\s`]+/|"
+        r"(?<![A-Za-z0-9_-])/Library/Developer/|"
+        r"(?<![A-Za-z0-9_-])/private/var/folders/[^\s`]+|"
+        r"[A-Za-z]:\\Users\\[^\\\s`]+\\|"
+        r"~/"
+        r")"
+    ),
+    "local_workspace_fragment": re.compile(
+        r"(?:"
+        r"Works/Works|"
+        r"Documents/(?:Codex|ChatGPT)|"
+        r"\.qoderwork(?:/|\b)|"
+        r"workspace/[0-9a-f-]{8,}"
+        r")",
+        re.IGNORECASE,
+    ),
+    "credential_literal": re.compile(
+        r"(?:api[_-]?key|access[_-]?key|secret|password|passwd)"
+        r"\s*[:=]\s*['\"]"
+        r"(?!(?:CHANGEME|REDACTED|test-key-redacted)['\"])"
+        r"[^'\"]{6,}['\"]",
+        re.IGNORECASE,
+    ),
+    "secret_token_shape": re.compile(
+        r"(?<![A-Za-z0-9])(?:"
+        r"(?:AKIA|ASIA)[0-9A-Z]{16}|"
+        r"gh[pousr]_[A-Za-z0-9]{20,}|"
+        r"github_pat_[A-Za-z0-9_]{20,}|"
+        r"sk-[A-Za-z0-9_-]{20,}|"
+        r"xox[baprs]-[A-Za-z0-9-]{10,}"
+        r")(?![A-Za-z0-9])|"
+        r"-----BEGIN [A-Z ]*PRIVATE KEY-----"
+    ),
+    "personal_email": re.compile(
+        r"\b[A-Za-z0-9._%+-]+@"
+        r"(?!example\.(?:com|org|net)\b)"
+        r"[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b"
+    ),
+    "private_network_address": re.compile(
+        r"\b(?:"
+        r"10(?:\.[0-9]{1,3}){3}|"
+        r"172\.(?:1[6-9]|2[0-9]|3[01])(?:\.[0-9]{1,3}){2}|"
+        r"192\.168(?:\.[0-9]{1,3}){2}"
+        r")\b|"
+        r"\b[A-Za-z0-9.-]+\.(?:internal|corp|local)(?::[0-9]+)?\b",
+        re.IGNORECASE,
+    ),
+    "china_mobile_number": re.compile(r"(?<![0-9])1[3-9][0-9]{9}(?![0-9])"),
+    "china_id_number": re.compile(r"(?<![0-9])[0-9]{17}[0-9Xx](?![0-9])"),
+    "direct_pii_field": re.compile(
+        r"(?:姓名|身份证(?:号)?|手机号|病历号)\s*[:：]\s*"
+        r"(?!(?:<REDACTED>|REDACTED\b|CHANGEME\b))\S+",
+        re.IGNORECASE,
+    ),
     "internal_role": re.compile(r"\b(?:Writer|Reviewer)(?:\s+[A-C])?\b"),
     "internal_round": re.compile(r"\bRound\s+\d+\b", re.IGNORECASE),
     "internal_lane": re.compile(r"(?<![A-Za-z])[A-C]\s*线"),
     "internal_report": re.compile(r"REVIEW-REPORT(?:-[A-C])?\.md"),
     "workspace_metadata": re.compile(r"(?:\.qoderwork|workspace/[0-9a-f-]{8,})"),
 }
+SENSITIVE_PATTERN_PROBES = {
+    "absolute_local_path": (
+        "/Users/alice/work/data.jsonl",
+        "/home/alice/work/data.jsonl",
+        r"C:\Users\alice\work\data.jsonl",
+        "~/work/data.jsonl",
+    ),
+    "local_workspace_fragment": (
+        "Works/Works/project/examples/train.jsonl",
+        "Documents/Codex/session/output.md",
+        ".qoderwork/workspace/12345678-abcd",
+    ),
+    "credential_literal": ('api_key="a-real-looking-secret"',),
+    "secret_token_shape": ("sk-abcdefghijklmnopqrstuvwxyz123456",),
+    "personal_email": ("maintainer@private-company.test",),
+    "private_network_address": ("10.23.4.5", "trainer.service.internal:8080"),
+    "china_mobile_number": ("13800138000",),
+    "china_id_number": ("11010519491231002X",),
+    "direct_pii_field": ("患者姓名：张三", "病历号:ABC-123456"),
+}
+SENSITIVE_SAFE_PROBES = {
+    "absolute_local_path": ("/path/to/train.jsonl", "branch/root-to-leaf"),
+    "local_workspace_fragment": ("src/qwenpaw/agents",),
+    "credential_literal": (
+        'DASHSCOPE_API_KEY="CHANGEME"',
+        'api_key="test-key-redacted"',
+    ),
+    "personal_email": ("learner@example.com",),
+    "private_network_address": ("127.0.0.1", "192.0.2.10"),
+    "direct_pii_field": ("姓名：<REDACTED>", "手机号：CHANGEME"),
+}
 KNOWN_LINK_SUFFIXES = {
     ".csv", ".gif", ".html", ".ipynb", ".jpeg", ".jpg", ".json",
     ".md", ".mp4", ".pdf", ".png", ".py", ".sh", ".svg", ".toml",
     ".tsv", ".webp", ".yaml", ".yml",
+}
+SENSITIVE_SCAN_SUFFIXES = {
+    ".csv", ".json", ".jsonl", ".md", ".py", ".sh", ".toml", ".tsv",
+    ".txt", ".yaml", ".yml",
 }
 
 
@@ -142,6 +234,50 @@ def validate_python(path: Path, root: Path, text: str, issues: list[str]) -> Non
         )
 
 
+def validate_sensitive_pattern_contract(issues: list[str]) -> None:
+    """Keep privacy detectors strict without rejecting documented sentinels."""
+    for name, probes in SENSITIVE_PATTERN_PROBES.items():
+        pattern = SENSITIVE_PATTERNS[name]
+        for index, probe in enumerate(probes, 1):
+            if not pattern.search(probe):
+                issues.append(f"validator:sensitive_probe:{name}:{index}:miss")
+    for name, probes in SENSITIVE_SAFE_PROBES.items():
+        pattern = SENSITIVE_PATTERNS[name]
+        for index, probe in enumerate(probes, 1):
+            if pattern.search(probe):
+                issues.append(f"validator:sensitive_probe:{name}:{index}:false_positive")
+
+
+def validate_public_sensitive_content(
+    public_root: Path,
+    git_root: Path | None,
+    issues: list[str],
+) -> int:
+    """Scan the whole publishable LLM-PBL tree, not only tutorial/material."""
+    validator = Path(__file__).resolve()
+    candidates = {
+        path.resolve()
+        for path in public_root.rglob("*")
+        if path.is_file()
+        and path.suffix.lower() in SENSITIVE_SCAN_SUFFIXES
+        and path.resolve() != validator
+    }
+    ignored = git_ignored(candidates, git_root)
+    scanned = 0
+    for path in sorted(candidates - ignored):
+        try:
+            text = path.read_text(encoding="utf-8")
+        except (UnicodeDecodeError, OSError):
+            continue
+        scanned += 1
+        rel = relative(path, public_root)
+        for name, pattern in SENSITIVE_PATTERNS.items():
+            for match in pattern.finditer(text):
+                line_no = text.count("\n", 0, match.start()) + 1
+                issues.append(f"sensitive:{rel}:{line_no}:{name}")
+    return scanned
+
+
 def main() -> int:
     root = arguments().root.resolve()
     if not root.is_dir():
@@ -158,6 +294,11 @@ def main() -> int:
     python = [path for path in files if path.suffix.lower() == ".py"]
     issues: list[str] = []
     todo_count = 0
+    validate_sensitive_pattern_contract(issues)
+    public_root = Path(__file__).resolve().parents[1]
+    sensitive_files_scanned = validate_public_sensitive_content(
+        public_root, git_root, issues
+    )
 
     for path in files:
         rel = relative(path, root)
@@ -168,10 +309,6 @@ def main() -> int:
         except (UnicodeDecodeError, OSError):
             continue
         todo_count += len(TODO_RE.findall(text))
-        for name, pattern in SENSITIVE_PATTERNS.items():
-            for match in pattern.finditer(text):
-                line_no = text.count("\n", 0, match.start()) + 1
-                issues.append(f"sensitive:{rel}:{line_no}:{name}")
         if path.suffix.lower() == ".md":
             validate_markdown(path, root, text, issues, link_records)
         elif path.suffix.lower() == ".py":
@@ -212,6 +349,7 @@ def main() -> int:
             "markdown_files": len(markdown),
             "planning_markers": todo_count,
             "python_files": len(python),
+            "sensitive_files_scanned": sensitive_files_scanned,
             "total_files": len(files),
         },
         "evidence_boundary": (

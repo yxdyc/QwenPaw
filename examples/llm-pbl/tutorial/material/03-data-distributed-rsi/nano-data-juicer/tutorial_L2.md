@@ -254,7 +254,7 @@ Data-Juicer 的 partitioned executor 选了 convergence：pre-convergence 的 OP
 
 ## 6. 与 Data-Juicer 权威实现的对应
 
-> 行号全部按 `github.com/modelscope/data-juicer` **main 分支**口径标注，2026-08-05 两次现场核验：第一次 raw 文件抓取，同日经 codeload main tarball 解包逐条复核，**29 处锚点无一漂移**。注意本地 checkout 为 `report_enhance@4e40654`（2026-05-11），行号与 main 有漂移（`base_op.py` main 约高 51 行、`dag_execution_mixin.py` 约高 16 行、`ray_executor_partitioned.py` 非均匀）——本教程引用一律以 main 为准，本地 checkout 只作机制交叉阅读。上游迭代可能再漂移。
+> 行号全部按 `github.com/modelscope/data-juicer` **main 分支**口径标注，2026-08-05 两次现场核验：第一次 raw 文件抓取，同日经 codeload main tarball 解包逐条复核，**29 处锚点无一漂移**。较早源码快照与 main 有行号漂移（`base_op.py` main 约高 51 行、`dag_execution_mixin.py` 约高 16 行、`ray_executor_partitioned.py` 非均匀）——本教程引用一律以 main 为准，旧快照只作机制交叉阅读。上游迭代可能再漂移。
 
 | toy 部件 | Data-Juicer 对应 | 源码锚点 |
 |---|---|---|
@@ -314,7 +314,7 @@ Data-Juicer 的 partitioned executor 选了 convergence：pre-convergence 的 OP
 
 ## 10. 溯源与口径声明
 
-- **源码锚点**：§6 表格全部行号于 2026-08-05 现场核验两次——第一次 `raw.githubusercontent.com/modelscope/data-juicer/main/...` 抓取；同日（raw 服务不可达时段）改经 codeload main tarball 解包复核，29 处锚点零漂移。本地 checkout `report_enhance@4e40654`（2026-05-11）行号与 main 有漂移，仅作交叉阅读，引用口径以 main 为准。
+- **源码锚点**：§6 表格全部行号于 2026-08-05 现场核验两次——第一次 `raw.githubusercontent.com/modelscope/data-juicer/main/...` 抓取；同日（raw 服务不可达时段）改经 codeload main tarball 解包复核，29 处锚点零漂移。较早源码快照与 main 有行号漂移，仅作交叉阅读，引用口径以 main 为准。
 - **toy 口径**：所有计时数字是本机（Apple Silicon, Python 3.13, multiprocessing spawn）真实运行输出，非 benchmark；合成语料固定 seed=42，除计时外逐字节可复现（连跑 3 遍 diff 验证）。
 - **[TODO: verify on real system]**（真实 GPU/多机环境验证）：① 真实 Ray 集群上 `split` + convergence 的多节点行为与本机模拟的差异；② convergence vs shuffle 在「单节点装不下全量」规模下的交叉点；③ `preserve_order=True` 在真实 Ray Data 上的性能开销。
 - **未核验项如实标注**：Data-Juicer partitioned executor 在 main 分支的启用方式（配置入口）未逐行核验，本教程只引用其源码机制，不声称「生产默认启用」。
