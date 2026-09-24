@@ -23,6 +23,10 @@
 | `nano-data-orchestration` | DAG 编排、依赖调度、失败重试、CI/CD、Agentic 管线自愈 | Apache Airflow / Dagster / Prefect；GitHub Actions / GitLab CI |
 | `nano-rag-retrieval` | embedding 索引、向量检索、混合检索、重排序、检索评估 | Milvus / OpenSearch / Weaviate |
 
+本轨负责跨模态通用的 OP、湖仓、DAG、分布式执行与治理；图片/音频/视频特有的 container/codec、受限 decode、
+PTS 抽帧、file/signal/model 三账本和 content-group split，接到 05 的
+[大规模多模态数据管线](../05-multimodal-understanding-generation/MEDIA_DATA_PIPELINE.md)。两者是上下层合同，不重复造一套平台。
+
 ---
 
 ## 学习路径（K+1 阶梯）

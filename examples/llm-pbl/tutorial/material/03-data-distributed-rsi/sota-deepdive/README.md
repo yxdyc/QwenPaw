@@ -1,7 +1,7 @@
 # SOTA Deep-Dive — LLM 数据方法论（去重 / 质量过滤 / 配比 / 去污染）
 
 > **深挖对象**：预训练数据方法论四机制面——去重（Lee et al. / FineWeb）、质量过滤（FineWeb-Edu / DCLM fastText）、数据配比（DoReMi Group DRO）、去污染（DCLM 工具哲学）（首版 ✅）；Nemotron-CC 为更新一代替代（摘要级，不作教学主体）。
-> **状态**：首版完成（SOTA 对齐日期 2026-08-12）
+> **状态**：首版完成；分布式去重与多模态治理专题已补齐（最新对齐日期 2026-09-24）
 > **可运行对照**：[nano-data-juicer L0–L3](../nano-data-juicer/) + [nano-ray](../nano-ray/) + [nano-vllm-sglang](../nano-vllm-sglang/)。
 
 ---
@@ -12,6 +12,7 @@
 |------|------|------|
 | [`data-methodology.md`](data-methodology.md) | ✅ 首版（2026-08-12） | 机制面 ×4（去重 exact+MinHash/LSH+传递聚类 / 质量过滤 启发式→分类器 / 配比 DoReMi Group DRO minimax / 去污染 n-gram 探针与 DCLM 工具哲学），每面一手来源逐字引文（46 处，2026-08-12 fresh ar5iv 逐字核验）+ sim 实测双证 + nano 实测锚交叉引用；费曼四件齐备；Nemotron-CC 定位 + 2025–26 旗舰扫描未决项标注 |
 | [`data_methodology_sim.py`](data_methodology_sim.py) | ✅ 可运行锚点（2026-08-12 定版） | 四个机制面的可运行本质模拟（真实 MinHash/LSH、真实乘性权重重加权、真实 n-gram 重叠）；纯标准库、CPU 秒级、seed=3 跨运行逐字节一致、self-check 26/26；[C] 配比 nano 侧无实测锚，以本 sim 为锚（显式声明），[C3b] toy 边界显式不外推 |
+| [`distributed-dedup-and-multimodal-curation.md`](distributed-dedup-and-multimodal-curation.md) | ✅ 专题（2026-09-24） | Spark vs Ray group-by 的物理边界；Data-Juicer Ray Data/BTS MinHash 与 `3.3×` 证据手术；`map`/`map_batches`；版本化增量相似性图；图像/视频/音频/PDF/pair/interleaved 的去重、清洗、打标、阈值和发布门 |
 
 ## 环境依赖
 
@@ -26,6 +27,13 @@
 3. **数据配比**（首版已覆盖）：DoReMi Group DRO 乘性权重 minimax 三签名（损失拉平 / worst 更低 / worst 目标加速 5.45x toy）；toy 边界（[C3b] 静态权重 + 平均目标反例，论文 2.6x 为经验结果不外推）。
 4. **去污染**（首版已覆盖）：n-gram 重叠探针（拷贝=1.0 / 近拷贝 0.444 / 改写≈0 盲区）；DCLM「发工具 + 披露」哲学 vs FineWeb「刻意不去污染」对照口径。
 5. **后续扩展（未开写，不设 placeholder 内容）**：合成数据（self-instruct / 拒绝采样 / 教师蒸馏的工程实现与陷阱）；data-model co-dev / RSI 闭环的工程化。新增内容前需先补齐可运行锚点与来源核验。
+
+### 新增工程专题的阅读顺序
+
+若问题是“MinHash/LSH 为什么有效”，先读 `data-methodology.md` §1；若问题是“它怎样在集群上跑、
+为什么 BTS 快、怎样做永久增量状态与多模态治理”，再读
+[`distributed-dedup-and-multimodal-curation.md`](distributed-dedup-and-multimodal-curation.md)。专题中的
+`3.3×` 只按论文特定 baseline 表述，明确区分论文快照、当前源码和工程推断。
 
 ## 信息溯源要求（反幻觉硬约束）
 

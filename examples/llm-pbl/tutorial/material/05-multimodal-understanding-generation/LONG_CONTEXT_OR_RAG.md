@@ -4,6 +4,9 @@
 > 也不把 RAG 视为 long context 的替代品。目标是在证据完整性、质量、延迟和成本之间做可检验选择。
 > 配套的纯标准库实验见 [nano-long-context-routing L0](nano-long-context-routing/tutorial_L0.md)。
 
+本章的 token 账从模型 processor 的输出开始。文件码率、解码放大、FPS/分辨率抽样与 content-group split 见
+[《大规模多模态数据管线》](MEDIA_DATA_PIPELINE.md)；先决定保留哪些证据，再决定这些证据进入 long context 还是 RAG。
+
 ## 0. PBL 任务：不先选架构，先识别证据形状
 
 给定三个请求：
