@@ -1,7 +1,7 @@
 # Frontier Model Lifecycle：追踪能力从哪里来
 
 > **核心问题**：一个新模型的提升，究竟来自 base architecture / pretraining、后训练、蒸馏、部署，还是评测口径？
-> **快照日期**：2026-09-08；这里使用官方名称 **DeepSeek-V4、Qwen3.8-Flash-Next、Kimi K3、GLM-5.3 / 5.3-Flash、GPT-6 Astra、Claude Fable 5.1**。
+> **生命周期证据快照**：2026-09-08；动态发版与 benchmark 已在 2026-09-22 的 [Frontier Benchmark Atlas](benchmark-atlas/README.md) 单独刷新。
 > **先修**：[02 预训练](../02-pretraining-cpt/README.md) + [01 后训练](../01-post-training-rl-sft/README.md)。
 > **本级边界**：L0 是纯标准库的 claim/evidence 合同；不下载权重，也不证明模型质量或系统吞吐。
 
@@ -14,6 +14,9 @@ python3 -B tutorial/material/cross-track-frontier-model-lifecycle/L0_stage_claim
 验收看 12/12 checks。脚本把别名归一到可核验对象，分开总参数、激活参数和外置容量；遇到未披露配方就停在
 `unknown`。对 GPT-6 Astra 和 Claude Fable 5.1，它还会守住另一条边界：API 可访问只说明服务可调用，参数规模和训练配方仍为空。
 真实输出和逐段解释见 [tutorial_L0](tutorial_L0.md)，完整证据账本见 [RESEARCH](RESEARCH.md)。
+若问题是“最新模型用了哪些 benchmark、分数是否真可比较”，先运行
+[Benchmark Atlas L0](benchmark-atlas/tutorial_L0.md)，再读[最新发版证据账](benchmark-atlas/RELEASE_LEDGER.md)。
+若问题具体是 Qwen3.8，直接进入[Qwen3.8 发版 benchmark 逐项导读](benchmark-atlas/QWEN38_WALKTHROUGH.md)，先分清 Max、2.4T、27B 与 Flash-Next 四个被测对象。
 若要解释“为什么厂商几个月就能追平、蒸馏刷榜为何容易而泛化仍难”，读
 [能力追平、蒸馏与 benchmark validity](CAPABILITY_GAP_AND_DISTILLATION.md)：它把 response/preference/OPD/
 multi-teacher 四档迁移、fresh evidence ladder 和专项小队交付合同串起来。
@@ -42,7 +45,7 @@ failure-aware evaluation ── same base? same harness? completion in denominat
 箱子到了，却没有物流单，我们就分不清提升来自新底座、后训练还是更宽松的测试条件。闭源 API 还多一道转运：服务端可能
 改变模型、工具或 safeguard 路由，因此请求名、实际返回模型、fallback 和完成状态都要进入记录。
 
-## 六家模型各自教什么
+## 各家模型各自教什么
 
 | 家族 | 最值得迁移的机制 | 代价 / 风险 | 课程中的作用 |
 |---|---|---|---|

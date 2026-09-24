@@ -45,7 +45,13 @@ Step 6  sota-deepdive           ← SOTA harness engineering 实践
   │
   ▼
 Step 7  跨轨长程训练             ← reasoning effort、长轨 SFT/RFT、partial rollout 与伪多轮边界
+  │
+  ▼
+Step 8  Benchmark Atlas Agent 分册 ← revision、harness、工具/预算、strict/partial 与失败分母
 ```
+
+Step 8 的正式入口是 [Frontier Benchmark Atlas：Agent 分册](../cross-track-frontier-model-lifecycle/benchmark-atlas/03-agent-tool-use.md)；
+先完成测量合同，再把公共 benchmark 接到自己的 fresh holdout 与 Evaluation Gate。
 
 ---
 
@@ -56,6 +62,7 @@ Step 7  跨轨长程训练             ← reasoning effort、长轨 SFT/RFT、p
 - [ ] 能解释上下文工程：何时压缩、何时检索、记忆怎么放
 - [ ] 能说出 agent 动作为什么需要事务语义，并设计 payload-bound idempotency、prepare/commit 与 needs_human
 - [ ] 能讲清至少 2 个 SOTA harness 的工程选择（如上下文管理 / 工具设计 / 评测）
+- [ ] 能为一个 Agent 分数补齐 benchmark revision/task manifest、prompt/harness、环境/verifier、工具/预算、trials、judge 与失败分母，并区分 strict、partial、Pass@k、Pass^k 和 Elo
 - [ ] 能区分真实环境多轮、离线轨迹与格式“伪多轮”，并为长程 Agent 设计 SFT/RFT mask、预算和 timeout 口径
 
 ---
@@ -66,7 +73,9 @@ Step 7  跨轨长程训练             ← reasoning effort、长轨 SFT/RFT、p
 - AgentScope：`github.com/agentscope-ai/agentscope`（message / pipeline / 工具调用）
 - qwenpaw：本仓库 `coach/`（harness / 方法论注入，同源材料）
 - 事务化执行：把数据库 commit/rollback 语义引入 agent 动作（概念专题，可参照数据库事务文献）
-- SOTA：代表性 harness / agent 框架工程博客或报告 `[TODO: verify]`；agent 评测基准（τ-bench / SWE-bench 等）`[TODO: verify]`
+- SOTA：代表性 harness / agent 框架工程博客或报告；benchmark 的任务量、指标、典型题与最新厂商协议统一进入
+  [Frontier Benchmark Atlas：Agent 分册](../cross-track-frontier-model-lifecycle/benchmark-atlas/03-agent-tool-use.md)，
+  不再把同名 τ-bench / SWE-bench / Toolathlon 分数默认视为同一实验。
 
 → 深挖见 [sota-deepdive/](sota-deepdive/)
 
