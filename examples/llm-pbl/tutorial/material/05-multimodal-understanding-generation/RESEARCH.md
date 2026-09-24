@@ -1,20 +1,23 @@
 # 05 多模态理解与生成：研究谱系与证据账本
 
-> 对齐日：2026-09-15。本文把**论文机制、官方发布事实、源码/配置事实、课程推断和开放缺口**分开。
+> 模型事实对齐日：2026-09-15；媒体数据平面实现锚补充于 2026-09-18。本文把**论文机制、官方发布事实、源码/配置事实、课程推断和开放缺口**分开。
 > 前沿模型、仓库和许可证会变化；进入 L1–L3 前必须固定 revision 并重新核验。
 > 本轮进一步拆分 latest service、latest open weight 与 reproducible anchor，并补入 multimodal long-context/RAG 证据；
 > 2026-09-04 的 Qwen3-VL L1 精确 revision 和真机结果保持原实验快照。
+> Benchmark 的稳定定义与 2026-09-22 最新厂商发版分数另见
+> [Frontier Benchmark Atlas](../cross-track-frontier-model-lifecycle/benchmark-atlas/README.md)；本账本不再复制动态总榜。
 
-## 0. 不是模型动物园：三条技术谱系
+## 0. 不是模型动物园：一个数据平面 + 三条模型谱系
 
 ```text
+媒体数据面：container/codec bytes → probe/demux/decode → pixels/PCM/frames → sample/processor
 图文理解：pixel/patch → visual encoder → connector/resampler → LLM token fusion → multimodal pretrain/SFT
 文生图：  pixels → VAE latent → latent patches → DiT + time/text condition → rectified-flow sampling → decode
 文生视频：frames/audio → causal VAE/codec latent → (t,h,w) patches → long-sequence DiT → multi-flow decode
 ```
 
-三条线共享 Transformer，却不能混为一谈：理解模型从媒体提取证据再生成文本；生成模型从噪声/条件预测连续 latent flow；
-视频系统还要处理时间一致性、序列成本和视听同步。
+数据平面先把压缩资产变成可追溯的模型视图；其后三条模型线共享 Transformer，却不能混为一谈：理解模型从媒体提取证据
+再生成文本；生成模型从噪声/条件预测连续 latent flow；视频系统还要处理时间一致性、序列成本和视听同步。
 
 ### 0.1 “最新”“SOTA”“开放”“可复现”不是同义词
 
@@ -29,7 +32,7 @@
 
 | 系列 | 当前身份核验 | 本课程处理 |
 |---|---|---|
-| Qwen 理解 | [Qwen3.8-Flash-Next](https://github.com/QwenLM/Qwen3.8-Flash-Next) 于 2026-08-26 开放权重，是更新的多模态 MoE 架构预览；Qwen3-VL 是更早的专用 VLM 家族 | 前者进入前沿追踪；后者 2B 继续作为已有真机证据的低成本锚 |
+| Qwen 理解 | Qwen3.8-Max 是带 vision/工具的托管系统；[Qwen3.8-2.4T-A95B](https://huggingface.co/Qwen/Qwen3.8-2.4T-A95B) 开放版是 text-only；[Qwen3.8-27B](https://huggingface.co/Qwen/Qwen3.8-27B) 与 [Flash-Next](https://huggingface.co/Qwen/Qwen3.8-Flash-Next) 是原生视觉开放变体；Qwen3-VL 是更早的专用 VLM 家族 | 四种身份分账；Qwen3-VL-2B 继续作为已有真机证据的低成本锚 |
 | Qwen Omni | [Qwen3.5-Omni 报告](https://arxiv.org/abs/2604.15804)给出更新的原生音视频训练路线；官方服务与公开权重边界不能混写 | 用报告讲训练；本地实验只用已确认可下载的 checkpoint |
 | Qwen Image | [Qwen-Image-2.0](https://arxiv.org/abs/2605.10730)是更新模型/报告；[官方仓库](https://github.com/QwenLM/Qwen-Image)当前本地 T2I quick start 仍指向 2512 | 2.0 作前沿研究，2512 保持 L2 开放权重基线 |
 | InternVL | InternVL3.5 仍是专用开放 VLM 家族；[InternVL-U](https://github.com/OpenGVLab/InternVL-U)是 2026-03 开放的 4B 理解—生图—编辑统一研究线 | 两条路线并列，不用发布日期替代任务定义 |
@@ -42,6 +45,17 @@
 
 下一次 source refresh 应重新读取官方发布页、仓库和模型文件列表。搜索结果摘要、第三方排行榜和模型名猜测不能单独改变
 课程实验锚。
+
+### 0.2 媒体数据平面的稳定实现锚
+
+| 层 | 一手实现/文档 | 课程使用方式 | 不能据此推出 |
+|---|---|---|---|
+| container / codec / timestamp | [FFmpeg formats](https://ffmpeg.org/ffmpeg-formats.html) · [FFmpeg codecs](https://ffmpeg.org/ffmpeg-codecs.html) | 区分 demux、decode、PTS/time base 与模型 processor | 任意媒体都可无失败、无资源上限地解码 |
+| 多模态清洗与算子 | [Data-Juicer](https://github.com/modelscope/data-juicer) | 对照 image/audio/video mapper/filter/dedup 的 OP 化与版本治理 | 某个默认阈值适合所有任务和数据分布 |
+| shard / streaming | [WebDataset](https://github.com/webdataset/webdataset) · [PyTorch data loading](https://docs.pytorch.org/docs/stable/data.html) | 对照顺序 shard、worker、shuffle buffer、prefetch 与 backpressure | shard 必然比所有对象布局更快，或 samples/s 足以解释 GPU 等待 |
+
+课程新增的 [媒体数据管线](MEDIA_DATA_PIPELINE.md) 只把这些机制压成三账本和可验证合同；L0 不执行 FFmpeg，
+也不把 toy 的 8 FPS 事件窗口、`32×32` cell 或 oracle content group 写成生产默认值。
 
 ## 1. 图文理解谱系：谁解决了哪一段接口
 
@@ -181,15 +195,15 @@ L2 用固定提示集、完成率、资源/计费账和盲评分栏复核。
 | 阶段 | 新增证据 | 仍然不能声称 |
 |---|---|---|
 | L0 | 机制合同、selector 反例、确定性 token/metric 账 | 权重能力、真实质量、真实检索/推理、官方私有 schema |
-| L1 | 真实 Qwen3-VL 小模型 / tokenizer+retriever / tiny trained DiT / H3 metadata | 大模型生产性能、真实视频 SOTA |
-| L2 | 固定 revision 的开放系统生成、资源测量、盲评 | H3 托管 Context-IR/2K 已本地复现 |
+| L1 | 真实 media probe/decode、Qwen3-VL 小模型 / tokenizer+retriever / tiny trained DiT / H3 metadata | 大规模 shard 吞吐、大模型生产性能、真实视频 SOTA |
+| L2 | 媒体 shard/backpressure、固定 revision 的开放系统生成、资源测量、盲评 | H3 托管 Context-IR/2K 已本地复现 |
 | L3 | H3 FL2VA 单 checkpoint 三案例真机 manifest | 广泛提示分布、Ref2VA、完整系统或商业可用性 |
 
 每一级都必须同时记录 completion/reliability。失败的 OOM、decode、依赖或许可证检查不能从质量均值的分母里删掉。
 
 ## 6. 决策门
 
-- **Go L1**：五个 L0 的稳定 JSON、反例和教程输出全部通过 fresh-CWD 验收。
+- **Go L1**：六个 L0 的稳定 JSON、反例和教程输出全部通过 fresh-CWD 验收。
 - **Go L2**：模型/代码/数据 revision 和许可证可固定；真实样本与合成样本、代理指标与人工 rubric 已分栏。
 - **Go H3 真机**：只读硬件/磁盘/依赖检查通过，FL2VA 许可与下载范围获确认，媒体输出目录在仓库外。
 - **Stop/Pivot**：任何组件只能由付费 hosted API 获得，就改为接口/边界分析；不得把 API 结果写成本地复现。

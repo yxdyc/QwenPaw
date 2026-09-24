@@ -1,24 +1,26 @@
 # LLM-PBL 课程完备性与质量审计
 
-> 快照日期：2026-09-15
+> 快照日期：2026-09-24
 > 审计范围：`tutorial/material` 的结构、阅读路径、发布卫生与证据分层。
 > 重要边界：本页不等于“全部实验已重跑”或“全部外部主张已重新联网核验”。
 
 ## 结论先行
 
 LLM-PBL 最有价值的教学模式已经稳定：把一个抽象机制压缩成可运行、可失败、可量化的最小实验，
-再逐级接到真实 tensor、分布式运行或真实系统。01–04 轨已有一批完整 L0–L3 纵深，05 多模态轨也补齐了
-“图文理解 → Image DiT → Video DiT → MiniMax H3”四个主线 L0 机制锚，把图文理解推进到真实 Qwen3-VL-2B L1，
-并新增“512K/1M Long Context 还是 RAG”的 token 账与可运行三路 selector 对照。
+再逐级接到真实 tensor、分布式运行或真实系统。01–04 轨已有一批完整 L0–L3 纵深，05 多模态轨现在从
+“压缩媒体 → 解码信号 → 模型视图”起步，再接“图文理解 → Image DiT → Video DiT → MiniMax H3”；共六个
+可独立运行的 L0。图文理解已推进到真实 Qwen3-VL-2B L1，Long Context/RAG 也有 token 账与三路 selector 对照。
 跨轨 Frontier Model Lifecycle 又把 DeepSeek-V4、Qwen3.8-Flash-Next、Kimi K3、GLM-5.3/Flash 按
 architecture → pretraining → post-training → serving → evaluation 串联，并把 GPT-6 Astra、Claude Fable 5.1
 放进闭源 API 的可观测合同。课程由此同时覆盖 stage 血缘、增益归因和路由 provenance，而不需要猜测未公开的模型内部。
+其下新增 Frontier Benchmark Atlas，把文本/推理、代码、Agent、多模态理解、生成与科学/安全/职业专项 benchmark 还原为版本化测量合同，
+另以专页拆开 Qwen3.8 Max、2.4T、27B 与 Flash-Next，并维护 Step 5、DeepSeek、Kimi、GLM、GPT、Gemini、Claude、Grok、Hy4 与 MiniMax 的动态发版证据账。
 本次再补齐三条容易混淆的边界：live object 与可重建 checkpoint state、真实多轮 trajectory 与 physical sample
 切段、reasoning effort 与长程训练的条件计算策略；并新增能力追平/蒸馏的 fresh-evidence 梯级。
 
 下一阶段的最高收益不再是继续增加并列的综述或 toy，而是闭合三类证据缺口：
 
-1. 把仍停在机制层的模块接到真实小模型、持久化状态、跨进程恢复或真机执行；
+1. 把仍停在机制层的模块接到真实媒体 decode/shard、小模型、持久化状态、跨进程恢复或真机执行；
 2. 把现有单机 TP2/4/8 collective 证据继续接到端到端 workload，并等待完整本地模型后再测真实推理引擎；
 3. 对正文中的计划标记和来源账逐项分级，优先消除会阻断结论的证据债，而不是机械清零所有标记。
 
@@ -27,12 +29,12 @@ architecture → pretraining → post-training → serving → evaluation 串联
 | 维度 | 当前数量 | 口径 |
 |---|---:|---|
 | 主轨 | 5 | 01 后训练、02 预训练、03 数据/分布式/RSI、04 Agent、05 多模态 |
-| `nano-*` 模块 | 21 | 递归目录名计数；H3 capstone 不在该命名口径内 |
+| `nano-*` 模块 | 22 | 递归目录名计数；H3 capstone 不在该命名口径内 |
 | 跨轨模块 | 4 | Capability Factory、EpisodeRecord、Evaluation Gate、Frontier Model Lifecycle |
 | deep-dive 目录 | 4 | 01–04 各一处；05 以 `RESEARCH.md` 承担研究账本 |
-| Markdown | 128 | `tutorial/material` 全树；新增长程训练、能力追平专题与 EpisodeRecord L2 |
-| `tutorial_L*.md` | 79 | 包含 EpisodeRecord L2、Evaluation Gate 补充教程、VLM L1、context-routing L0 与 Frontier Lifecycle L0 |
-| Python | 87 | 课程材料树内脚本，不含仓库级校验器 |
+| Markdown | 142 | `tutorial/material` 全树；包含 Benchmark Atlas 的 6 个领域/专项分册、Qwen3.8 导读、L0 与 release ledger，以及分布式去重/多模态治理专题 |
+| `tutorial_L*.md` | 81 | 新增 Benchmark Contract L0，既有教程口径不变 |
+| Python | 89 | 课程材料树内脚本，不含仓库级校验器 |
 
 数量只说明“内容存在”，不说明“生产可用”。本课程继续使用三层证据口径：
 
@@ -50,7 +52,7 @@ architecture → pretraining → post-training → serving → evaluation 串联
 | 02 预训练 | FSDP、Megatron 已到 L3；pretraining lifecycle 到 gloo exact resume L2，L0 已补 live object→descriptor 重建边界；Megatron 有 PP2 与 TP2/4/8 L20/NCCL 证据 | hybrid sparse/linear attention、Muon、mHC、QAT 仍缺独立实验；分片 checkpoint schema 尚未闭合 | metadata ledger 后，每次只做一个小型 architecture/optimizer factorial |
 | 03 数据/分布式/RSI | Data-Juicer、Ray、vLLM/SGLang 到 L3；平台、编排、RAG 到 L2 | 跨组件 schema 演进、离线/在线一致性和真实引擎证据仍分散 | 用一条 EpisodeRecord 贯穿 snapshot → retrieval → rollout → admission，并补真实 SGLang 固定提示集 |
 | 04 Agent | AgentScope、QwenPaw 到 L3；transactional runtime L2 已覆盖多 worker、outbox、compensation 与 provider-checked fencing epoch | fencing 仍是单机 SQLite 机制证据；网络分区、真实 token 与外部 runtime 尚未实证 | 以 HTTP mock/真实 runtime 注入 stale owner、响应丢失、权限重放与补偿失败 |
-| 05 多模态 | 五个 L0 可独立学习；Qwen3-VL-2B L1 已有单张 L20、双独立进程的真实 checkpoint 证据；新增 readout、encoder/VAE、Long Context/RAG 决策、参数口径和现代训练路线 | VLM 仍只有六例 synthetic diagnostics；context-routing 仍是 oracle selector；真实图像/视频质量和 H3 配置账尚未落地 | 给 context-routing 接真实 tokenizer/小模型，再训练微型 Image DiT、moving-video DiT 与 H3 config-only 复算 |
+| 05 多模态 | 六个 L0 可独立学习；新增 file/signal/model 三账本、解码放大、自适应抽样与 group-before-split 数据平面；Qwen3-VL-2B L1 已有单张 L20、双独立进程的真实 checkpoint 证据；另有 readout、encoder/VAE 与 Long Context/RAG 决策 | 媒体管线仍是算术 surrogate，未跑真实 codec、PTS、shard/backpressure；VLM 仍只有六例 synthetic diagnostics；context-routing 仍是 oracle selector；真实图像/视频质量和 H3 配置账尚未落地 | 先用小型真实媒体闭合 probe/decode/时间戳与 shard 吞吐，再接真实 tokenizer/context selector、微型 Image/Video DiT 与 H3 config-only 复算 |
 
 跨轨部分已经承担“系统闭环”而非补充阅读：
 
@@ -58,8 +60,9 @@ architecture → pretraining → post-training → serving → evaluation 串联
 - [Capability Factory](cross-track-capability-factory/) 产生可追溯 candidate；
 - [Evaluation Gate](cross-track-evaluation-gate/) 用配对证据、隐藏 sentinel、回滚与激活日志约束晋升。
 - [Frontier Model Lifecycle](cross-track-frontier-model-lifecycle/) 把 model identity、parent、stage、参数口径与开放边界放进同一 claim contract。
+- [Frontier Benchmark Atlas](cross-track-frontier-model-lifecycle/benchmark-atlas/) 把 score 绑定到 revision/task manifest、prompt/harness、环境/verifier、metric、工具/预算、trials、judge 与失败分母，并用 L0 反例拒绝同名异协议排名。
 
-这里最值得继续做的是把三者接到同一条可恢复的端到端实验，而不是再复制一套概念定义。
+这里最值得继续做的是把这五个跨轨部件接到同一条可恢复的端到端实验，而不是再复制一套概念定义。
 
 ## 3. 六个质量维度
 
@@ -82,15 +85,14 @@ architecture → pretraining → post-training → serving → evaluation 串联
 “简单”应来自更少的状态变量和更清楚的因果对照，不是删掉关键假设；“深入”应来自失败模式和可证伪性，
 不是增加名词密度。
 
-本轮加入非阻断的 [风格审计器](../../scripts/audit_tutorial_style.py)，扫描 77 篇 `tutorial_L*.md` 的首屏语义字段和两类惯用句。
-首批改写 22 篇高优先级教程后，首屏覆盖从“问题 44 / 先修 41 / 运行 54 / 验收 38 / 边界 37”提升到
-“问题 61 / 先修 62 / 运行 63 / 验收 60 / 边界 55”；固定“不是…而是…”句式由 83 处降到 68 处，
-正文双破折号信号由 2326 降到 2282。这些计数只用于发现入口过密或信息缺位，不能替代人工判断；
+非阻断的 [风格审计器](../../scripts/audit_tutorial_style.py) 当前扫描 81 篇 `tutorial_L*.md` 的首屏语义字段和两类惯用句。
+2026-09-22 快照中，首屏覆盖为“问题 65 / 先修 67 / 运行 67 / 验收 65 / 边界 60”；固定对照句信号 73 处，
+正文双破折号信号 2282 处。这些计数只用于发现入口过密或信息缺位，不能替代人工判断；
 合理的逻辑对照、长推导和表格不会因为命中规则就自动成为坏文风。
 
-本轮也把“费曼自检”从结尾问题清单升级为可自学的反馈回路：77 篇教程全部含自检，77 个自检段均给出显式参考答案。
+“费曼自检”已从结尾问题清单升级为可自学的反馈回路：81 篇教程全部含自检；再加 Benchmark Atlas 的 9 份分册/导读，当前 90 个自检段均给出显式参考答案。
 学习者应先独立作答再展开对照；答案重点解释因果链、反例和不可外推项，不要求背诵固定措辞。
-[费曼覆盖审计器](../../scripts/audit_feynman_answers.py) 会阻断“整篇缺自检”或“有问题无答案”的回归，
+[费曼覆盖审计器](../../scripts/audit_feynman_answers.py) 会检查全部 `tutorial_L*.md` 和显式登记的 Benchmark Atlas 分册，阻断“整篇缺自检”或“有问题无答案”的回归，
 但覆盖率不能证明答案正确、解释充分，也不能证明学习者真的先思考过。
 
 ### 3.3 材料组织
@@ -113,7 +115,9 @@ GPT-6 Astra 与 Claude Fable 5.1 则提供闭源对照：只教学官方 API 行
 新增 reasoning-effort/长程 Agent 专题用当前官方 API 合同对照 Kimi K3 的公开训练锚；能力追平专题则把
 response/preference/OPD/MOPD 与 public→fresh→live 证据阶梯分开，避免把局部刷榜写成通用能力。
 
-05 轨的 [研究账本](05-multimodal-understanding-generation/RESEARCH.md) 特别需要保持三种事实分离：
+05 轨新增的 [媒体数据管线](05-multimodal-understanding-generation/MEDIA_DATA_PIPELINE.md) 先分离压缩字节、解码信号与
+模型位置，并把精确/感知/近语义去重的证据强度分层。[研究账本](05-multimodal-understanding-generation/RESEARCH.md)
+则特别需要保持三种事实分离：
 论文/官方模型卡声明、公开源码实现、课程推断。开放权重也不能写成整个托管系统全部开源。
 
 ### 3.5 学习 ROI 与冗余
@@ -129,9 +133,9 @@ deep-dive 的第一屏应先给“解决什么、代价什么、何时不用、�
 
 ### 3.6 证据质量
 
-当前材料包含 341 个常用计划标记**关键字出现次数**，分布在 102 个文件；
-它们不是 341 个独立缺陷，也不能按非零枚举简单等同为 341 个任务。按轨道的出现次数为：01=77、02=48、
-03=138、04=78、05=0。
+当前材料包含 339 个常用计划标记**关键字出现次数**，分布在 102 个文件；
+它们不是 339 个独立缺陷，也不能按非零枚举简单等同为 339 个任务。按轨道的出现次数为：01=77、02=48、
+03=138、04=76、05=0。
 
 建议逐项标为四类：
 
@@ -162,7 +166,8 @@ $$
 | Frontier Lifecycle L0 | 模型昵称、参数口径、stage、API 开放边界和跨版本比较是否可审计 | 纯标准库；不提供质量证据 | **已闭合**；7 张模型卡、12/12 claim checks |
 | Frontier Lifecycle L1 metadata | 官方 config/card 是否支持参数、序列、显存、license 与 parent 复算 | 不下载大权重；有版本维护债 | **当前最高 ROI** |
 | Qwen3-VL-2B 六例 L1 | L0 的视觉依赖反事实能否迁移到真实 processor/checkpoint；语义、格式、敏感性与 completion 能否分开量 | 单卡、小合成集；不能外推自然图像 | **已闭合**；真实 OCR 失败已留在证据中 |
-| 微型 rectified-flow Image DiT L1 | oracle velocity 的方向/条件合同能否迁移到真实优化，并在 held-out condition 上学习 | 单卡小时内；合成数据不代表真实画质 | **05 轨下一项最高 ROI** |
+| 真实媒体 probe/decode L1 | 三账本、PTS 抽帧、失败隔离与 content-group 合同能否迁移到真实图片/音频/视频 | CPU、小型公开资产；尚不能证明集群吞吐 | **05 数据平面下一项最高 ROI** |
+| 微型 rectified-flow Image DiT L1 | oracle velocity 的方向/条件合同能否迁移到真实优化，并在 held-out condition 上学习 | 单卡小时内；合成数据不代表真实画质 | **05 模型学习下一项最高 ROI** |
 | checkpoint manifest bridge | exact resume 合同能否跨 FSDP/Megatron 分片、半写和 world-size 变化成立 | 多进程与格式维护成本中等 | 高复用，紧随其后 |
 | Agent HTTP/provider 故障注入 | SQLite fencing 在响应丢失、stale owner 和权限重放下是否仍守住副作用 | 需要 mock/真实 provider 双层边界 | 高决策价值 |
 | H3 config-only 复算 | 33B packed sequence、video/audio latent 与显存账能否由公开 metadata 重算 | 不需大权重，但需固定版本和事实审计 | 先于 H3 权重 |
@@ -195,28 +200,30 @@ OCR 漏数字失败，image-swap sensitivity/correctness 均为真。该结果�
 
 SGLang 探针还必须使用可公开复现的本地模型，并同时报告完成 token 数和 matched prompt token budget；
 不能用请求的最大 token 数冒充实际吞吐，也不能用长度悬殊的 prompt 声称证明 prefix cache 收益。
-本轮机器只有 SGLang wheel 与不完整的模型仓库元数据，缺少完整本地权重，因此按合同不运行、不补数。
+当前可复现环境只有 SGLang wheel 与不完整的模型仓库元数据，缺少完整本地权重，因此按合同不运行、不补数。
 
 ## 5. 接下来两轮的优先级
 
 ### P0：闭合而不是扩张
 
 1. 完成 Frontier Lifecycle L1：固定七个模型身份的官方 metadata revision、license、parent/stage 与 API 合同；只对公开 config 复算参数、序列和最小显存账，不下载 frontier 权重，也不补写闭源参数。
-2. 把 Image DiT L0 的 oracle velocity 改成可训练的微型 rectified-flow DiT；固定训练预算、held-out condition、
+2. 用小型公开图片、音频和视频闭合真实 probe/decode L1：固定资产 hash、codec/PTS、资源上限、失败 reason code、抽样 manifest 与吞吐口径。
+3. 把 Image DiT L0 的 oracle velocity 改成可训练的微型 rectified-flow DiT；固定训练预算、held-out condition、
    reconstruction/condition metrics 与错误符号反例，不把合成图形升级成真实画质声明。
-3. 把 `nano-pretraining-loop` L2 的 rank-local 合同接到 FSDP/Megatron manifest，补半写、world-size 与版本不兼容反例。
-4. 把 `nano-agent-runtime` L2 已验证的 fencing 合同迁到 HTTP/真实 provider，加入响应丢失与网络分区。
-5. 获得完整、固定 revision 的小模型后再运行 SGLang；Megatron 后续只在加入真实层形状、overlap 或多机变量时继续真机实验。
+4. 把 `nano-pretraining-loop` L2 的 rank-local 合同接到 FSDP/Megatron manifest，补半写、world-size 与版本不兼容反例。
+5. 把 `nano-agent-runtime` L2 已验证的 fencing 合同迁到 HTTP/真实 provider，加入响应丢失与网络分区。
+6. 获得完整、固定 revision 的小模型后再运行 SGLang；Megatron 后续只在加入真实层形状、overlap 或多机变量时继续真机实验。
 
 ### P1：让证据债可管理
 
-1. 使用仓库级 [材料校验器](../../scripts/validate_material.py) 固定 AST、Markdown fence、相对链接、Git 可见性、敏感信息和产物卫生检查。
+1. 使用仓库级 [材料校验器](../../scripts/validate_material.py) 固定 AST、Markdown fence、相对链接、git-ignored 目标、敏感信息和产物卫生检查；发布前另用 `git status` 确认新增文件已纳入版本控制。
 2. 为计划标记增加四类标签与 owner-free 的处理状态；不要恢复内部协作流程元数据。
-3. 对当前导航中的新增教程做两次空 CWD、`python -B`、stderr 为空和输出同步验收。
+3. 后续每个导航新增教程都做两次空 CWD、`python -B`、stderr 为空和输出同步验收；当前 Benchmark Contract L0
+   与媒体三账本 L0 已分别通过 9/9、8/8 checks，且两次 stdout 逐字一致。
 
 ### P2：推进 05 轨真实层
 
-按依赖顺序推进：微型 rectified-flow Image DiT → moving-video DiT → H3 config-only。Qwen3-VL L1 已完成，下一次
+按依赖顺序推进：真实媒体 probe/decode → 微型 rectified-flow Image DiT → moving-video DiT → H3 config-only。Qwen3-VL L1 已完成，下一次
 VLM 扩展应直接进入自然图像、动态分辨率和 token-budget 对照，而不是继续增加同分布合成样本。
 H3 大权重真机实验必须单独核验许可证、磁盘、依赖与 revision；本地 768p 不能写成托管 2K 系统复现。
 
@@ -231,15 +238,15 @@ python3 -B scripts/audit_feynman_answers.py
 ```
 
 校验器只依赖 Python 标准库与仓库已有的 Git，最后输出稳定的 `RESULT_JSON=`。当前检查覆盖 Python AST、
-Markdown fence、代码块外的真实相对文件链接及其 Git 可见性、公开内容中的本机/内部元数据，以及
-`__pycache__`/`.pyc` 等产物。
+Markdown fence、代码块外的真实相对文件链接及目标是否被 git-ignore、公开内容中的本机/内部元数据，以及
+`__pycache__`/`.pyc` 等产物；它不检查文件是否已被 `git add`/commit。
 它会报告计划标记数量但不因此失败。
 
 风格审计器同样只依赖标准库，并输出稳定的 `RESULT_JSON=`。它只检查首屏是否容易找到问题、先修、运行、验收和边界，
 以及少数容易滥用的句式；它是编辑提示，不是发布门禁或写作质量分数。
 
-费曼覆盖审计器要求每篇 `tutorial_L*.md` 至少有一段费曼自检，且每段都含 `参考答案`、`参考讲法` 或 `答案要点` 标记。
+费曼覆盖审计器要求每篇 `tutorial_L*.md` 与显式登记的 Benchmark Atlas 文档至少有一段费曼自检，且每段都含 `参考答案`、`参考讲法` 或 `答案要点` 标记。
 它验证反馈回路没有结构性缺口，不对答案的事实性、教学深度或学习效果背书。
 
-仍需人工或专项实验完成的部分包括：85 个脚本的全量运行、外部引文逐项刷新、其余模块的 GPU 真机结果、视觉质量盲评，
+仍需人工或专项实验完成的部分包括：89 个 Python 文件（其中 86 个有 `__main__` 入口）的全量运行、外部引文逐项刷新、其余模块的 GPU 真机结果、视觉质量盲评，
 以及“自动指标能否支持结论”的构念效度判断。静态全绿只是发布必要条件，不是课程正确性的充分条件。

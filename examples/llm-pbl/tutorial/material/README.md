@@ -9,7 +9,7 @@
 [校验器源码](../../scripts/validate_material.py) 只检查发布卫生与静态结构，不替代课程实验和外部主张核验。
 如果要排查教程首屏和惯用文风，可再运行 `python3 -B scripts/audit_tutorial_style.py`。
 [风格审计器](../../scripts/audit_tutorial_style.py) 只生成编辑队列，不给教程打质量分，也不阻断发布。
-`python3 -B scripts/audit_feynman_answers.py` 则检查每篇教程是否有费曼自检、每个自检是否带显式参考答案；
+`python3 -B scripts/audit_feynman_answers.py` 则检查每篇教程与显式登记的 Benchmark Atlas 分册是否有费曼自检、每个自检是否带显式参考答案；
 [费曼覆盖审计器](../../scripts/audit_feynman_answers.py) 会在缺项时失败，但不判断答案是否正确或足够深入。
 
 ---
@@ -22,6 +22,7 @@
 flowchart LR
     D0["数据接入、快照与治理"] --> D1["清洗、去重与配比"]
     D1 --> D2["Ray 分布式执行"]
+    D1 --> MD["媒体 probe / decode / sample view"]
     D2 --> I["vLLM / SGLang 推理与采样"]
     I --> R["Versioned EpisodeRecord"]
     R --> P["SFT / RLVR / OPD 后训练"]
@@ -31,14 +32,17 @@ flowchart LR
     B --> L["Frontier stage lineage / claim contract"]
     L --> P
     L --> C
+    L --> BM["Benchmark revision / harness / metric contract"]
     F --> M["VLM / Image DiT / Video DiT / H3"]
     D2 --> M
+    MD --> M
     P --> A["Agent + transactional runtime"]
     M --> A
     A --> T["运行轨迹、失败与反馈"]
     T --> D0
     P --> C["Candidate snapshot"]
     C --> E["Paired + epoch-aware Evaluation Gate"]
+    BM --> E
     E -->|"PROMOTE"| X["Durable activation journal"]
     X --> O["Outbox + generation-guarded router"]
     O --> A
@@ -59,6 +63,9 @@ generation CAS 与 reconcile 暴露并修复跨事务域裂缝。它们仍是单
 L0 验证的是证据纪律，没有本地复现这些前沿模型。
 [能力追平与蒸馏专题](cross-track-frontier-model-lifecycle/CAPABILITY_GAP_AND_DISTILLATION.md) 进一步解释几个月级
 迭代为何可行，并用 fresh evidence ladder 区分 benchmark-local imitation、任务族迁移和部署能力。
+[Frontier Benchmark Atlas](cross-track-frontier-model-lifecycle/benchmark-atlas/README.md) 再把文本、代码、Agent、
+多模态理解/生成与前沿专项 benchmark 拆成可执行测量合同，并维护 2026-09-22 最新发版证据账；
+[Qwen3.8 专页](cross-track-frontier-model-lifecycle/benchmark-atlas/QWEN38_WALKTHROUGH.md)另将 Max、2.4T、27B 与 Flash-Next 分开逐项解释。它们都不替代自家 fresh holdout。
 
 ---
 
@@ -70,7 +77,7 @@ L0 验证的是证据纪律，没有本地复现这些前沿模型。
 | 02 预训练 / CPT | 从文档到可恢复 checkpoint 的完整训练过程怎样建立，并在模型放不下一张卡时正确切分？ | pretraining lifecycle L0–L2、ZeRO/FSDP L0–L3、TP/PP/SP/MoE/MLA L0–L3 | [进入轨道 02](02-pretraining-cpt/README.md) |
 | 03 数据 / 分布式 / RSI | 怎样把原始数据变成可复现、可扩展、可评估的训练与检索供给？ | OP/Ray/KV 系统 L0–L3，湖仓/DAG/RAG L0–L2 | [进入轨道 03](03-data-distributed-rsi/README.md) |
 | 04 LLM → Agent | 怎样把随机、会失败的模型包成可观察、可约束、可恢复的执行体？ | AgentScope/QwenPaw L0–L3，以及事务化副作用 L0–L2 | [进入轨道 04](04-llm-to-agent/README.md) |
-| 05 多模态理解与生成 | 媒体怎样进入 Transformer，又怎样从条件/噪声生成一致的图像、视频与音频？ | VLM L0–L1、rectified-flow Image/Video DiT 与 MiniMax H3 系统合同 L0 | [进入轨道 05](05-multimodal-understanding-generation/README.md) |
+| 05 多模态理解与生成 | 压缩媒体怎样成为可学习证据，媒体又怎样进入 Transformer 或从条件/噪声生成？ | 媒体数据三账本、VLM L0–L1、rectified-flow Image/Video DiT 与 MiniMax H3 系统合同 L0 | [进入轨道 05](05-multimodal-understanding-generation/README.md) |
 
 “当前最强覆盖”描述的是已经写出来的材料，不等于整条学科已经覆盖完整。
 
@@ -154,18 +161,21 @@ L0 验证的是证据纪律，没有本地复现这些前沿模型。
 
 ### 路线 E：多模态理解与生成
 
-1. [模型解剖与训练](05-multimodal-understanding-generation/MODEL_ANATOMY_AND_TRAINING.md)：readout、三类 encoder/VAE、参数口径，以及从 LLaVA 到 CPT/SFT/蒸馏/RL；
-2. [Long Context 还是 RAG](05-multimodal-understanding-generation/LONG_CONTEXT_OR_RAG.md)：把 512K/1M 拆成容量、有效利用、模态 token 账和质量—成本决策；
-3. [Long Context / RAG L0](05-multimodal-understanding-generation/nano-long-context-routing/tutorial_L0.md)：运行 sparse、temporal、exhaustive 三类 selector 反例；
-4. [visual tokens → language](05-multimodal-understanding-generation/nano-vlm-understanding/tutorial_L0.md)：二维位置和图像依赖反事实；
-5. [Qwen3-VL L1 真机诊断](05-multimodal-understanding-generation/nano-vlm-understanding/tutorial_L1.md)：真实 checkpoint 的五类估计量、token 账、L20 复验与 OCR 失败；
-6. [rectified-flow Image DiT](05-multimodal-understanding-generation/nano-image-dit/tutorial_L0.md)：latent token、AdaLN、Euler 与 CFG；
-7. [spatiotemporal Video DiT](05-multimodal-understanding-generation/nano-video-dit/tutorial_L0.md)：3D position、端点条件、flicker 与序列成本；
-8. [MiniMax H3 capstone](05-multimodal-understanding-generation/minimax-h3-capstone/tutorial_L0.md)：packed rows、视听双 flow 与开放边界；
-9. [证据账本](05-multimodal-understanding-generation/RESEARCH.md)：区分当前产品、开放权重、任务族、经典谱系和证据缺口。
+1. [大规模多模态数据管线](05-multimodal-understanding-generation/MEDIA_DATA_PIPELINE.md)：从 codec/容器到解码信号、模型视图、manifest 与 shard；
+2. [媒体三账本 L0](05-multimodal-understanding-generation/nano-multimodal-data-pipeline/tutorial_L0.md)：运行解码放大、短事件抽样与跨 split 去重反例；
+3. [模型解剖与训练](05-multimodal-understanding-generation/MODEL_ANATOMY_AND_TRAINING.md)：readout、三类 encoder/VAE、参数口径，以及从 LLaVA 到 CPT/SFT/蒸馏/RL；
+4. [Long Context 还是 RAG](05-multimodal-understanding-generation/LONG_CONTEXT_OR_RAG.md)：把 512K/1M 拆成容量、有效利用、模态 token 账和质量—成本决策；
+5. [Long Context / RAG L0](05-multimodal-understanding-generation/nano-long-context-routing/tutorial_L0.md)：运行 sparse、temporal、exhaustive 三类 selector 反例；
+6. [visual tokens → language](05-multimodal-understanding-generation/nano-vlm-understanding/tutorial_L0.md)：二维位置和图像依赖反事实；
+7. [Qwen3-VL L1 真机诊断](05-multimodal-understanding-generation/nano-vlm-understanding/tutorial_L1.md)：真实 checkpoint 的五类估计量、token 账、L20 复验与 OCR 失败；
+8. [rectified-flow Image DiT](05-multimodal-understanding-generation/nano-image-dit/tutorial_L0.md)：latent token、AdaLN、Euler 与 CFG；
+9. [spatiotemporal Video DiT](05-multimodal-understanding-generation/nano-video-dit/tutorial_L0.md)：3D position、端点条件、flicker 与序列成本；
+10. [MiniMax H3 capstone](05-multimodal-understanding-generation/minimax-h3-capstone/tutorial_L0.md)：packed rows、视听双 flow 与开放边界；
+11. [证据账本](05-multimodal-understanding-generation/RESEARCH.md)：区分当前产品、开放权重、任务族、经典谱系和证据缺口。
 
-完成后应能解释“视觉证据如何进入语言模型”和“媒体 latent 如何从噪声生成”是两类不同问题，能在 long context、
-RAG 与 hybrid 间按证据形状和成本选择，并能拒绝把 toy、开放权重、托管模块或代理分数误写成完整生产能力。
+完成后应能先区分压缩文件、解码信号和模型位置，再解释“视觉证据如何进入语言模型”和“媒体 latent 如何从噪声生成”
+是两类不同问题；能在抽样、long context、RAG 与 hybrid 间按证据形状和成本选择，并拒绝把 toy、开放权重、托管模块
+或代理分数误写成完整生产能力。
 
 ### 路线 F：前沿模型全生命周期
 
@@ -178,7 +188,8 @@ RAG 与 hybrid 间按证据形状和成本选择，并能拒绝把 toy、开放�
 5. [nano-opd L0–L3](01-post-training-rl-sft/nano-opd/)：从 reverse KL 到多教师路由与生产配方坐标；
 6. [Frontier Model Lifecycle L0](cross-track-frontier-model-lifecycle/tutorial_L0.md)：以 DeepSeek-V4、Qwen3.8、Kimi K3、GLM-5.3/Flash、GPT-6 Astra 与 Claude Fable 5.1 统一名称、参数账、stage、服务合同与归因；
 7. [能力追平、蒸馏与 benchmark validity](cross-track-frontier-model-lifecycle/CAPABILITY_GAP_AND_DISTILLATION.md)：解释快速追平的机制与局部刷榜的证据边界；
-8. [Evaluation Gate L0–L3a](cross-track-evaluation-gate/)：把 same-base paired evidence、失败率、成本、晋升、发布与回滚接到 candidate。
+8. [Frontier Benchmark Atlas](cross-track-frontier-model-lifecycle/benchmark-atlas/README.md)：逐项读懂 benchmark 的体量、metric、典型题、harness 与动态水位；
+9. [Evaluation Gate L0–L3a](cross-track-evaluation-gate/)：把 same-base paired evidence、失败率、成本、晋升、发布与回滚接到 candidate。
 
 完成后应能区分“新 base 更强”“后训练更有效”“部署更便宜”和“评测合同更宽松”，并能为每个判断设计最低成本反证。
 面对闭源模型，还应记录请求模型、实际执行模型、路由原因、工具轨迹与成本回执，并拒绝从价格、上下文长度或榜单倒推出未公开架构。
@@ -195,9 +206,11 @@ RAG 与 hybrid 间按证据形状和成本选择，并能拒绝把 toy、开放�
 | 显存与吞吐 | [ZeRO 账本](02-pretraining-cpt/nano-fsdp/tutorial_L0.md) | [TP/PP/SP](02-pretraining-cpt/nano-megatron/) · [paged/radix KV](03-data-distributed-rsi/nano-vllm-sglang/) | 分开算训练状态、activation、KV cache 与通信峰值 |
 | 状态、血缘与恢复 | [lakehouse snapshot](03-data-distributed-rsi/nano-data-platform/tutorial_L0.md) | [distributed exact resume](02-pretraining-cpt/nano-pretraining-loop/tutorial_L2.md) · [EpisodeRecord batch round-trip](cross-track-episode-record/tutorial_L1.md) · [multi-worker runtime](04-llm-to-agent/nano-agent-runtime/tutorial_L2.md) | 分别恢复训练状态、轨迹事实、派生 batch 与外部副作用，说明 round-trip、lease/fencing 与 exactly-once outcome 的边界 |
 | 评估与治理 | [RAG metrics](03-data-distributed-rsi/nano-rag-retrieval/tutorial_L0.md) | [reward proxy 失效](01-post-training-rl-sft/nano-trinity-rft/tutorial_L2.md) · [Evaluation Gate L0-L3a](cross-track-evaluation-gate/) · [对抗自检](04-llm-to-agent/nano-qwenpaw/tutorial_L2.md) | 比较不同 cluster lineage/权重下的结论敏感性；待 Agent runtime 接口稳定后，再把本地 router 替身换成 HTTP mock |
+| benchmark 测量合同 | [Benchmark Atlas L0](cross-track-frontier-model-lifecycle/benchmark-atlas/tutorial_L0.md) | [六个领域/专项分册](cross-track-frontier-model-lifecycle/benchmark-atlas/README.md) · [Qwen3.8 逐项导读](cross-track-frontier-model-lifecycle/benchmark-atlas/QWEN38_WALKTHROUGH.md) · [最新发版证据账](cross-track-frontier-model-lifecycle/benchmark-atlas/RELEASE_LEDGER.md) | 为一次成绩补齐 revision、metric、harness、工具/预算、trials、judge 与失败分母；不同合同不做减法 |
 | 多教师能力集成 | [nano-opd](01-post-training-rl-sft/nano-opd/) | [Capability Factory](cross-track-capability-factory/) · [能力追平与 benchmark validity](cross-track-frontier-model-lifecycle/CAPABILITY_GAP_AND_DISTILLATION.md) | 比较 response/preference/OPD/MOPD，注入错路由并检查 fresh holdout 与最坏领域回归 |
 | reasoning effort / 长程训练 | [Kimi-K3 deep-dive](01-post-training-rl-sft/sota-deepdive/kimi-k3-agentic-rl-scale.md) | [effort 与长程 Agent playbook](01-post-training-rl-sft/sota-deepdive/reasoning-effort-and-long-horizon-agent-training.md) · [EpisodeRecord L2](cross-track-episode-record/tutorial_L2.md) | 对同题做 low/high/max paired sweep，先过质量门再压成本，并审计 timeout censoring |
 | 配置是可执行契约 | [pipeline config](03-data-distributed-rsi/nano-data-juicer/tutorial_L0.md) | [Trinity schema / registry](01-post-training-rl-sft/nano-trinity-rft/tutorial_L3.md) | 让非法组合在运行前失败，并记录 resolve 后的最终配置 |
+| 多模态数据平面 | [媒体三账本 L0](05-multimodal-understanding-generation/nano-multimodal-data-pipeline/tutorial_L0.md) | [完整媒体管线](05-multimodal-understanding-generation/MEDIA_DATA_PIPELINE.md) · [Data-Juicer](03-data-distributed-rsi/nano-data-juicer/) · [编排](03-data-distributed-rsi/nano-data-orchestration/) | 分开核算压缩字节、解码信号和模型位置；先 content-group 再切 split |
 | 多模态证据依赖 | [visual token L0](05-multimodal-understanding-generation/nano-vlm-understanding/tutorial_L0.md) | [Qwen3-VL L1](05-multimodal-understanding-generation/nano-vlm-understanding/tutorial_L1.md) · [H3 packed contract](05-multimodal-understanding-generation/minimax-h3-capstone/tutorial_L0.md) | 对同一问题执行 image-drop/swap，并记录 row/tag/position 是否仍可追溯 |
 | 连续流与时序一致性 | [Image DiT oracle](05-multimodal-understanding-generation/nano-image-dit/tutorial_L0.md) | [Video DiT temporal coupling](05-multimodal-understanding-generation/nano-video-dit/tutorial_L0.md) | 分开检查 flow 方向、条件命中、端点约束、flicker 与 $N^2$ 成本 |
 | 模型 stage 与增益归因 | [pretraining lifecycle](02-pretraining-cpt/nano-pretraining-loop/) | [Frontier Model Lifecycle](cross-track-frontier-model-lifecycle/) · [Evaluation Gate](cross-track-evaluation-gate/) | 固定 base/parent/harness，比较 same-base post-training delta；拒绝把新 base 对比写成 stage 消融 |
@@ -219,6 +232,7 @@ RAG 与 hybrid 间按证据形状和成本选择，并能拒绝把 toy、开放�
 | 跨轨 | [EpisodeRecord](cross-track-episode-record/) | L0 · L1 · L2 |
 | 跨轨 | [Evaluation Gate](cross-track-evaluation-gate/) | L0 · L1 · L2 · L3a |
 | 跨轨 | [Frontier Model Lifecycle](cross-track-frontier-model-lifecycle/) | L0 |
+| 跨轨 | [Frontier Benchmark Atlas](cross-track-frontier-model-lifecycle/benchmark-atlas/) | L0 + 6 个领域/专项分册 + Qwen3.8 导读 + release ledger |
 | 02 | [nano-pretraining-loop](02-pretraining-cpt/nano-pretraining-loop/) | L0 · L1 · L2 |
 | 02 | [nano-fsdp](02-pretraining-cpt/nano-fsdp/) | L0 · L1 · L2 · L3 |
 | 02 | [nano-megatron](02-pretraining-cpt/nano-megatron/) | L0 · L1 · L2 · L3 |
@@ -231,7 +245,9 @@ RAG 与 hybrid 间按证据形状和成本选择，并能拒绝把 toy、开放�
 | 04 | [nano-agentscope](04-llm-to-agent/nano-agentscope/) | L0 · L1 · L2 · L3 |
 | 04 | [nano-qwenpaw](04-llm-to-agent/nano-qwenpaw/) | L0 · L1 · L2 · L3 |
 | 04 | [nano-agent-runtime](04-llm-to-agent/nano-agent-runtime/) | L0 · L1 · L2 |
+| 05 | [nano-multimodal-data-pipeline](05-multimodal-understanding-generation/nano-multimodal-data-pipeline/) | L0 |
 | 05 | [nano-vlm-understanding](05-multimodal-understanding-generation/nano-vlm-understanding/) | L0 · L1 |
+| 05 | [nano-long-context-routing](05-multimodal-understanding-generation/nano-long-context-routing/) | L0 |
 | 05 | [nano-image-dit](05-multimodal-understanding-generation/nano-image-dit/) | L0 |
 | 05 | [nano-video-dit](05-multimodal-understanding-generation/nano-video-dit/) | L0 |
 | 05 | [minimax-h3-capstone](05-multimodal-understanding-generation/minimax-h3-capstone/) | L0 |
@@ -245,6 +261,7 @@ RAG 与 hybrid 间按证据形状和成本选择，并能拒绝把 toy、开放�
 - [Harness Engineering](04-llm-to-agent/sota-deepdive/harness-engineering.md)
 - [Frontier Model Lifecycle：开放权重 stage 血缘 + GPT-6 Astra / Claude Fable 5.1 API 合同](cross-track-frontier-model-lifecycle/)
 - [能力追平、蒸馏与 benchmark validity](cross-track-frontier-model-lifecycle/CAPABILITY_GAP_AND_DISTILLATION.md)
+- [Frontier Benchmark Atlas：benchmark 卡片、反例与最新发版账](cross-track-frontier-model-lifecycle/benchmark-atlas/README.md)
 
 ---
 

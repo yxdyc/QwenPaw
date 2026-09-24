@@ -29,7 +29,7 @@
 | **02** | 预训练 / CPT infra | megatron · fsdp | DeepSeek-V4 / Qwen3.8-Flash-Next / Kimi K3 / GLM-5.3-Flash（架构—预训练—部署共同设计） |
 | **03** | 数据 / 分布式 / RSI / 数据平台工程 | data-juicer · ray · vllm-sglang · data-platform · orchestration · rag-retrieval | LLM 数据方法论 + data-model co-dev + 湖仓/MLOps |
 | **04** | LLM → Agent | agentscope · qwenpaw | Harness engineering + GPT-6 Astra / Claude Fable 5.1 可观测 API 合同 |
-| **05** | 多模态理解与生成 | vlm-understanding · image-dit · video-dit · minimax-h3-capstone | VLM/DiT/Video DiT → MiniMax H3 综合系统 |
+| **05** | 多模态理解与生成 | multimodal-data-pipeline · vlm-understanding · image-dit · video-dit · minimax-h3-capstone | 媒体数据平面 → VLM/DiT/Video DiT → MiniMax H3 综合系统 |
 
 五条线组成一个闭环：03 产出的数据喂给 02/01 训练，02 的 Transformer/并行底座与 03 的数据/推理服务共同支撑 05；
 01/02/05 产出的语言与多模态能力在 04 里变成 agent，agent 的运行轨迹又回流成 03 的数据——这正是
@@ -74,6 +74,7 @@ LLM-PBL/
     ├── cross-track-capability-factory/ # 多教师能力集成
     ├── cross-track-evaluation-gate/  # 配对评测、晋升与回滚边界
     ├── cross-track-frontier-model-lifecycle/ # 前沿模型的 stage 血缘、归因与证据合同
+    │   └── benchmark-atlas/                  # 文本、代码、Agent、多模态 benchmark 与最新发版账
     ├── 01-post-training-rl-sft/      # 后训练 / RL / SFT
     │   ├── nano-trinity-rft/  nano-slime/  nano-verl/  nano-llamafactory/  nano-opd/
     │   └── sota-deepdive/
@@ -88,9 +89,11 @@ LLM-PBL/
     │   ├── nano-agentscope/  nano-qwenpaw/  nano-agent-runtime/
     │   └── sota-deepdive/
     └── 05-multimodal-understanding-generation/
+        ├── MEDIA_DATA_PIPELINE.md          # codec、解码、三账本、抽样、去重、shard
         ├── MODEL_ANATOMY_AND_TRAINING.md  # readout、encoder/VAE、参数与现代训练配方
         ├── LONG_CONTEXT_OR_RAG.md         # 512K/1M、多模态 token 账与 RAG/hybrid 决策
-        ├── nano-vlm-understanding/  nano-long-context-routing/
+        ├── nano-multimodal-data-pipeline/  nano-vlm-understanding/
+        ├── nano-long-context-routing/
         ├── nano-image-dit/  nano-video-dit/
         └── minimax-h3-capstone/
 ```
@@ -106,5 +109,8 @@ LLM-PBL/
 - 想理解模型为何几个月追平、蒸馏刷榜怎样发生，以及怎样用 fresh evidence 判断真实泛化 → 读 [能力追平与蒸馏专题](tutorial/material/cross-track-frontier-model-lifecycle/CAPABILITY_GAP_AND_DISTILLATION.md)
 - 想理解“candidate 怎样被裁决、可靠激活、治理 evaluator，并发布到独立 router” → 跑 [Evaluation Gate L0→L3a](tutorial/material/cross-track-evaluation-gate/)
 - 想把 DeepSeek-V4、Qwen3.8-Flash-Next、Kimi K3、GLM-5.3，以及闭源 GPT-6 Astra / Claude Fable 5.1 串成“身份→stage→服务→评测”的证据链 → 跑 [Frontier Model Lifecycle L0](tutorial/material/cross-track-frontier-model-lifecycle/)
+- 想查 Qwen3.8、Step 5 Preview、DeepSeek、Kimi、GLM、GPT、Gemini、Claude、Grok、Hy4 等最新发版用了哪些 benchmark，以及体量、指标、典型题、协议陷阱和最高水位 → 进入 [Frontier Benchmark Atlas](tutorial/material/cross-track-frontier-model-lifecycle/benchmark-atlas/)
+- 只想逐项读懂 Qwen3.8 的 Max、2.4T 开放权重、27B VLM 与 Flash-Next 四套表 → 直接看 [Qwen3.8 benchmark 导读](tutorial/material/cross-track-frontier-model-lifecycle/benchmark-atlas/QWEN38_WALKTHROUGH.md)
+- 想理解 JPEG/MP4/音频怎样从压缩字节变成像素、波形和模型 token，以及抽样、去重、shard 怎样影响成本与证据 → 读 [大规模多模态数据管线](tutorial/material/05-multimodal-understanding-generation/MEDIA_DATA_PIPELINE.md)，再跑 [三账本 L0](tutorial/material/05-multimodal-understanding-generation/nano-multimodal-data-pipeline/tutorial_L0.md)
 - 想区分多模态 readout、vision/condition encoder、VAE、参数占比与现代多阶段训练 → 读 [多模态模型解剖与训练](tutorial/material/05-multimodal-understanding-generation/MODEL_ANATOMY_AND_TRAINING.md)
 - 想判断 512K/1M 是否真有必要、图像/视频 token 怎样膨胀，以及何时选 RAG 或 hybrid → 读 [多模态 Long Context 决策教程](tutorial/material/05-multimodal-understanding-generation/LONG_CONTEXT_OR_RAG.md)

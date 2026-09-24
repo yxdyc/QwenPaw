@@ -1,6 +1,6 @@
 # shared — 跨轨共用约定
 
-> 四条轨道共用的环境约定、术语表、评测基线。新增或修改材料时统一遵循，避免各轨各说各话。
+> 五条轨道共用的环境约定、术语表、评测基线。新增或修改材料时统一遵循，避免各轨各说各话。
 
 ---
 
@@ -8,11 +8,11 @@
 
 - **Python**：示例默认 Python 3.10+。L0 玩具实现**零外部依赖**（纯标准库 + numpy 可选），CPU 即跑。
 - **GPU 相关**：L1+ 涉及 GPU 的内容，须注明显存估算与最低卡型；拿不到 GPU 验证时标 `[TODO: verify on GPU]`。
-- **真实小样本**：用真实小样本数据（公开小数据集或本地样本，如一份 10 条医学 SFT MCQ），不造假数据。
+- **真实小样本**：优先使用公开小数据集；使用自有数据时必须先确认授权并脱敏，只描述 schema、规模和必要统计，不公开原始记录或内部来源路径。
 - **LLM API**：涉及真实模型调用时，用环境变量传 key，**绝不硬编码 key**。
 - **可移植路径**：教程命令默认使用 `python3`；外部源码 checkout 用
   `DATA_JUICER_REPO` 等显式环境变量；外部数据用 `--data` 或
-  `LLM_PBL_DATA_PATH` 传入。文档和代码不得写入维护者用户名、主机地址或绝对工作目录。
+  `LLM_PBL_DATA_PATH` 传入。文档和代码不得写入维护者用户名、主机地址、绝对工作目录、内部工程名或私有 checkout/分支名；示例只使用 `CHANGEME`、`example.com`、RFC 5737 地址等明确占位符。
 
 ## 术语表（统一用词）
 
@@ -28,7 +28,10 @@
 ## 评测基线约定
 
 - 每个 nano-* 的 L0 须给出一个**可量化的 toy 指标**（如条数变化、loss 下降、吞吐 tokens/s），作为后续级别的对照基线。
-- benchmark 分数必须可溯源；无法验证标 `[TODO: verify]`。
+- benchmark 分数必须可溯源；无法验证标 `[TODO: verify]`。任何跨模型比较至少绑定
+  `benchmark@revision/split + metric + model mode/effort + harness/tools + token/time/step budget + trials + judge + failure denominator + evaluated_at`；
+  缺少关键字段时只能记为 vendor-reported，不能写成统一协议下的“最高水位”。完整卡片与反例见
+  [Frontier Benchmark Atlas](../tutorial/material/cross-track-frontier-model-lifecycle/benchmark-atlas/README.md)。
 
 ## 文件命名
 
