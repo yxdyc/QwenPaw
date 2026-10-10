@@ -1,7 +1,7 @@
 # Frontier Model Lifecycle：追踪能力从哪里来
 
 > **核心问题**：一个新模型的提升，究竟来自 base architecture / pretraining、后训练、蒸馏、部署，还是评测口径？
-> **生命周期证据快照**：2026-09-08；动态发版与 benchmark 已在 2026-09-22 的 [Frontier Benchmark Atlas](benchmark-atlas/README.md) 单独刷新。
+> **生命周期证据快照**：2026-09-08；动态发版与 benchmark 已在 2026-10-10 的 [Frontier Benchmark Atlas](benchmark-atlas/README.md) 单独刷新。
 > **先修**：[02 预训练](../02-pretraining-cpt/README.md) + [01 后训练](../01-post-training-rl-sft/README.md)。
 > **本级边界**：L0 是纯标准库的 claim/evidence 合同；不下载权重，也不证明模型质量或系统吞吐。
 
@@ -16,6 +16,7 @@ python3 -B tutorial/material/cross-track-frontier-model-lifecycle/L0_stage_claim
 真实输出和逐段解释见 [tutorial_L0](tutorial_L0.md)，完整证据账本见 [RESEARCH](RESEARCH.md)。
 若问题是“最新模型用了哪些 benchmark、分数是否真可比较”，先运行
 [Benchmark Atlas L0](benchmark-atlas/tutorial_L0.md)，再读[最新发版证据账](benchmark-atlas/RELEASE_LEDGER.md)。
+Atlas 还把 intent、knowledge domain、required capability、task condition 与 failure stage 分轴记录，避免把领域词、文件类型或工具名误当能力。
 若问题具体是 Qwen3.8，直接进入[Qwen3.8 发版 benchmark 逐项导读](benchmark-atlas/QWEN38_WALKTHROUGH.md)，先分清 Max、2.4T、27B 与 Flash-Next 四个被测对象。
 若要解释“为什么厂商几个月就能追平、蒸馏刷榜为何容易而泛化仍难”，读
 [能力追平、蒸馏与 benchmark validity](CAPABILITY_GAP_AND_DISTILLATION.md)：它把 response/preference/OPD/

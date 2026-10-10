@@ -11,9 +11,10 @@ import math
 
 CONTRACT_FIELDS = (
     "benchmark", "revision", "split", "task_manifest", "prompt_template",
-    "harness", "environment", "tools", "reasoning_effort", "context_budget",
-    "output_budget", "samples_per_task", "temperature", "timeout_seconds",
-    "verifier", "judge", "failure_policy", "metric",
+    "harness", "access_surface", "environment", "tools", "reasoning_effort",
+    "context_budget", "output_budget", "samples_per_task", "temperature",
+    "timeout_seconds", "verifier", "judge", "failure_policy", "metric",
+    "capability_slice",
 )
 
 
@@ -26,6 +27,7 @@ class BenchmarkRun:
     task_manifest: str
     prompt_template: str
     harness: str
+    access_surface: str
     environment: str
     tools: str
     reasoning_effort: str
@@ -38,6 +40,7 @@ class BenchmarkRun:
     judge: str
     failure_policy: str
     metric: str
+    capability_slice: str
     score: float
     tasks: int
     provenance: str
@@ -74,13 +77,16 @@ def make_run(model: str, score: float, **changes: object) -> BenchmarkRun:
         "model": model, "benchmark": "Terminal-Bench", "revision": "2.1",
         "split": "test", "task_manifest": "sha256:tasks-v2.1-100",
         "prompt_template": "terminal-agent@v1", "harness": "same-minimal-agent@abc123",
-        "environment": "ubuntu-24.04@sha256:env-a", "tools": "terminal-only",
+        "access_surface": "public-api@2026-10", "environment": "ubuntu-24.04@sha256:env-a",
+        "tools": "terminal-only",
         "reasoning_effort": "max", "context_budget": 262_144,
         "output_budget": 65_536, "samples_per_task": 1, "temperature": 1.0,
         "timeout_seconds": 7_200, "verifier": "official-tests@v2.1",
         "judge": "deterministic-binary@v1",
         "failure_policy": "timeout/error/blocked=0; all tasks in denominator",
-        "metric": "task_success_rate", "score": score, "tasks": 100,
+        "metric": "task_success_rate",
+        "capability_slice": "repo-debugging+patch+verification@v1",
+        "score": score, "tasks": 100,
         "provenance": "public-harness",
     }
     values.update(changes)
@@ -107,9 +113,14 @@ def main() -> None:
     changed_manifest = make_run(
         "model-h", 87.0, task_manifest="sha256:tasks-v2.1-80", tasks=80
     )
+    changed_surface = make_run("model-i", 93.0, access_surface="chat-product@2026-10")
+    changed_slice = make_run(
+        "model-j", 92.0, capability_slice="repo-navigation-only@v1"
+    )
     incomplete = make_run("model-invalid", 99.0, prompt_template="")
     runs = (baseline, same_contract, with_search, pass_at_eight, hidden_failures,
-            changed_prompt, changed_runtime, changed_manifest, incomplete)
+            changed_prompt, changed_runtime, changed_manifest, changed_surface,
+            changed_slice, incomplete)
 
     valid = [run for run in runs if not missing_fields(run)]
     raw_headline_winner = max(runs, key=lambda run: run.score)
@@ -160,6 +171,10 @@ def main() -> None:
         ),
         "failure denominator is part of score": contract_diff(baseline, hidden_failures)
         == ["failure_policy"],
+        "product surface is part of contract": contract_diff(baseline, changed_surface)
+        == ["access_surface"],
+        "capability slice is part of contract": contract_diff(baseline, changed_slice)
+        == ["capability_slice"],
         "contract-aware winner differs from naive winner": comparable_winner != naive_winner,
     }
     for name, passed in checks.items():
@@ -167,7 +182,7 @@ def main() -> None:
     assert all(checks.values())
 
     payload = {
-        "schema_version": "1.0",
+        "schema_version": "1.1",
         "module": "benchmark-contract-l0",
         "metrics": {
             "runs": len(runs),

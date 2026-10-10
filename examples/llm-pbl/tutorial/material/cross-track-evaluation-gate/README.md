@@ -11,7 +11,7 @@ durable promotion 再把批准变成可恢复、幂等且可回滚的状态转�
 |---|---|---|---|
 | L0 | 配对差值、paired bootstrap、隐藏 sentinel、关键回归、成本门、不可变决策记录 | 公开均分上涨但隐藏关键项退化时拒绝；稳健候选晋升；重复证据 fail closed | ✅ [代码](evaluation_gate_lab.py) · [教程](tutorial_L0.md) |
 | L1 | raw evidence durable store、PREPARE/ACTIVATE、崩溃恢复、stale-parent guard、实际 rollback | raw evidence 可重算；恢复只激活一次；rollback 后历史仍在 | ✅ [代码](L1_durable_promotion.py) · [教程](tutorial_L1.md) |
-| L2 | cluster-aware exact paired test、持久化预登记与 lineage sensitivity audit、anchor drift、evaluator epoch、re-baseline 与 alpha-spending | policy 必须早于 evidence 且可重放；逐 task 显著但 source/user/domain 不显著时冻结；独立 marginal trial 再被全局预算拒绝；漂移后冻结 | ✅ [主代码](L2_evaluator_governance.py) · [主教程](tutorial_L2.md) · [敏感性代码](L2_cluster_sensitivity.py) · [敏感性教程](tutorial_L2_sensitivity.md) |
+| L2 | cluster-aware exact paired test、持久化预登记与 lineage sensitivity audit、adaptive search / winner's curse、anchor drift、evaluator epoch、re-baseline 与 alpha-spending | policy 必须早于 evidence 且可重放；逐 task 显著但 source/user/domain 不显著时冻结；候选搜索与独立 held-out 分离；独立 marginal trial 再被全局预算拒绝；漂移后冻结 | ✅ [主代码](L2_evaluator_governance.py) · [主教程](tutorial_L2.md) · [敏感性代码](L2_cluster_sensitivity.py) · [敏感性教程](tutorial_L2_sensitivity.md) · [adaptive search 代码](L2_adaptive_search_lab.py) · [adaptive search 教程](tutorial_L2_adaptive_search.md) |
 | L3a | 双 SQLite authority、outbox、lease/fencing、payload-bound idempotency、generation CAS、receipt reconcile | router commit 后丢 ACK 可恢复且只切一次；陈旧/冲突命令拒绝；未知 route drift 冻结 | ✅ [代码](L3_external_router.py) · [教程](tutorial_L3.md) |
 | L3b | 真实模型盲测、多阶段 GPU canary、SLO 与 evaluator succession | quality、错误率、延迟、吞吐、成本、rollback time 与评估器换代均有可审计证据 | 🔲（需可用 GPU 环境） |
 

@@ -32,9 +32,9 @@ architecture → pretraining → post-training → serving → evaluation 串联
 | `nano-*` 模块 | 22 | 递归目录名计数；H3 capstone 不在该命名口径内 |
 | 跨轨模块 | 4 | Capability Factory、EpisodeRecord、Evaluation Gate、Frontier Model Lifecycle |
 | deep-dive 目录 | 4 | 01–04 各一处；05 以 `RESEARCH.md` 承担研究账本 |
-| Markdown | 142 | `tutorial/material` 全树；包含 Benchmark Atlas 的 6 个领域/专项分册、Qwen3.8 导读、L0 与 release ledger，以及分布式去重/多模态治理专题 |
-| `tutorial_L*.md` | 81 | 新增 Benchmark Contract L0，既有教程口径不变 |
-| Python | 89 | 课程材料树内脚本，不含仓库级校验器 |
+| Markdown | 146 | `tutorial/material` 全树；包含 Benchmark Atlas 的 6 个领域/专项分册、Qwen3.8 导读、L0 与 release ledger，以及分布式去重/多模态治理专题 |
+| `tutorial_L*.md` | 82 | 新增 Benchmark Contract L0 与 Adaptive Search L2，既有教程口径不变 |
+| Python | 90 | 课程材料树内脚本，不含仓库级校验器 |
 
 数量只说明“内容存在”，不说明“生产可用”。本课程继续使用三层证据口径：
 
@@ -85,12 +85,12 @@ architecture → pretraining → post-training → serving → evaluation 串联
 “简单”应来自更少的状态变量和更清楚的因果对照，不是删掉关键假设；“深入”应来自失败模式和可证伪性，
 不是增加名词密度。
 
-非阻断的 [风格审计器](../../scripts/audit_tutorial_style.py) 当前扫描 81 篇 `tutorial_L*.md` 的首屏语义字段和两类惯用句。
-2026-09-22 快照中，首屏覆盖为“问题 65 / 先修 67 / 运行 67 / 验收 65 / 边界 60”；固定对照句信号 73 处，
+非阻断的 [风格审计器](../../scripts/audit_tutorial_style.py) 当前扫描 82 篇 `tutorial_L*.md` 的首屏语义字段和两类惯用句。
+2026-10-10 快照中，首屏覆盖为“问题 66 / 先修 68 / 运行 68 / 验收 66 / 边界 61”；固定对照句信号 74 处，
 正文双破折号信号 2282 处。这些计数只用于发现入口过密或信息缺位，不能替代人工判断；
 合理的逻辑对照、长推导和表格不会因为命中规则就自动成为坏文风。
 
-“费曼自检”已从结尾问题清单升级为可自学的反馈回路：81 篇教程全部含自检；再加 Benchmark Atlas 的 9 份分册/导读，当前 90 个自检段均给出显式参考答案。
+“费曼自检”已从结尾问题清单升级为可自学的反馈回路：82 篇教程全部含自检；再加 Benchmark Atlas 的 9 份分册/导读，当前 91 个自检段均给出显式参考答案。
 学习者应先独立作答再展开对照；答案重点解释因果链、反例和不可外推项，不要求背诵固定措辞。
 [费曼覆盖审计器](../../scripts/audit_feynman_answers.py) 会检查全部 `tutorial_L*.md` 和显式登记的 Benchmark Atlas 分册，阻断“整篇缺自检”或“有问题无答案”的回归，
 但覆盖率不能证明答案正确、解释充分，也不能证明学习者真的先思考过。

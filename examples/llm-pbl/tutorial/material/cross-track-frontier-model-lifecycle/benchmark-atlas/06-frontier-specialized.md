@@ -201,7 +201,18 @@
 - **局限**：high 反高于 xhigh 不是置信区间；小样本、基础设施失败和不同先验信息会产生数个百分点波动。
 - **最高水位 / 口径**：原论文最佳 agent 最高约 `13%`，Grok 两数显然是后续配置；无 matched contract 时只保留两条正式声明，不做代际差。
 
-### 3.6 LatchBio：benchmark 家族，不是一个固定总集
+### 3.6 CWE-bench v1：冷代码审计与修复，不先告诉漏洞在哪里
+
+- **基本信息 / 体量**：`[一手事实]` [CWE-bench v1](https://cwe-bench.com/)含 120 个 held-out audit-and-patch tasks、73 类 CWE、6 类语言；评测集由维护方私有保存，另有独立训练语料，二者不重叠。
+- **能力项 / 阶梯**：T2/T3 代码审计 → 漏洞定位 → 修复 → 正常功能回归 → reward-hacking 检查；与已给 CVE/PoC 的 patch-only 任务不同。
+- **canonical slice**：`domain=defensive_security`；`capability=audit + localize + patch + verify`；`condition=unknown weakness / held-out repo / 1h`；`output=code patch`；`guardrail=no regression / no verifier gaming`。
+- **课程合成典型题**：`[课程合成]` 给封网教学仓库但不指出缺陷位置，要求审计输入解析、提交修复，并通过恶意输入和正常输入两组隐藏测试。
+- **指标**：四次 rollout；程序化 verifier 与三模型 judge panel 分栏报 `pass@1/pass@4`。程序 gate 要求 exploit 失效且既有测试通过；panel 还检查 generalization、integrity 与 soundness。
+- **厂商采用**：`[一手事实]` 2026-10-10 榜上 Argon、GPT-6 Astra、Grok 4.7 的 programmatic pass@1 均为 `68%`，但分别使用 Antigravity、Codex、OpenCode；同分不表示权重等价。
+- **局限**：held-out 有利于抗污染但限制外部独立复验；harness、每次一小时预算和 agentic judge 都属于 score identity。防御性能力与攻击性部署授权也不能画等号。
+- **最高水位 / 口径**：只在 CWE-bench v1@120-task、programmatic pass@1、2026-10-10 快照内称三方并列；judge-panel、pass@4 或未来 rotating set 另开时间序列。
+
+### 3.7 LatchBio：benchmark 家族，不是一个固定总集
 
 - **基本信息 / 体量**：`[一手事实]` [LatchBio 官方研究页](https://latch.bio/)维护 SpatialBench、scBench、EpiBench、TxBench、VariantBench、BioSecBench 等持续扩展的家族；没有一个稳定名为“LatchBio aggregate”的固定 N。例如 BioSecBench-Surveillance 是 100 evals，scBench-Long 是 21 evals。
 - **能力项 / 阶梯**：短程结构化分析 → 长程多组学复现 → 药理/变异决策 → capability 与 biosecurity refusal 的双轴评估。
@@ -393,6 +404,18 @@
 - **局限**：语音 user simulator、VAD、turn endpoint、噪声合成和通信 judge 会改变结果；backend 成功不等于自然、低延迟或不抢话。
 - **最高水位 / 口径**：两数属于两个任务集，不能平均；截至 2026-09-22 只称 Google 官方系统候选，不与文本 τ³-Banking 比较。
 
+### 6.3 2026-10-10 实时模型身份补丁：没有同协议分数时不造榜
+
+| 模型 | 公共服务合同 | 能力切片 | 本页证据边界 |
+|---|---|---|---|
+| [SeedRealtime](https://seed.bytedance.com/en/seedrealtime) | 2026-08-05 发布并产品全量部署；原生 audio-video-text 连续流 | 视听联合理解、说话人/指代跟踪、对话时序、打断、主动交互、工具调用 | 厂商报告相对级联系统改善节奏、延迟与误触发，但缺少可重放 task manifest 和同协议对手，记 B-vendor product evidence |
+| [Gemini 3.8 Live](https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-3-8-live-gemini-3-8-live-extended-thinking/) | API / AI Studio 可用；Enterprise 状态另记 | 原生实时语音、视觉 grounding、97 种语言、异步工具与 Extended Thinking | 只有绑定 AA Index / τ-Voice revision、endpoint、网络和 turn detector 后才可比较 |
+| [Nova 2.5 Sonic](https://aws.amazon.com/about-aws/whats-new/2026/10/amazon-nova-2.5-Sonic/) | 2026-10-05 GA；Bedrock 四个 region；七种语言、256K、异步工具 | speech-to-speech、turn-taking、多步指令、工具调用与低延迟 | 官方没有随发布给出可并入 τ-Voice 的同协议分数；只登记 identity/runtime，不填写“当前最高” |
+
+这三类系统的 canonical slice 还要带 `audio condition / speaker count / interruption pattern / VAD or endpoint /
+network region / tool policy / latency metric / task outcome`。只写“实时语音能力”会把感知、时序、自然度、工具成功和
+端到端延迟折成一个不可诊断标签。
+
 ## 7. Legacy / base probing：紧凑回归表
 
 > `[一手事实]` 下表的体量与定义来自各 benchmark 官方论文/仓库；`[厂商声明]` “采用/水位”均指
@@ -462,6 +485,7 @@
 8. SkillsBench 若只给 with-Skills 70.2，为什么还不能声称技能包带来 70.2 分收益？
 9. DeepSeek Base 的 HumanEval 79.4、GSM8K 93.0 仍有什么现实用途？
 10. 如果要把本页所有数字存入数据库，最小主键是什么？
+11. CWE-bench programmatic pass@1 三个模型同为 68%，能否断言它们的安全审计能力相同？
 
 <details>
 <summary>参考答案</summary>
@@ -476,6 +500,7 @@
 8. 收益是同任务同容器下 `with - without` 的配对差；70.2 是结果水平。还要确认 agent 实际读取 skill，并分离 harness 自带能力。
 9. 它们适合低成本、低方差的持续回归：检查预训练、量化、tokenizer、chat template 或 serving 改动是否破坏基础算术/代码。它们不适合作为前沿能力唯一 headline。
 10. `model/checkpoint + benchmark@revision/split + metric/aggregation + mode/effort + harness/prompt/tools + input representation + time/step/token/cost budget + sampling/trials + judge/verifier/environment + failure/refusal/fallback policy + evaluated_at + source owner`。
+11. 不能。三者使用不同 harness，同一 pass@1 还可能来自不同的 solved-task 集合与成本分布；至少要比较 paired task outcome、pass@4、judge-panel、cost 和 failure slice，并在统一 harness 下重跑，才能缩小模型权重差异。
 
 </details>
 

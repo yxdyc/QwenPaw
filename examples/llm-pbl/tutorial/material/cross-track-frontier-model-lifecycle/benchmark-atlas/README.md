@@ -1,7 +1,7 @@
 # Frontier Benchmark Atlas：模型发版表到底测了什么
 
 > **核心问题**：一张“模型 A 85.0、模型 B 82.0”的表，何时是在比较能力，何时只是在比较 harness、工具、预算或失败处理？
-> **快照日期**：2026-09-22；动态型号与分数集中在 [发布证据账](RELEASE_LEDGER.md)，稳定的 benchmark 定义放在领域分册。
+> **动态证据账快照**：2026-10-10；各领域分册中仍标为 2026-09-22 的公共榜水位没有在本轮重算，不能自动视作 10 月水位。动态型号与分数集中在 [发布证据账](RELEASE_LEDGER.md)，稳定的 benchmark 定义放在领域分册。
 > **先修**：[Frontier Model Lifecycle](../README.md) 的 stage/identity 概念；建议随后进入 [Evaluation Gate](../../cross-track-evaluation-gate/README.md)。
 > **证据边界**：本专题解释测量合同，不把厂商自报表当独立排行榜，也不把 benchmark 高分自动升级为生产能力。
 
@@ -11,8 +11,8 @@
 python3 -B tutorial/material/cross-track-frontier-model-lifecycle/benchmark-atlas/L0_benchmark_contract.py
 ```
 
-验收看 9/9 checks：缺 `prompt_template` 的 99 分先被 fail closed；同一 `Terminal-Bench` 名称下，`pass@8`、
-加搜索、换 prompt/环境/verifier、换 task manifest 或排除失败任务都不能进入基线排序。只有题集身份、执行系统、
+验收看 11/11 checks：缺 `prompt_template` 的 99 分先被 fail closed；同一 `Terminal-Bench` 名称下，`pass@8`、
+加搜索、换产品 surface、换 capability slice、prompt/环境/verifier、task manifest 或排除失败任务都不能进入基线排序。只有题集身份、执行系统、
 预算与裁决合同全部一致的两行才进入同一个“最高水位”。逐段解释见 [L0 教程](tutorial_L0.md)。
 
 ## 学习阶梯与当前状态
@@ -48,19 +48,20 @@ $$
 
 只报 $(M,\hat S)$，等于把其余十一个变量藏进脚注。越接近 coding/agent/GUI 任务，隐藏变量对结论的影响通常越大。
 
-## 2. 能力阶梯：不是“题越难级别越高”
+## 2. 任务复杂度阶梯：不是“题越难级别越高”
 
 这里按**状态空间、交互长度、验证成本与开放度**分层，而不是按当前 SOTA 分数排序。
+这里用 `T0–T4` 表示 task/environment complexity，避免与本课程 `L0–L3` 的实现成熟度混淆；它也不是能力分类树。
 
 | 层级 | 被测对象 | 代表 benchmark | 核心失败模式 |
 |---|---|---|---|
-| L0 受控回答 | 短上下文知识、约束遵循、数学/科学推理、短代码 | MMLU-Pro、GPQA Diamond、HLE、IFBench、AIME、LiveCodeBench | 污染、饱和、答案抽取、`pass@k` 混用 |
-| L1 长输入与复杂感知 | 长文检索/综合、OCR、图表、空间、长视频 | MRCR、LongBench v2、AA-LCR、BEAM-1M、MMMU-Pro、CharXiv、OmniDocBench、Video-MME | “装得下”冒充“用得好”、模态 token/工具不等价、judge bias |
-| L2 有状态工程任务 | repo patch、终端、网页、手机与桌面环境 | SWE-bench、SWE-bench Pro、Terminal-Bench、WebArena、AndroidWorld、OSWorld | harness、镜像、依赖、timeout 与基础设施噪声主导 |
-| L3 长程开放工作 | 跨工具/文件/应用的职业交付和用户交互 | GAIA、BrowseComp、Toolathlon、ALE、AutomationBench、JobBench | 小样本、失败分母、fallback、LLM judge 与任务泄漏 |
-| L4 开放式生成 | 图像/视频/音频的质量、遵循、一致性和安全 | GenEval、DPG-Bench、T2I-CompBench、VBench、FVD/FAD | 代理指标与人类偏好错位、reference bias、不可复现的 prompt/seed |
+| T0 受控回答 | 短上下文知识、约束遵循、数学/科学推理、短代码 | MMLU-Pro、GPQA Diamond、HLE、IFBench、AIME、LiveCodeBench | 污染、饱和、答案抽取、`pass@k` 混用 |
+| T1 长输入与复杂感知 | 长文检索/综合、OCR、图表、空间、长视频 | MRCR、LongBench v2、AA-LCR、BEAM-1M、MMMU-Pro、CharXiv、OmniDocBench、Video-MME | “装得下”冒充“用得好”、模态 token/工具不等价、judge bias |
+| T2 有状态工程任务 | repo patch、终端、网页、手机与桌面环境 | SWE-bench、SWE-bench Pro、Terminal-Bench、WebArena、AndroidWorld、OSWorld | harness、镜像、依赖、timeout 与基础设施噪声主导 |
+| T3 长程开放工作 | 跨工具/文件/应用的职业交付和用户交互 | GAIA、BrowseComp、Toolathlon、ALE、AutomationBench、JobBench | 小样本、失败分母、fallback、LLM judge 与任务泄漏 |
+| T4 开放式生成 | 图像/视频/音频的质量、遵循、一致性和安全 | GenEval、DPG-Bench、T2I-CompBench、VBench、FVD/FAD | 代理指标与人类偏好错位、reference bias、不可复现的 prompt/seed |
 
-同一模型可能 L0 很强、L2 很弱；同一 benchmark 也可能因加工具从“模型闭卷能力”变成“系统能力”。阶梯的用途是
+同一模型可能 T0 很强、T2 很弱；同一 benchmark 也可能因加工具从“模型闭卷能力”变成“系统能力”。阶梯的用途是
 定位证据，不是制造一个新的总榜。
 
 安全不是第六级，而是横切每一级的另一根轴。至少分开：危险能力是否存在、模型是否在不当请求上拒绝、是否对正常请求
@@ -92,21 +93,69 @@ $$
 
 但 agent 任务常按 repo、网站或工作流成簇，也含环境失败；直接把每个 task 当 iid 往往会低估不确定性。
 
-## 4. Benchmark card 的最小合同
+## 4. 先把能力切片写成向量，再选择 benchmark
 
-领域分册里的每张 card 尽量回答十一件事：
+领域、能力和运行条件回答的是不同问题。`medical` 说明知识域，`retrieve_evidence` 说明模型要执行的操作，
+`long_record_with_distractors` 说明操作发生的条件；三者不能压成一个自由文本标签。一个可检验的能力切片至少写成：
+
+```text
+intent / target artifact
++ knowledge domain
++ input distribution / modality / context condition
++ required atomic behavior
++ composition or interaction horizon
++ output / environment
++ evaluation contract
++ failure interpretation
++ guardrail / side effect
+```
+
+例如“医疗长文能力”过于粗。更可执行的切片是：在含干扰项的长病历中，定位诊断证据、跨段整合并引用依据；
+分别以 citation support、diagnosis correctness 和 unsafe recommendation 作为主指标、结果指标与 guardrail。
+
+### 4.1 切片不是标签的笛卡尔积
+
+- **Intent** 记录最终要交付什么；**domain** 记录完成目标所需的知识；**capability** 记录主要操作瓶颈；**condition** 记录模态、长度、语言、交互和环境。
+- 样本标签是输入协变量；能力切片是模型在给定条件下的可观察行为。领域词、文件类型和工具名不能直接推出能力。
+- 每项定义至少含 `definition / include / exclude / positive example / counterexample / version / source`；近邻反例通常比再加一个标签名更有校准价值。
+- 一个样本可以多标并带置信度；证据不足时允许 `unknown/abstain`。稀疏交叉桶回退到父层，不为所有轴生成完整笛卡尔积。
+- 每张 benchmark card 只保留 3–6 个主要行为切片与关键混杂；切得过粗会隐藏退化，切得过细会制造小样本和 multiple-testing 噪声。
+
+推荐的最小记录为：
+
+```text
+primary_intent
+primary_domains[]
+primary_capabilities[]
+conditions{}
+unit_of_evaluation
+evidence_required
+metric / aggregation / direction
+failure_stage / guardrails
+known_confounders
+taxonomy_version
+```
+
+稳定的 failure stage 可复用
+`perception / retrieval / grounding / reasoning / planning / action / verification / recovery / communication / safety / environment`；
+但它描述“在哪里首次失效”，不能替代任务能力本身。
+
+## 5. Benchmark card 的最小合同
+
+领域分册里的每张 card 尽量回答十二件事：
 
 1. 名称、版本与一手来源；
 2. 任务量、split、语言、模态和环境；
 3. 真正测量的构念；
-4. 所处能力阶梯；
-5. **课程合成例题**，只展示题型，不复制受版权保护的正式题；
-6. metric、聚合方法与成功条件；
-7. prompt、harness、环境/verifier、工具、预算、采样、timeout、judge 与失败分母；
-8. 哪些最新发版采用过；
-9. 截止快照日的 protocol-specific 水位；
-10. contamination、饱和、小样本、judge/environment 等局限；
-11. 证据等级。
+4. 所处任务复杂度阶梯；
+5. canonical capability-slice vector；
+6. **课程合成例题**，只展示题型，不复制受版权保护的正式题；
+7. metric、聚合方法与成功条件；
+8. prompt、harness、环境/verifier、工具、预算、采样、timeout、judge 与失败分母；
+9. 哪些最新发版采用过；
+10. 截止快照日的 protocol-specific 水位；
+11. contamination、饱和、小样本、judge/environment 等局限；
+12. 证据等级。
 
 证据等级统一为：
 
@@ -114,7 +163,7 @@ $$
 - **B-vendor**：来自厂商正式模型卡/发布页，但协议或逐题结果不完整；
 - **C-internal**：厂商内部题集、内部 judge 或只给摘要；只说明厂商关注方向。
 
-### 4.1 发版表常见别名：先正规化名称，仍不能省略 revision
+### 5.1 发版表常见别名：先正规化名称，仍不能省略 revision
 
 | 发版表短名 | 本专题正规化身份 | 仍须保留的差异 |
 |---|---|---|
@@ -130,7 +179,7 @@ $$
 
 正规化只解决“它大概是哪一家族”；只要上表最后一列不同，score identity 仍不同，不能做差。
 
-## 5. “最高水位”必须是复数
+## 6. “最高水位”必须是复数
 
 本专题不用一个粗体数字宣布 SOTA，而分四栏：
 
@@ -145,7 +194,7 @@ $$
 表中写“**不可合并**”，而不是挑最大数字。
 每个动态水位都必须带日期；旧水位仍可保留为时间序列，但不能继续叫“当前最高”。
 
-## 6. 分册导航
+## 7. 分册导航
 
 - **从这次问题直接进入**：[Qwen3.8 发版 benchmark 逐项导读](QWEN38_WALKTHROUGH.md)。它先拆开 Max、2.4T-A95B、27B 与 Flash-Next，再逐项给出能力、体量、metric、课程合成题、Qwen 协议/成绩与局限。
 - [文本、知识、推理与长上下文](01-text-reasoning.md)：MMLU-Pro、GPQA、HLE、IFBench、AIME、MRCR、LongBench v2、AA-LCR、BEAM-1M。
@@ -154,15 +203,15 @@ $$
 - [多模态理解](04-multimodal-understanding.md)：MMMU-Pro、MathVision、CharXiv、OCR/文档、RealWorldQA 与长视频。
 - [多模态生成](05-multimodal-generation.md)：GenEval、DPG/T2I-CompBench、VBench、FVD/FAD 以及盲评合同。
 - [前沿专项与新兴协议](06-frontier-specialized.md)：科学发现、机器学习研究、网络安全、办公交付、CAD/电子、实时语音及 living benchmark 的版本陷阱。
-- [2026-09-22 最新发版证据账](RELEASE_LEDGER.md)：Qwen3.8、Step 5 Preview、DeepSeek、Kimi、GLM、GPT、Gemini、Claude、Grok、Hy4 与 MiniMax。
+- [2026-10-10 最新发版证据账](RELEASE_LEDGER.md)：在 9 月主线之外，新增 Gemini 4 Argon、GPT-6 October snapshot、Claude Haiku 5.5、SeedRealtime 与 Nova 2.5 Sonic；访问状态和 benchmark 合同分开记录。
 
-## 7. 从发版表走到自己的 Evaluation Gate
+## 8. 从发版表走到自己的 Evaluation Gate
 
 推荐顺序不是“选一个总榜第一”，而是：
 
 ```text
 产品失败簇
-  → 对应能力阶梯与 benchmark card
+  → 对应 capability slice、任务复杂度阶梯与 benchmark card
   → 冻结 revision / task manifest / prompt / harness / environment / verifier / budget / failure denominator
   → 公共 benchmark 做诊断
   → fresh family-disjoint task 做选择
@@ -179,6 +228,7 @@ $$
 2. `pass@8=90%` 与 `pass@1=70%` 哪个模型更可靠？为什么题目信息不足？
 3. 为什么 GPQA/HLE 的上升不能替代 SWE-bench/OSWorld 的证据？
 4. 为什么 internal benchmark 仍值得记录，却不应进入公共最高水位？
+5. 为什么 `domain=medical` 与 `capability=evidence_retrieval` 不能合并成一个标签？
 
 <details>
 <summary>参考答案</summary>
@@ -187,6 +237,7 @@ $$
 2. 无法直接判断。`pass@8` 是八次搜索至少一次成功，`pass@1` 是单次成功；还需同题、同采样分布、同预算，并同时报告稳定性与总成本。
 3. GPQA/HLE 主要测受控的专家问答与推理；SWE-bench/OSWorld 还要求在有状态环境中观察、行动、恢复并满足终态 verifier，构念和失败面不同。
 4. internal benchmark 能暴露厂商的目标任务和真实 failure clusters，常比旧学术题更贴产品；但题目、污染、judge 和协议不可审计，因此只能作为 C 级发布声明，不能支持跨厂排名。
+5. 前者描述完成任务依赖的知识，后者描述模型必须执行的操作；同一领域可以要求多种能力，同一能力也可跨多个领域。合并后无法判断失败来自知识覆盖、检索、推理还是运行条件，也无法复用评测切片。
 
 </details>
 

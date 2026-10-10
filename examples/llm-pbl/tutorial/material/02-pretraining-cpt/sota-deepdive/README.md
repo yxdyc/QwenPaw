@@ -10,6 +10,7 @@
 
 | 文件 | 状态 | 说明 |
 |------|------|------|
+| [`deepseek-llm-scaling-laws.md`](deepseek-llm-scaling-laws.md) | ✅ 一手报告复核 | DeepSeek LLM 2024 的 batch/LR scaling、IsoFLOP model/data allocation、数据版本导致 exponent 漂移，以及与 recipe ladder 的边界 |
 | [`deepseek-moe-mla-stability.md`](deepseek-moe-mla-stability.md) | ✅ 首版 + V4 刷新 | 机制面 ×4（MoE / MLA / FP8 / 稳定性）仍以 V3 为规范锚；§6 用 V4 完整报告补上 CSA/HCA、mHC、Muon 与 specialist→OPD 生命周期，链接跨轨 capstone |
 | [`deepseek_v3_mechanisms_sim.py`](deepseek_v3_mechanisms_sim.py) | ✅ 冻结基线（2026-08-12 00:57） | 四个机制面的可运行本质模拟（toy 尺度 + 真实格式语义，真实 `float8_e4m3fn` 量化-反量化）；仅依赖 torch、CPU 即跑、seed=3 跨运行逐字节一致、self-check 20/20 |
 

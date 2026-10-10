@@ -39,7 +39,7 @@ Step 3  nano-megatron L0–L3    ← 张量/流水线/序列并行与 MFU
 Step 4  联读 FSDP/Megatron L2   ← 比较复制式 DP 状态合同与真正 tensor/pipeline 分片
   │
   ▼
-Step 5  sota-deepdive: DeepSeek ← MoE + MLA + 训练稳定性的 SOTA 工程
+Step 5  sota-deepdive: DeepSeek ← scaling allocation；MoE + MLA + 训练稳定性
   │
   ▼
 Step 6  Frontier Lifecycle L0   ← 把架构/pretrain 与后训练、部署和评测血缘连起来
@@ -56,6 +56,7 @@ Step 6  Frontier Lifecycle L0   ← 把架构/pretrain 与后训练、部署和�
 - [ ] 能解释序列并行（SP）为什么能省 activation 显存
 - [ ] 能列出一套 loss spike 的诊断与恢复流程
 - [ ] 能讲清 DeepSeek 的 MLA（多头潜在注意力）和 MoE 在训练上的至少 2 个工程要点
+- [ ] 能解释 IsoFLOP sweep 怎样估计 model/data allocation，以及为什么数据版本变化会改变 scaling exponent
 - [ ] 能分开总参数、激活参数、外置容量与训练状态，并判断一个跨版本比较是否能归因于 pretraining
 
 ---

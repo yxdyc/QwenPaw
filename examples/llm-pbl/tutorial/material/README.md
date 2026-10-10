@@ -12,6 +12,10 @@
 `python3 -B scripts/audit_feynman_answers.py` 则检查每篇教程与显式登记的 Benchmark Atlas 分册是否有费曼自检、每个自检是否带显式参考答案；
 [费曼覆盖审计器](../../scripts/audit_feynman_answers.py) 会在缺项时失败，但不判断答案是否正确或足够深入。
 
+如果从一个具体技术问题出发、希望直接定位到最短可运行实验，请使用
+[Question-to-Lab Crosswalk](QUESTION-TO-LAB-CROSSWALK.md)。它按“本质 → 取舍 → 工程 → 边界”组织分析，
+再将每类证据缺口连接到对应的 L0–L3，而不重复五轨正文。
+
 ---
 
 ## 先建立一张系统图
@@ -57,14 +61,14 @@ rollback；[L2](cross-track-evaluation-gate/tutorial_L2.md) 继续治理 evaluat
 generation CAS 与 reconcile 暴露并修复跨事务域裂缝。它们仍是单机 toy：不要把协议 self-check 误读成真实
 网络、GPU serving 或持续自我改进已经得到证明。
 [Frontier Model Lifecycle L0](cross-track-frontier-model-lifecycle/tutorial_L0.md) 位于 base 与 candidate 之间，
-用 DeepSeek-V4、Qwen3.8-Flash-Next、Kimi K3、GLM-5.3/Flash，以及 GPT-6 Astra、Claude Fable 5.1，
+用 DeepSeek-V4、Qwen3.8-Flash-Next、Kimi K3、GLM-5.3/Flash，以及 GPT-6、Gemini 3.8/4、Claude 5.x，
 把 architecture、pretraining、post-training、serving 与 evaluation 绑定到可审计 stage lineage。
 开放权重模型可以进入 config/checkpoint 账；闭源模型只进入 API、路由、工具轨迹、token/cost receipt 等可观测合同。
 L0 验证的是证据纪律，没有本地复现这些前沿模型。
 [能力追平与蒸馏专题](cross-track-frontier-model-lifecycle/CAPABILITY_GAP_AND_DISTILLATION.md) 进一步解释几个月级
 迭代为何可行，并用 fresh evidence ladder 区分 benchmark-local imitation、任务族迁移和部署能力。
 [Frontier Benchmark Atlas](cross-track-frontier-model-lifecycle/benchmark-atlas/README.md) 再把文本、代码、Agent、
-多模态理解/生成与前沿专项 benchmark 拆成可执行测量合同，并维护 2026-09-22 最新发版证据账；
+多模态理解/生成与前沿专项 benchmark 拆成可执行测量合同，并维护 2026-10-10 最新发版证据账与多轴能力切片 schema；
 [Qwen3.8 专页](cross-track-frontier-model-lifecycle/benchmark-atlas/QWEN38_WALKTHROUGH.md)另将 Max、2.4T、27B 与 Flash-Next 分开逐项解释。它们都不替代自家 fresh holdout。
 
 ---
@@ -126,9 +130,10 @@ L0 验证的是证据纪律，没有本地复现这些前沿模型。
 2. [nano-data-juicer](03-data-distributed-rsi/nano-data-juicer/) L0→L3：数据算子与分布式语义；
 3. [nano-ray](03-data-distributed-rsi/nano-ray/) L0→L3：执行、共享状态与 object store；
 4. [数据方法论 deep-dive](03-data-distributed-rsi/sota-deepdive/data-methodology.md)：去重、质量、配比、去污染；
-5. [reward signals 与 Goodhart](01-post-training-rl-sft/nano-trinity-rft/tutorial_L2.md)：反馈不等于真目标；
-6. [harness engineering](04-llm-to-agent/sota-deepdive/harness-engineering.md)：让失败可发现、状态可续接；
-7. [Evaluation Gate L0→L3a](cross-track-evaluation-gate/)：先裁决 candidate-parent，再把批准变成可恢复状态转移，
+5. [数据 Recipe 实验设计](03-data-distributed-rsi/sota-deepdive/data-recipe-experiment-design.md)：operator/bucket/capability effect、功效、混杂与交互；
+6. [reward signals 与 Goodhart](01-post-training-rl-sft/nano-trinity-rft/tutorial_L2.md)：反馈不等于真目标；
+7. [harness engineering](04-llm-to-agent/sota-deepdive/harness-engineering.md)：让失败可发现、状态可续接；
+8. [Evaluation Gate L0→L3a](cross-track-evaluation-gate/)：先裁决 candidate-parent，再把批准变成可恢复状态转移，
    治理 evaluator 换代与连续 candidate 的误报预算，最后用 outbox/receipt 把命令送到独立 router。
 
 这条路线的验收不是“成功训练过一次”，而是能回答：候选是否真的优于 parent、谁批准晋升、
@@ -154,8 +159,9 @@ L0 验证的是证据纪律，没有本地复现这些前沿模型。
 11. [Evaluation Gate L0](cross-track-evaluation-gate/tutorial_L0.md)：把均值、区间、hidden/critical 回归和成本拆成独立门；
 12. [Evaluation Gate L1](cross-track-evaluation-gate/tutorial_L1.md)：让批准、激活、重试和 rollback 进入 append-only journal；
 13. [Evaluation Gate L2](cross-track-evaluation-gate/tutorial_L2.md)：先按独立 cluster 聚合配对证据，再让 evaluator drift、re-baseline 和 stopping budget 进入 lineage；
-14. [Evaluation Gate L3a](cross-track-evaluation-gate/tutorial_L3.md)：让外部 router 发布具备 outbox、generation guard、receipt 与 reconcile；
-15. [事务化 Agent runtime L0–L2](04-llm-to-agent/nano-agent-runtime/)：把同一事务思想扩到多 worker、outbox、provider-checked fencing 与补偿。
+14. [Adaptive search companion](cross-track-evaluation-gate/tutorial_L2_adaptive_search.md)：winner's curse、SE/MDE、rank stability 与独立 held-out；
+15. [Evaluation Gate L3a](cross-track-evaluation-gate/tutorial_L3.md)：让外部 router 发布具备 outbox、generation guard、receipt 与 reconcile；
+16. [事务化 Agent runtime L0–L2](04-llm-to-agent/nano-agent-runtime/)：把同一事务思想扩到多 worker、outbox、provider-checked fencing 与补偿。
 
 完成后应能区分：能力生产可以并行、能力表示仍会纠缠、集成完成不等于 candidate 应当晋升。
 
@@ -182,14 +188,15 @@ L0 验证的是证据纪律，没有本地复现这些前沿模型。
 这条路线不按厂商或 benchmark 横向背型号，而是沿 stage 追问“提升来自哪里”：
 
 1. [pretraining lifecycle L0–L2](02-pretraining-cpt/nano-pretraining-loop/)：先建立数据顺序、optimizer、RNG、cursor 与 checkpoint 血缘；
-2. [DeepSeek-V3 deep-dive](02-pretraining-cpt/sota-deepdive/deepseek-moe-mla-stability.md)：用 MoE / MLA / FP8 / 稳定性建立可迁移机制地基；
-3. [Kimi K3 deep-dive](01-post-training-rl-sft/sota-deepdive/kimi-k3-agentic-rl-scale.md)：看长轨 agentic RL 为什么同时是算法和环境系统问题；
-4. [Reasoning effort 与长程 Agent 训练](01-post-training-rl-sft/sota-deepdive/reasoning-effort-and-long-horizon-agent-training.md)：把 API effort、训练预算课程、长轨 mask/RFT 与 adaptive selector 分层；
-5. [nano-opd L0–L3](01-post-training-rl-sft/nano-opd/)：从 reverse KL 到多教师路由与生产配方坐标；
-6. [Frontier Model Lifecycle L0](cross-track-frontier-model-lifecycle/tutorial_L0.md)：以 DeepSeek-V4、Qwen3.8、Kimi K3、GLM-5.3/Flash、GPT-6 Astra 与 Claude Fable 5.1 统一名称、参数账、stage、服务合同与归因；
-7. [能力追平、蒸馏与 benchmark validity](cross-track-frontier-model-lifecycle/CAPABILITY_GAP_AND_DISTILLATION.md)：解释快速追平的机制与局部刷榜的证据边界；
-8. [Frontier Benchmark Atlas](cross-track-frontier-model-lifecycle/benchmark-atlas/README.md)：逐项读懂 benchmark 的体量、metric、典型题、harness 与动态水位；
-9. [Evaluation Gate L0–L3a](cross-track-evaluation-gate/)：把 same-base paired evidence、失败率、成本、晋升、发布与回滚接到 candidate。
+2. [DeepSeek LLM scaling laws](02-pretraining-cpt/sota-deepdive/deepseek-llm-scaling-laws.md)：用 IsoFLOP sweep 理解 model/data/compute allocation 与数据版本漂移；
+3. [DeepSeek-V3 deep-dive](02-pretraining-cpt/sota-deepdive/deepseek-moe-mla-stability.md)：用 MoE / MLA / FP8 / 稳定性建立可迁移机制地基；
+4. [Kimi K3 deep-dive](01-post-training-rl-sft/sota-deepdive/kimi-k3-agentic-rl-scale.md)：看长轨 agentic RL 为什么同时是算法和环境系统问题；
+5. [Reasoning effort 与长程 Agent 训练](01-post-training-rl-sft/sota-deepdive/reasoning-effort-and-long-horizon-agent-training.md)：把 API effort、训练预算课程、长轨 mask/RFT 与 adaptive selector 分层；
+6. [nano-opd L0–L3](01-post-training-rl-sft/nano-opd/)：从 reverse KL 到多教师路由与生产配方坐标；
+7. [Frontier Model Lifecycle L0](cross-track-frontier-model-lifecycle/tutorial_L0.md)：以 DeepSeek-V4、Qwen3.8、Kimi K3、GLM-5.3/Flash 与闭源 GPT-6、Gemini、Claude 统一名称、参数账、stage、服务合同与归因；
+8. [能力追平、蒸馏与 benchmark validity](cross-track-frontier-model-lifecycle/CAPABILITY_GAP_AND_DISTILLATION.md)：解释快速追平的机制与局部刷榜的证据边界；
+9. [Frontier Benchmark Atlas](cross-track-frontier-model-lifecycle/benchmark-atlas/README.md)：逐项读懂 benchmark 的体量、metric、典型题、harness 与动态水位；
+10. [Evaluation Gate L0–L3a](cross-track-evaluation-gate/)：把 same-base paired evidence、失败率、成本、晋升、发布与回滚接到 candidate。
 
 完成后应能区分“新 base 更强”“后训练更有效”“部署更便宜”和“评测合同更宽松”，并能为每个判断设计最低成本反证。
 面对闭源模型，还应记录请求模型、实际执行模型、路由原因、工具轨迹与成本回执，并拒绝从价格、上下文长度或榜单倒推出未公开架构。
@@ -257,9 +264,12 @@ L0 验证的是证据纪律，没有本地复现这些前沿模型。
 - [后训练算法演进](01-post-training-rl-sft/sota-deepdive/post-training-algorithm-evolution.md)
 - [Reasoning effort 与长程 Agent 训练](01-post-training-rl-sft/sota-deepdive/reasoning-effort-and-long-horizon-agent-training.md)
 - [DeepSeek-V3：MoE / MLA / FP8 / 稳定性](02-pretraining-cpt/sota-deepdive/deepseek-moe-mla-stability.md)
+- [DeepSeek LLM：model / data / compute scaling](02-pretraining-cpt/sota-deepdive/deepseek-llm-scaling-laws.md)
 - [LLM 数据方法论](03-data-distributed-rsi/sota-deepdive/data-methodology.md)
+- [数据 Recipe 实验设计](03-data-distributed-rsi/sota-deepdive/data-recipe-experiment-design.md)
+- [Adaptive search 与独立验收](cross-track-evaluation-gate/tutorial_L2_adaptive_search.md)
 - [Harness Engineering](04-llm-to-agent/sota-deepdive/harness-engineering.md)
-- [Frontier Model Lifecycle：开放权重 stage 血缘 + GPT-6 Astra / Claude Fable 5.1 API 合同](cross-track-frontier-model-lifecycle/)
+- [Frontier Model Lifecycle：开放权重 stage 血缘 + GPT-6 / Gemini / Claude API 合同](cross-track-frontier-model-lifecycle/)
 - [能力追平、蒸馏与 benchmark validity](cross-track-frontier-model-lifecycle/CAPABILITY_GAP_AND_DISTILLATION.md)
 - [Frontier Benchmark Atlas：benchmark 卡片、反例与最新发版账](cross-track-frontier-model-lifecycle/benchmark-atlas/README.md)
 

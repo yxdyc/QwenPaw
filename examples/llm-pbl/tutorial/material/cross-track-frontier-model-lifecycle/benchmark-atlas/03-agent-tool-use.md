@@ -23,7 +23,7 @@
 ### 2.1 GAIA：466 道通用助手题的经典基线
 
 - **基本信息**：[GAIA](https://huggingface.co/datasets/gaia-benchmark/GAIA) 有 466 题：166 道公开 validation、300 道隐藏答案 test，分三个难度等级；输入可含 PDF、图像、音频或网页。
-- **能力项 / 阶梯**：L2/L3 浏览、文件解析、计算与多步工具推理。
+- **能力项 / 阶梯**：T2/T3 浏览、文件解析、计算与多步工具推理。
 - **课程合成例题**：从 PDF 脚注找到一个年份，再到网页查同期汇率，换算后只输出最终金额。
 - **打分**：规范化后的短答案 exact/equivalence accuracy，按 level 与 overall 报告。
 - **厂商采用**：历代通用 agent 常用；2026 头部发版已更多迁到 BrowseComp、ALE 和职业工作集。
@@ -33,7 +33,7 @@
 ### 2.2 BrowseComp：1,266 道“搜不到第一屏答案”的短答案题
 
 - **基本信息**：[OpenAI BrowseComp](https://openai.com/index/browsecomp/) 有 1,266 道人工构造的困难检索题，答案通常很短，但需要组合多个罕见线索。
-- **能力项 / 阶梯**：L3 query reformulation、多跳浏览、消歧与证据综合。
+- **能力项 / 阶梯**：T3 query reformulation、多跳浏览、消歧与证据综合。
 - **课程合成例题**：根据会议年份、作者教育经历和一项实验细节，定位唯一论文标题。
 - **打分**：短答案正确率，官方 simple-evals 用 judge 判断等价；single run、majority、best-of-N 必须分栏。
 - **厂商采用**：GPT-6 Astra、Step 5、Kimi K3 等最新发版；Hy4 另有内部 BrowseComp-Pro2。
@@ -43,7 +43,7 @@
 ### 2.3 DRACO / deep-research rubric：从答案命中到研究过程
 
 - **基本信息**：DRACO 以约 100 个 deep-research query 和 rubric/judge 评估搜索、证据与综合；版本与 judge 需跟发布材料绑定。
-- **能力项 / 阶梯**：L3 长报告、引用、多源矛盾处理和研究计划。
+- **能力项 / 阶梯**：T3 长报告、引用、多源矛盾处理和研究计划。
 - **课程合成例题**：比较三家公司的供应链风险，逐条给出处、时点和相互冲突的口径，而非只报结论。
 - **打分**：rubric criterion pass/aggregate judge score；有的协议允许近 1M token。
 - **厂商采用**：Claude Fable 5.1、Step 5、Hy4 等。
@@ -55,7 +55,7 @@
 ### 3.1 WebArena / WebArena-Verified：在网站中改变真实状态
 
 - **基本信息**：[WebArena](https://github.com/web-arena-x/webarena) 原始套件有 812 个自托管网站任务；Verified 对任务与 grader 做人工复核，具体 N 必须绑定 snapshot。
-- **能力项 / 阶梯**：L2 网站导航、表单、购物/论坛/GitLab 等有状态交互。
+- **能力项 / 阶梯**：T2 网站导航、表单、购物/论坛/GitLab 等有状态交互。
 - **课程合成例题**：在项目站找到指定 issue、加标签并安排里程碑，同时不修改同名诱饵 issue。
 - **打分**：终态 functional correctness；有些任务另检查 URL/页面状态。
 - **厂商采用**：Qwen3.8-27B 报 WebArena-Verified `64.8`，使用 OSWorld scaffold 与官方 grader。
@@ -65,7 +65,7 @@
 ### 3.2 OSWorld lineage：classic / Verified 与 2.x 不是一张榜
 
 - **基本信息**：[classic OSWorld](https://github.com/xlang-ai/OSWorld) 与 2025 年修订的 OSWorld-Verified 属 1.x 任务线；[OSWorld 2.x](https://github.com/xlang-ai/OSWorld-V2) 另有 108 个跨桌面、网页与应用的长程 workflow，论文报告人类完成时间中位数约 1.6 小时。官方在 2026-09-16 又发布 `osworld-v2.1` bug-fix manifest，要求代码、tasks、assets、website 与 VM image 全部同 revision。
-- **能力项 / 阶梯**：L3 GUI grounding、跨应用状态、动态信息、失败恢复与长程计划。
+- **能力项 / 阶梯**：T3 GUI grounding、跨应用状态、动态信息、失败恢复与长程计划。
 - **课程合成例题**：读取迟到的邮件附件，修正 spreadsheet，再在另一个应用同步状态并导出 PDF。
 - **打分**：1.x/Verified 常报 task success；2.x 在最多 500 actions 下分 strict binary completion 与 partial reward。三者必须连同 release manifest 命名。
 - **厂商采用**：GPT-6 Astra、Claude 5.1、Kimi K3、Qwen3.8 VLM 等。
@@ -75,7 +75,7 @@
 ### 3.3 AndroidWorld：116 个跨 20 个 app 的移动端任务
 
 - **基本信息**：[AndroidWorld](https://github.com/google-research/android_world) 的基准任务由可重置模拟器状态和 app verifier 定义，经典套件为 116 题、20 个 Android app。
-- **能力项 / 阶梯**：L2/L3 小屏视觉定位、输入、跨 app intent 与状态恢复。
+- **能力项 / 阶梯**：T2/T3 小屏视觉定位、输入、跨 app intent 与状态恢复。
 - **课程合成例题**：从短信读取地址，在地图保存地点，再在日历创建带正确时区的事件。
 - **打分**：task success；厂商表也可能跑 95-task public subset 或 `avg@3`。
 - **厂商采用**：Qwen3.8-Max/27B/Flash-Next 等最新视觉 agent 发布。
@@ -87,7 +87,7 @@
 ### 4.1 Toolathlon-Verified：108 题、32 个应用、604 个工具
 
 - **基本信息**：[Toolathlon](https://toolathlon.xyz/) 的 Verified 版复核了 108 个跨应用任务，覆盖 32 apps、604 tools，平均约 20 轮。
-- **能力项 / 阶梯**：L3 多工具规划、依赖顺序、状态查询与写操作。
+- **能力项 / 阶梯**：T3 多工具规划、依赖顺序、状态查询与写操作。
 - **课程合成例题**：读邮件附件、核对学习平台记录、更新成绩并向符合条件的人发送通知。
 - **打分**：常见三次运行的 Pass@1、Pass@3、`Pass^3` 与轮数；Pass@3 是至少一次成功，Pass³ 是三次都成功。
 - **厂商采用**：Qwen3.8、Step 5、Kimi K3、GLM-5.3-Flash、Claude 5.1、Hy4 等。
@@ -97,7 +97,7 @@
 ### 4.2 MCP-Atlas：把 tool protocol 与长程调用分开测
 
 - **基本信息**：[Scale MCP-Atlas](https://labs.scale.com/leaderboard/mcp_atlas) 全集 1,000 题（500 public + 500 private），覆盖 36 servers、220 tools；当前协议常允许最多 100 次 tool calls。
-- **能力项 / 阶梯**：L3 MCP tool discovery、schema binding、跨 server 工作流与长程恢复。
+- **能力项 / 阶梯**：T3 MCP tool discovery、schema binding、跨 server 工作流与长程恢复。
 - **课程合成例题**：从 cloud drive 找报价单，在 CRM 更新 deal，再在 project tracker 创建带依赖的任务。
 - **打分**：task success / judge score，必须锁定 public/private、judge 与 2026-04 前后协议。
 - **厂商采用**：Step 5、Kimi K3、GLM、Hy4；Kimi/Hy4 明确跑 public 500。
@@ -107,7 +107,7 @@
 ### 4.3 AutomationBench：600 个严格计分业务流程
 
 - **基本信息**：[AutomationBench](https://github.com/zapier/AutomationBench) 有 600 个公开计分任务，Sales/Marketing/Ops/Support/Finance/HR 各 100，涉及 47 个模拟 SaaS 工具；另有 200 smoke tasks 与更难 private set。
-- **能力项 / 阶梯**：L3 跨 CRM、邮件、日历、消息与表格的确定性业务自动化。
+- **能力项 / 阶梯**：T3 跨 CRM、邮件、日历、消息与表格的确定性业务自动化。
 - **课程合成例题**：找到正确 lead、约会、改状态并通知 Slack，且不得触碰同名诱饵记录。
 - **打分**：`partial_credit` 是状态断言通过比例；所有断言都通过才 `task_completed_correctly=1`。
 - **厂商采用**：Qwen、Step、DeepSeek、Kimi、GLM、GPT、Claude、Hy4 最新发版几乎全覆盖。
@@ -117,7 +117,7 @@
 ### 4.4 τ lineage：文本政策、知识检索与全双工语音
 
 - **基本信息**：[τ³ 官方仓库](https://github.com/sierra-research/tau2-bench) 延续 τ-bench 的 airline/retail 政策与 user simulator，τ² 增加双边交互和 telecom；τ³-Banking 再加入约 700 份、约 195K-token 的非结构化政策库与 97 个任务；[τ-Voice](https://arxiv.org/abs/2603.13686) 则把 278 个 retail/airline/telecom 任务改成可打断、带噪声/口音的全双工音频交互。
-- **能力项 / 阶梯**：L3 工具调用、policy compliance、知识检索、信息收集与用户协商；voice 支路额外测听说重叠、打断、响应时延与选择性。
+- **能力项 / 阶梯**：T3 工具调用、policy compliance、知识检索、信息收集与用户协商；voice 支路额外测听说重叠、打断、响应时延与选择性。
 - **课程合成例题**：用户要求退一张不满足规则的票；agent 需核验身份、解释限制并给合法替代，不能为追求“帮忙”绕过政策。
 - **打分**：最终数据库状态 + 沟通合同的 task success；文本线常报 `pass^k` 衡量连续多次都成功，voice 线还报告 clean/realistic 条件下的 task pass@1、responsiveness、latency、interrupt rate 与 selectivity。
 - **厂商采用**：Kimi K3、Step 5 等报告 τ³-Banking；Gemini 3.8 Live 报 τ-Voice 与 τ-Voice-banking。它们不能与原 τ-bench 合并。
@@ -129,7 +129,7 @@
 ### 5.1 ALE：living benchmark，pass 与 score 必须同时报
 
 - **基本信息**：[Agents' Last Exam](https://agents-last-exam.org/) 是持续扩展的 OS sandbox 专业任务；论文描述 1K+ 任务、55 子领域、13 行业簇，公开仓约 150 个 reference tasks，完整库已超过 1,500。厂商还可能使用 105-task snapshot。
-- **能力项 / 阶梯**：L3 多小时 CLI/GUI、文档、媒体、工程与专业软件工作。
+- **能力项 / 阶梯**：T3 多小时 CLI/GUI、文档、媒体、工程与专业软件工作。
 - **课程合成例题**：分析多份财务文件、更新模型、制作演示，并满足隐藏数值与格式检查。
 - **打分**：隐藏 grader 的 `[0,1]` partial `Score`；满分任务比例为 `Pass Rate`。
 - **厂商采用**：Qwen、Step、DeepSeek、Kimi、GLM、GPT、Hy4 等。
@@ -139,7 +139,7 @@
 ### 5.2 GDPval-AA v2.1：220 个职业交付的相对偏好
 
 - **基本信息**：[Artificial Analysis 公共榜](https://artificialanalysis.ai/evaluations/gdpval-aa) 从 GDPval 的 1,320 题中运行 220 题，覆盖 44 个职业、9 个行业；agent 通过 Stirrup 获得 shell 与 web，产出文档、表格、幻灯片和图示。
-- **能力项 / 阶梯**：L3 经济相关职业 artifact 的研究、计算、写作与呈现。
+- **能力项 / 阶梯**：T3 经济相关职业 artifact 的研究、计算、写作与呈现。
 - **课程合成例题**：根据 venue 和乐队需求制作 stage plot PDF；连接位置、尺寸、标签与交付格式分别进入验收。
 - **打分**：同题匿名 submission 的盲评 pairwise，聚合为 Elo；v2.1 以 DeepSeek V4.1 Flash max=`1600` 锚定，不是正确率。
 - **厂商采用**：Step、Kimi、GLM、GPT、Claude、Grok、Hy4、Qwen 等当前发布。
@@ -149,7 +149,7 @@
 ### 5.3 AA-Briefcase v1.1：四个多周项目、91 份独立交付
 
 - **基本信息**：[AA-Briefcase](https://artificialanalysis.ai/evaluations/aa-briefcase) 是 4 个 multi-week 私有项目、共 91 tasks 与成千输入文件；每个 task 目前独立运行，不继承模型上周的输出。第五个 public-lite 场景只示范结构，不计正式分。
-- **能力项 / 阶梯**：L3 数据科学、产品管理、公司战略中的多文件证据、冲突消解与成品质量。
+- **能力项 / 阶梯**：T3 数据科学、产品管理、公司战略中的多文件证据、冲突消解与成品质量。
 - **课程合成例题**：从数十份尽调底稿制作市场结构图、财务模型和 briefing video；引用、结论、分析深度与版式分别评分。
 - **打分**：binary rubric pass、analytical-quality pairwise Elo 与 presentation Elo，再合成 AA-Briefcase Elo。
 - **厂商采用**：Step、Kimi、GPT、Claude、Grok、Qwen 等；Qwen3.8-Max 还出现在独立 v1.1 榜，而非其首发主表。
@@ -159,7 +159,7 @@
 ### 5.4 JobBench：专业人士真正想委托的 130 个任务
 
 - **基本信息**：[JobBench 论文](https://arxiv.org/abs/2605.26329) 从 1,500+ 专业人士的委托偏好出发，覆盖 35 个职业、130 个 agentic tasks；公开 main/easy 为不同的 65/63 题平行 split，不是逐题难化版。
-- **能力项 / 阶梯**：L3 在杂乱 dossier 中检索矛盾证据、展示推理链并做职业交付。
+- **能力项 / 阶梯**：T3 在杂乱 dossier 中检索矛盾证据、展示推理链并做职业交付。
 - **课程合成例题**：为审计师核对监管 PDF、SQLite 账目与多年 CSV，解释冲突并生成带出处的 exception memo。
 - **打分**：每题 fact-anchored weighted rubric；论文平均每题 35.6 个 binary criteria，不能把 rubric pass 当 task all-pass。
 - **厂商采用**：Qwen3.8、Step 5、Kimi、GLM、Hy4 等。
@@ -169,7 +169,7 @@
 ### 5.5 Workspace-Bench 1.0：20,476 个文件中的依赖与版本谱系
 
 - **基本信息**：[Workspace-Bench](https://arxiv.org/abs/2605.03596) 有 5 个职业 workspace、74 种文件类型、20,476 files、388 tasks 和 7,399 rubrics；Lite 为保持分布的 100 题子集，成本约低 70%。
-- **能力项 / 阶梯**：L3 workspace exploration、跨文件语义/血缘关系、supporting/result files 选择与一致交付。
+- **能力项 / 阶梯**：T3 workspace exploration、跨文件语义/血缘关系、supporting/result files 选择与一致交付。
 - **课程合成例题**：在数千文件中识别过期 `final_v2` 与当前定价表的依赖，更新预测表和管理层 memo，且保留来源链。
 - **打分**：平均 rubric pass，并可看 dependency node/edge F1 与 task-level TCR@30/50/70/90/100。
 - **厂商采用**：Qwen3.8-Max 等；模型表常只写 `WorkSpaceBench`，必须核对 full/Lite 与 harness。
@@ -179,12 +179,23 @@
 ### 5.6 OfficeQA Pro / Pro V2：财务 PDF 检索、表格与计算
 
 - **基本信息**：[OfficeQA 官方仓](https://github.com/databricks/officeqa) 分 Pro 133 题、Full 246 题与新语料 Pro V2 90 题；前两者使用 697 期 U.S. Treasury Bulletins，V2 使用 1,435 份更老、更难解析的 Federal Accounts 文档。
-- **能力项 / 阶梯**：L2/L3 文档解析、跨期检索、表格数值对齐与 grounded calculation。
+- **能力项 / 阶梯**：T2/T3 文档解析、跨期检索、表格数值对齐与 grounded calculation。
 - **课程合成例题**：从数期财政公报找到口径改变前后的同一收支项，统一单位、计算差额并给出页码证据。
 - **打分**：official reward 对规范化答案计 accuracy；agent-harness、oracle pages、extracted text 与 PDF image 是四种不同观察合同。
 - **厂商采用**：Step、Kimi、GLM、Claude、Hy4 等。
 - **局限**：OCR/表格表示、corpus indexing、web access 和绝对/相对误差阈值会移动分数；Pro 与 Pro V2 不合榜。
 - **最高水位口径**：Fable 卡在 extracted-text harness 报 OfficeQA/OfficeQA Pro `80.2/69.0`；更新且换了语料的 Pro V2 官方仓快照最佳 `54.4`。三者不是难度刻度上的同一 split，不能挑最大值称“OfficeQA 80.2”。
+
+### 5.7 Vals Index：经济权重是产品假设，不是自然常数
+
+- **基本信息**：[Vals Index methodology](https://www.vals.ai/benchmarks)将 finance、coding、legal、tax 等 agentic benchmark 按行业权重合成一个 proprietary index；组件和权重会随版本变化。
+- **能力项 / 阶梯**：T2/T3 的专业检索、财务计算、repo/terminal、法律与税务 artifact 交付；它是多 benchmark portfolio，不是一种原子能力。
+- **canonical slice**：每个 component 单独保存 `domain + required behavior + environment + metric`；index 层再保存 `component revision + normalization + weight + evaluated_at`。
+- **课程合成例题**：先分别评估财务模型、repo 修复与法律 memo，再按预先声明的业务流量权重聚合；同时保留每项最低门槛，避免一个强项掩盖另一项失效。
+- **打分**：组件分数经版本化公式加权；最新公开页还同时给 cost/test 与 duration。一个 index 值不能反推出任一组件准确率。
+- **厂商采用**：Google 报 Argon `68.9`；2026-10-07 的 Vals 页面也列其为该 snapshot 的第一名。
+- **局限**：权重近似经济影响而非具体产品流量；proprietary tasks、组件版本、模型 pool 和 harness 会变。v1、v1.1、v1.2、v2.x 不是同一时间序列。
+- **最高水位口径**：`68.9` 只属于 Vals Index@2026-10-07；对自家产品应换成真实 task mixture，并分别报告 macro、worst slice、cost 与 strict completion。
 
 ## 6. 把 Agent 分数拆成四个分母
 
@@ -207,6 +218,7 @@
 3. OSWorld partial 77.9 与 strict 41.7，哪个更“真实”？
 4. 为什么 GDPval Elo 1853 不能解释为 85.3% 正确？
 5. 怎样区分底座变强与 harness 变强？
+6. 为什么 Vals Index 适合看能力组合，却不适合直接当发布门槛？
 
 <details>
 <summary>参考答案</summary>
@@ -216,6 +228,7 @@
 3. 两者都真实但回答不同问题：partial 适合定位进展和 bottleneck，strict 更接近“用户是否拿到完整交付”。生产决策通常把 strict 作主门、partial 作诊断。
 4. Elo 是特定对手池和 judge 下的相对位置，零点与尺度会随 pool 改变；既不是 task accuracy，也不能跨日期直接相减。
 5. 固定 benchmark revision、harness、工具、预算、sampling 和 grader，只换 checkpoint 做 paired run；再固定 checkpoint 换 harness。两组 factorial 分别估计 model 与 scaffold effect，并保留交互项。
+6. 它把异质的金融、代码、法律和税务任务按外部权重合成，便于看组合竞争力；但权重未必匹配产品流量，且均分可掩盖关键切片失效。发布时应替换为目标 mixture，并加 strict、worst-slice 与 cost 门禁。
 
 </details>
 

@@ -85,3 +85,8 @@ Step 5  sota-deepdive                 ← SOTA LLM 数据方法论 + 核心工�
 - SOTA：代表性数据方法论报告（FineWeb / DCLM / Nemotron 等）`[TODO: verify arXiv]`；RSI / self-improvement 代表工作 `[TODO: verify]`；湖仓与 MLOps 平台最佳实践 `[TODO: verify]`
 
 → 深挖见 [sota-deepdive/](sota-deepdive/)
+
+重点专题：
+
+- [LLM 数据方法论](sota-deepdive/data-methodology.md)：去重、质量过滤、配比与去污染；
+- [数据 Recipe 实验设计](sota-deepdive/data-recipe-experiment-design.md)：operator/bucket/capability response、功效、混杂、interaction 与多模态覆盖。

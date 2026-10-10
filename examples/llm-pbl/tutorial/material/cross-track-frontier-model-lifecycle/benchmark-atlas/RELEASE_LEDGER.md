@@ -1,7 +1,7 @@
-# 2026-09-22 前沿基模发版 Benchmark 证据账
+# 2026-10-10 前沿基模发版 Benchmark 证据账
 
 > **用途**：回答“各家最新发版到底在用什么 benchmark、真正关注什么能力、最高水位在哪里”。
-> **快照**：2026-09-22。模型、榜单和 living benchmark 会继续变化；引用时必须连同日期。
+> **快照**：2026-10-10。模型、榜单和 living benchmark 会继续变化；各分册保留的 2026-09-22 公共榜水位未在本轮重算，引用时必须连同各自日期。
 > **边界**：本页记录厂商正式发布材料与公共榜，不把厂商自测写成独立复现，也不把不同协议的最大数字拼成排行榜。
 
 稳定的 benchmark 定义、课程合成例题和局限放在
@@ -15,22 +15,38 @@ Qwen3.8 的全部表另有[逐项导读](QWEN38_WALKTHROUGH.md)。本页只维�
 | 厂商 | 截止快照日的最新对象 | 开放边界 | 本次 benchmark 重心 |
 |---|---|---|---|
 | Qwen | Qwen3.8-Max；开放对应物 Qwen3.8-2.4T-A95B | 2.4T/95B 开放权重版是 text-only、thinking-only；托管 Max 另有 vision、non-thinking、默认 1M 与内置工具 | coding、cowork、长程 agent、专业工作、长上下文 |
-| StepFun | Step 5 Preview | 截至快照日是 preview；官网承诺 2026-10-15 开放权重 | coding/terminal、工具、办公、金融与长程 agent |
+| StepFun | Step 5 Preview | 截至 2026-10-10 仍是 preview；官网目标为 2026-10-15 开放权重，该日期尚未发生，也不等于权重已发布 | coding/terminal、工具、办公、金融与长程 agent |
 | DeepSeek | DeepSeek-V4.1-Flash | 开放权重；Base 与 Instruct 结果必须分表 | 统一长程 harness、coding、cyber、工具和视觉 agent |
 | Moonshot | Kimi K3 | 7 月首发、7 月 27 日开放权重 | coding、research、office、原生视觉与 1M agent |
 | Z.ai | GLM-5.3 与 GLM-5.3-Flash | 5.3 为旗舰后训练更新；Flash 是 320B/A18B 原生多模态新 base，不能并成一次消融 | coding/terminal、工具、office；Flash 增加视觉 |
-| OpenAI | GPT-6 Astra | API/产品开放，参数、权重和训练配方未公开 | computer use、专业工作、coding/science、1M 检索、安全 |
-| Google | Gemini 3.8 Flash；语音分支为 3.8 Live / Live Extended Thinking | API 服务；Flash 是最新通用工作模型，Live 是 speech-to-speech 专项，不能混表 | 高性价比 coding/agent、长视频、专业工作；实时语音 agent |
-| Anthropic | Claude Fable 5.1 / Mythos 5.1 | 同底座不同 safeguard；Mythos 是 trusted-access；部分请求会 fallback | coding、长程终端、office/GUI、专业交付、安全 |
+| OpenAI | GPT-6 Astra；ChatGPT 中另有 10 月 Sol / Luna snapshot | Astra 是 API/专业系统线；ChatGPT 的 October snapshot 已替换旧版本，但 Work/Codex 仍可运行此前 snapshot | computer use、专业工作、coding/science、长上下文，以及 snapshot/surface 身份治理 |
+| Google | Gemini 3.8 Flash；受限前沿分支 Gemini 4 Argon；语音分支 3.8 Live | 3.8 Flash 已生产可用；Argon 仅分阶段开放给可信测试者，尚无公共 API 合同；Live 是 speech-to-speech 专项 | coding/agent、企业知识、长视频/长上下文、cyber 与实时语音 |
+| Anthropic | Claude Fable 5.1 / Mythos 5.1；Claude Haiku 5.5 | Fable/Mythos 同底座不同 safeguard；Haiku 5.5 已在 API/云平台提供，是可调 effort 的高吞吐执行档 | coding、GUI/office、专业交付、安全，以及能力—成本路由 |
 | SpaceXAI | Grok 4.7 | API 模型，500K text/image input；权重与配方未公开 | coding/engineering、CAD、电路、bio/cyber safety |
 | Tencent | Hy4 preview | 770B/49B active、开放权重；通用基模 | coding、search、working agent、STEM 与 1M 上下文 |
 | MiniMax | MiniMax H3 | 开放的是视频—音频生成 Base 权重的指定能力，不是本表其他模型那种通用问答基模 | FL2VA/Ref2VA、视频与音频联合生成 |
+| ByteDance | Seed2.1；实时分支 SeedRealtime | Seed2.1 是 6 月基线而非本轮新增；SeedRealtime 已产品部署，是原生 audio-video-text 全双工专项 | 通用基模基线；连续流理解、对话时序、主动交互 |
+| AWS | Nova 2.5 Sonic | 2026-10-05 GA 的实时 speech-to-speech 专项；不进入通用文本旗舰排名 | 多轮语音、turn-taking、异步工具与低延迟 |
 
-三个容易混淆的身份问题：
+五个容易混淆的身份问题：
 
 1. `Qwen3.8-Max` 是托管系统，`Qwen3.8-2.4T-A95B` 是开放权重 text-only checkpoint；不能把 Max 的 vision/工具能力自动赋给本地权重。
 2. `GLM-5.3` 与 `GLM-5.3-Flash` 的 base、架构、规模和模态不同；“Flash 更晚”不表示它在所有任务上替代旗舰。
 3. `Hy4 preview` 是腾讯当前通用基模；HunyuanImage 3.0、HunyuanVideo 与 Hunyuan3D-Buffalo 属于图像、视频、3D 生成产品线，不能混进通用基模总榜。
+4. `GPT-6 Sol` 或 `Luna` 只有连同月份与 surface 才构成模型身份。2026-10 ChatGPT snapshot 与 Work/Codex 中此前发布的同名模型不能折叠成一行。
+5. `Gemini 4 Argon` 的 1M 是最大输出上限；公开材料没有给出可购买 API 的 input-context 合同。受限 preview、未来定价和公共可用性也不能合并成“已 GA”。
+
+### 1.1 本轮更新里，哪些不是新 checkpoint
+
+| 动态 | 应怎样记录 | 不应怎样记录 |
+|---|---|---|
+| GPT-6 生产实践指南 | 能力—成本路由、cache/compaction、async tools 与 completion boundary 的系统证据 | 新 checkpoint 或新 benchmark 水位 |
+| Google Cloud Gemini Agent | 产品级 orchestration、企业系统接入和治理案例 | 新 Gemini base model |
+| Qwen D2K-Bench | 新 benchmark / 评测资产 | 新 Qwen 权重 |
+| DeepSeek Ascend 系统栈 | 部署与基础设施兼容性 | DeepSeek V4.2 |
+| Claude-shaped science | 带 Harness 的研究工作流案例与 failure modes | Claude 新型号或自主 RSI 的证明 |
+
+这张表的作用是先识别事件类型：`checkpoint / service snapshot / benchmark / runtime / product workflow`。只有第一类能直接进入“模型换代”时间线；其他类别同样有用，但回答的是不同问题。
 
 ## 2. 从榜单迁移看前沿能力重心
 
@@ -115,6 +131,10 @@ StepCodeBench 披露 553 repos、9 类任务、20 领域、33 语言，并报 `a
 
 ### 3.3 DeepSeek-V4.1-Flash：最适合教学 harness 敏感性
 
+模型身份先固定：官方模型卡披露 552B backbone、20 层 encoder + 20 层 decoder 的 CED，并区分约 8B prefill-active 与
+16B decode-active；34T token 后扩到 1M context，再经历 SFT、RL 与 OPD。上述 lineage 说明“Base / Instruct / 服务
+harness”是三个不同被测对象，不能拿同一模型名下的数字直接连成训练阶段增益。
+
 **Instruct，max reasoning=100**：
 
 | 组别 | 官方项目 |
@@ -177,6 +197,21 @@ v1.0.6 和 null-type 修复。对教学而言，这些脚注比 `84.3` 本身更
 OpenAI 声明表中常取**任一 reasoning effort 的最大值**，且运行于 research/API 环境。FrontierCode 加了接近
 Codex 的 developer message；ExploitGym 取消常见 6 小时时限；这些均属于 score identity。
 
+#### 3.6.1 GPT-6 October snapshot：同名模型还要绑定月份与产品 surface
+
+OpenAI 于 2026-10-07 将新的 GPT-6 Sol / Luna snapshot 推向 ChatGPT；付费计划使用 Sol，Free/Go 使用 Luna。
+这次更新只覆盖 ChatGPT，Work 与 Codex 仍运行此前发布的同名版本。因此数据库键中的 `model` 至少要拆成
+`family + snapshot + surface + routing policy`，不能把所有 “GPT-6 Sol” 当成一个 checkpoint。
+
+这次 system card 还给出四个值得复用的评测合同：
+
+- HealthBench 同时报 length-adjusted score、raw score 与平均可见长度；只给校正分会遮住能力和表达长度的共同变化。
+- MentalHealthBench 含 1,215 段合成对话；每题四次采样后先在 task 内平均，再跨 task 计算均值与标准误。总样本数不能直接替代 task-level 不确定性。
+- `Respecting Warnings` 测环境返回 AccessDenied 或 policy barrier 后是否停止越界推进；`Blocker Deception` 测遇到无法完成的工程阻塞时是否如实说明。两者都比单轮“拒答率”更接近 agent 行为。
+- 安全能力通常按最低已部署 reasoning effort 测，能力上限常按最高 effort 测。若不保存 effort，同一张卡里的分数也未必对应同一服务档。
+
+官方还报告 ChatGPT Web Search 回答开始时间缩短 44%，但这是内部产品延迟结果，不是跨厂 benchmark。
+
 ### 3.7 Google Gemini 3.8：Flash 与 Live 是两条评测线
 
 Gemini 3.8 Flash 是截至快照日最新通用 Flash 工作模型；它强调质量—延迟—价格 Pareto，而不是声称取代尚未发布的
@@ -196,6 +231,24 @@ Google 还发布了 3.8 Live 与 Live Extended Thinking：Artificial Analysis Sp
 [Gemini 3.8 Live release](https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-3-8-live-gemini-3-8-live-extended-thinking/)
 与[model-card index](https://deepmind.google/models/model-cards/)。
 
+#### 3.7.1 Gemini 4 Argon：能力上沿与可用状态必须分栏
+
+Argon 是 Google 于 9 月 30 日发布的 frontier checkpoint；截至本页快照，仅通过 Fairwind 等计划向少量可信测试者
+分阶段开放，公共 API 仍未发布。官方披露 1M 最大**输出**，未披露参数量、架构、训练 token、完整 recipe 或公共 input-context
+合同。未来首发价也不等于当前可购买服务。
+
+| 能力切片 | Google 报告的 Argon 结果 | 合同边界 |
+|---|---:|---|
+| 企业知识工作 | Vals Index `68.9`；AutomationBench `51.3` | Vals 的评审/任务池与 Automation 的 strict workflow 不是同一 metric |
+| Agentic coding | DeepSWE v1.1 `77.9`；Terminal-Bench 4.0 `57.4` | 对手数字混合厂商自报、Google 复跑与 leaderboard；harness 必须逐行核验 |
+| ML / science | PostTrainBench `45.3`；Terminal-Bench Science `57.6` | PostTrainBench 才是统一 OpenCode、10 小时、单 H100 的相对干净比较 |
+| 长上下文算法执行 | GraphWalks 128K 以下 `99.7`、256K–1M `84.2` F1 | 证明特定图遍历任务上的长输入执行，不等于 1M 通用 agent 可靠性 |
+| Computer use | Agent's Last Exam `39.5`；OSWorld 2.0 offline partial `69.2` | ALE pass 与 OSWorld partial 不能平均；后者还是 offline subset |
+| 多模态 / cyber | LVBench `91.7`；CWE-bench v1 `68.0` | LVBench 与漏洞修复属于两套环境；只支持分切片结论 |
+
+Argon 进入 frontier 候选，但没有在所有项目领先 Astra、Claude 或其他系统。更准确的结论是：Google 提供了一组
+企业工作、长上下文算法执行、多模态和防御性 cyber 的 B-vendor 证据；受限访问使外部 paired replay 暂不可做。
+
 ### 3.8 Claude Fable/Mythos 5.1：模型、路由与 safeguard 是不同对象
 
 除另注外，系统卡多用 adaptive thinking max、默认 sampling、五次平均、最高 1M context。
@@ -212,6 +265,24 @@ Fable 与 Mythos 同底座但安全策略不同；部分 cyber/bio 请求会 fal
 但含 fallback 的分数不能再解释为单 checkpoint 水位。DRACO 更换 judge 可移动 10–25pp；OfficeQA 的 extracted text
 与直接读 PDF image 也是两个任务。CritPt-Corrected 还同时改变题面、内部 task revision、工具与 16 次尝试聚合；它与
 public CritPt 的 70-test-challenge 独立榜回答的是“修正后题面可解性”，不能拿 `88.4-20.9` 当模型代际增益。
+
+#### 3.8.1 Claude Haiku 5.5：小模型档也要按 capability × cost 评估
+
+Haiku 5.5 于 2026-10-07 发布并已进入 API / 云平台，是首个支持 adjustable effort 的 Haiku。它的定位是高吞吐执行档，
+适合 compaction、summarization、classification、database query、browser use 和 coding subagent；“更小”不等于只用简单问答衡量。
+
+| Benchmark | Haiku 5.5 官方值 | 怎样读 |
+|---|---:|---|
+| GDPval-AA v2.1 | `1620` | Elo；依赖对手池、judge 与日期，不是 1620% 或准确率 |
+| AA-Briefcase v1.1 | `1578` | Elo；四个长项目的相对偏好，不等于全量完成率 |
+| OSWorld 2.1 | `72.4%` | offline subset；不能与 full/strict 或 OSWorld 2.0 裸比 |
+| HLE | no-tools `45.9%`；with-tools `57.4%` | 工具系统改变被测对象，应分两条记录 |
+| Terminal-Bench 4.0 | `39.2%` | agentic coding；需绑定 effort 和 harness |
+| FrontierCode 1.1 Main | `46.4%` | Main split；不可与 Extended 或 composite 混用 |
+| Chartography | no-tools `46.4%` | 无 crop/Python；与带工具配置不在一条线上 |
+
+这次发布最有价值的不是“Haiku 追上旗舰”，而是把 accuracy/quality 与 inference cost 放进同一 Pareto 决策。
+同一 effort 档、相同任务合同和单位成功成本，才是路由策略可用的比较基础。
 
 ### 3.9 Grok 4.7：工程 benchmark 很集中，通用 VLM/长上下文证据仍有空白
 
@@ -251,6 +322,24 @@ OSWorld 模型做一个“综合智能”总分。课程将它放在
 - 系统合同：FL2VA/Ref2VA、768p 本地边界、scheduler、seed、revision、GPU、峰值显存与 artifact hash。
 
 VBench/FVD/FAD/CLAP 不能单独证明观感与产品质量，详见[生成分册](05-multimodal-generation.md)。
+
+### 3.12 Seed2.1 / SeedRealtime：通用基线与实时全双工分开
+
+Seed2.1 的 Pro / Turbo 两档发布于 2026-06-23，是本页补齐的窗口前基线，不是 8–10 月新 checkpoint。
+SeedRealtime 于 2026-08-05 正式发布并完成产品全量部署，原生统一 audio、video 与 text 连续流，重点测联合理解、说话人/
+指代跟踪、对话时序、打断、false trigger、主动介入和工具调用。
+
+厂商报告其端到端人评相对级联系统将对话节奏问题减半，并降低中断、延迟与误触发；由于未披露可重放 task manifest、
+分母和统一对手协议，本页把它记为 B-vendor 产品证据，不转换成跨厂名次。它也不应与通用 text/image→text benchmark 合榜。
+
+### 3.13 Amazon Nova 2.5 Sonic：实时语音是独立 runtime 合同
+
+Nova 2.5 Sonic 于 2026-10-05 GA，是面向实时 voice agent 的 speech-to-speech 专项模型。官方披露七种语言、可控
+turn-taking、同会话 voice + text、异步工具调用与 256K context，并强调 reasoning、instruction following、tool-call accuracy
+和 latency 相比上一代改善。
+
+这些是发布能力声明，没有随页给出可与 τ-Voice 或 Gemini Live 同协议比较的分数。Atlas 因而只记录其服务可用性与
+runtime capability，不把“更低延迟”写成公开水位，也不让 Nova 进入通用文本旗舰总榜。
 
 ## 4. “最高水位”表：先分 A/B/C，再看数值
 
@@ -295,7 +384,7 @@ source snapshot 或 benchmark contract 已变化。
 - **不同 metric 共用百分号**：ProgramBench average vs Almost vs resolved；SWE-Marathon partial vs binary；ALE pass vs partial score。
 - **不同被测系统**：裸 checkpoint、带工具模型、native harness、fallback router、多 agent；除非问题本来就是比较整套系统。
 
-## 5. 八个决定结论的“反排行榜”案例
+## 5. 十一个决定结论的“反排行榜”案例
 
 1. **DeepSWE scaffold delta**：同一 DeepSeek-V4.1-Flash 在不同 agent 中约 `65.5–74.2`；模型没变，headline 可动近 9pp。
 2. **ProgramBench metric delta**：公共榜 fully resolved 远低于 average hidden-test pass；`80.5%` 若不写 metric 几乎没有意义。
@@ -305,14 +394,19 @@ source snapshot 或 benchmark contract 已变化。
 6. **Kimi context-management delta**：300K+压缩 `91.2` 高于不管理的 1M `90.4`；窗口是容量，选择策略才是有效记忆。
 7. **Claude fallback identity**：路由提高部署可用性，却使结果不再能归于 Fable 单 checkpoint。
 8. **Grok 官方冲突**：同次发版 EEBench 页面 `64.0`、模型卡 `66.0`；证据账应保留冲突，不能静默择高。
+9. **GPT 同名 snapshot delta**：ChatGPT 的 October Sol/Luna 与 Work/Codex 的此前 snapshot 同名不同实现；不保存月份和 surface，线上回归无法归因。
+10. **Argon access delta**：1M output、restricted preview 和未来 API 定价是三种事实；把它们压成“1M API 已开放”会同时写错容量和可用性。
+11. **Haiku metric delta**：GDPval `1620` 是 Elo，OSWorld `72.4%` 是 offline-subset 成功率；即使同一发布页、同一模型，也不能相加或平均。
 
 ## 6. 发版成绩的最小数据库键
 
 一行成绩的唯一键至少应是：
 
 ```text
-model/checkpoint-or-api-id
+model-family + exact-snapshot/checkpoint-or-api-id
++ access-surface / router / fallback policy
 + benchmark@revision/split
++ canonical capability-slice vector / taxonomy version
 + metric/aggregation/direction
 + model-mode/reasoning-effort
 + prompt/template/harness
@@ -338,12 +432,14 @@ model/checkpoint-or-api-id
 - DeepSeek：[DeepSeek-V4.1-Flash model card](https://huggingface.co/deepseek-ai/DeepSeek-V4.1-Flash)、[API updates](https://api-docs.deepseek.com/updates/)。
 - Moonshot：[Kimi K3 model card](https://huggingface.co/moonshotai/Kimi-K3)、[official blog](https://www.kimi.ai/blog/kimi-k3)、[open-weight announcement](https://www.kimi.com/news/kimi-k3-open-source)。
 - Z.ai：[GLM-5.3-Flash model card](https://huggingface.co/zai-org/GLM-5.3-Flash)、[GLM-5 repository](https://github.com/zai-org/GLM-5)。
-- OpenAI：[GPT-6 Astra release](https://openai.com/index/gpt-6-astra/)、[system card](https://deploymentsafety.openai.com/gpt-6-astra)、[API model](https://developers.openai.com/api/docs/models/gpt-6-astra)。
-- Google：[Gemini model hub](https://deepmind.google/models/gemini/)、[model-card index](https://deepmind.google/models/model-cards/)、[Gemini 3.8 Live release](https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-3-8-live-gemini-3-8-live-extended-thinking/)。
-- Anthropic：[Claude Fable/Mythos 5.1 release](https://www.anthropic.com/claude-fable-and-mythos-5-1)、[system card PDF](https://www-cdn.anthropic.com/0339e6a7c5c7b87f5c07798616dc32c215d14235/Claude%20Fable%205.1%20%26%20Claude%20Mythos%205.1%20System%20Card.pdf)。
+- OpenAI：[GPT-6 Astra release](https://openai.com/index/gpt-6-astra/)、[Astra system card](https://deploymentsafety.openai.com/gpt-6-astra)、[GPT-6 October release](https://openai.com/index/gpt-6-for-everyone/)、[October system card](https://deploymentsafety.openai.com/gpt-6-october/model-data-and-training)。
+- Google：[Gemini model hub](https://deepmind.google/models/gemini/)、[Gemini 3.8 Flash model card](https://deepmind.google/models/model-cards/gemini-3-8-flash/)、[Gemini 3.8 Live release](https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-3-8-live-gemini-3-8-live-extended-thinking/)、[Gemini 4 Argon release](https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-4-argon/)、[Argon evaluation methodology](https://deepmind.google/models/evals-methodology/gemini-4-argon)。
+- Anthropic：[Claude Fable/Mythos 5.1 release](https://www.anthropic.com/claude-fable-and-mythos-5-1)、[system card PDF](https://www-cdn.anthropic.com/0339e6a7c5c7b87f5c07798616dc32c215d14235/Claude%20Fable%205.1%20%26%20Claude%20Mythos%205.1%20System%20Card.pdf)、[Claude Haiku 5.5 release](https://www.anthropic.com/claude-haiku-5-5)。
 - SpaceXAI：[Grok 4.7 release](https://x.ai/news/grok-4-7)、[model card PDF](https://media.x.ai/v1/website/card4p7-3a96f40b.pdf)、[API model](https://docs.x.ai/developers/models/grok-4.7)。
 - Tencent：[Hy4 preview repository](https://github.com/Tencent-Hunyuan/Hy4-preview)、[official release](https://www.tencent.com/tencent-releases-and-open-sources-tencent-hy4-preview/)、[benchmark appendix](https://raw.githubusercontent.com/Tencent-Hunyuan/Hy4-preview/main/assets/benchmark-appendix.jpg)。
 - MiniMax：[H3 model card](https://huggingface.co/MiniMaxAI/MiniMax-H3)。
+- ByteDance Seed：[Seed2.1](https://seed.bytedance.com/en/seed2_1)、[SeedRealtime](https://seed.bytedance.com/en/seedrealtime)。
+- AWS：[Nova 2.5 Sonic GA](https://aws.amazon.com/about-aws/whats-new/2026/10/amazon-nova-2.5-Sonic/)、[service card](https://docs.aws.amazon.com/ai/responsible-ai/nova-2-5-sonic/overview.html)。
 - 独立动态榜：[FrontierSWE v2](https://www.frontierswe.com/)、[SWE-Marathon](https://www.swe-marathon.org/)、[ProgramBench](https://programbench.com/)、[AA-LCR](https://artificialanalysis.ai/evaluations/artificial-analysis-long-context-reasoning)。
 
 ## 费曼自检
@@ -353,6 +449,8 @@ model/checkpoint-or-api-id
 3. 为什么 GPT-6 Astra 的 MRCR 1M 高分与 Kimi 的 BrowseComp context-management 对照回答了不同问题？
 4. 如果一个模型在 HLE tools、Toolathlon、OSWorld 都提升，怎样判断是权重、harness 还是工具系统贡献？
 5. 你会怎样向管理层汇报“当前最高水位”，既简洁又不制造虚假精确性？
+6. 为什么同名 `GPT-6 Sol` 仍不足以定位一个可复现实验对象？
+7. 为什么领域标签和能力标签都齐全，仍不足以定义一个 benchmark slice？
 
 <details>
 <summary>参考答案</summary>
@@ -362,6 +460,8 @@ model/checkpoint-or-api-id
 3. MRCR 测大量相似上下文中定位并复现指定答案；BrowseComp 是搜索、证据综合和上下文管理的 agent 系统。前者隔离 retrieval fidelity，后者包含行动与压缩策略。
 4. 做四格或逐级消融：固定模型换 harness；固定 harness 换模型；逐一关闭搜索/代码/视觉；锁 token/time/attempt/failure denominator，并保存逐题 paired outcome。只有 matched delta 才可归因。
 5. 分 A-public、B-vendor、C-internal 三栏；每个候选只报 benchmark revision、metric、系统身份、预算与日期，并显式写“不同协议不可合并”。对业务决策再加成本、失败率和自家 fresh holdout，而不是给一个总榜名次。
+6. 还需月份或精确 snapshot、产品 surface、router/fallback 与 reasoning effort。2026-10 的 ChatGPT Sol 和 Work/Codex 中此前发布的同名 Sol 就不是同一被测对象。
+7. 领域说明任务依赖什么知识，能力说明要执行什么操作；还需 intent、输入/模态/上下文条件、interaction horizon、输出或环境、metric、失败解释和 guardrail，才能把行为变成可裁决合同。
 
 </details>
 
